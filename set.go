@@ -14,7 +14,8 @@ func main() {
     helps := `
         -h      to show tis help message
         -t      to set time duration by second e.g: -tm 5 this add 5 second bitween every messages
-        -to     to set topic
+        -s      to set subject/topic
+        // another setting here
         // another setting here
 
     `
@@ -32,9 +33,9 @@ func main() {
     var help string
     //timeUp := 3
 
-    flag.StringVar(&topic, "tp", "", "specify of topic")
+    flag.StringVar(&topic, "s", "", "specify of topic")
     flag.StringVar(&help, "h", "", "show help message")
-    flag.StringVar(&timeUp, "s", "3", "Send data every specified number of seconds")
+    flag.StringVar(&timeUp, "t", "3", "adding a wait time by second bitween messages")
 
     flag.Parse()
 
