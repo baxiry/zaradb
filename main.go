@@ -32,7 +32,7 @@ func New(dir string) (*Driver, error) {
 		return &driver, nil
 	}
 	log.Printf("creating new databse at %s", dir)
-	return &driver, os.MkdirAll(dir, 0655)
+	return &driver, os.MkdirAll(dir, 0744)
 }
 
 func (d *Driver) Write(collection, resource string, v interface{}) error {
@@ -51,8 +51,9 @@ func (d *Driver) Write(collection, resource string, v interface{}) error {
 	fnlPath := filepath.Join(dir, resource+".json")
 	tmpPath := fnlPath + ".tmp"
 
-	err := os.MkdirAll(dir, 0655)
+	err := os.MkdirAll(dir, 0744)
 	if err != nil {
+		fmt.Println("Error is : ", err)
 		return err
 	}
 
@@ -63,7 +64,7 @@ func (d *Driver) Write(collection, resource string, v interface{}) error {
 
 	b = append(b, byte('\n'))
 
-	err = ioutil.WriteFile(tmpPath, b, 0755)
+	err = ioutil.WriteFile(tmpPath, b, 0666)
 	if err != nil {
 		return err
 	}
