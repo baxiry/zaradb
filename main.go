@@ -35,6 +35,7 @@ func New(dir string) (*Driver, error) {
 	return &driver, os.MkdirAll(dir, 0744)
 }
 
+// Write
 func (d *Driver) Write(collection, resource string, v interface{}) error {
 	if collection == "" {
 		return fmt.Errorf("missing collection - no place to save record, ")
@@ -72,6 +73,7 @@ func (d *Driver) Write(collection, resource string, v interface{}) error {
 	return os.Rename(tmpPath, fnlPath)
 }
 
+// Read
 func (d *Driver) Read(collection, resource string, v interface{}) error {
 	if collection == "" {
 		return errors.New("missing collection - no place to save record! ")
@@ -94,6 +96,7 @@ func (d *Driver) Read(collection, resource string, v interface{}) error {
 	return json.Unmarshal(b, &v)
 }
 
+// ReadAll
 func (d *Driver) ReadAll(collection string) ([]string, error) {
 
 	if collection == "" {
@@ -121,6 +124,7 @@ func (d *Driver) ReadAll(collection string) ([]string, error) {
 	return records, nil
 }
 
+// Delete
 func (d *Driver) Delete(collection, resource string) error {
 	path := filepath.Join(collection, resource)
 	mutex := d.getOrCreateMutex(collection)
@@ -198,6 +202,8 @@ func main() {
 		{"jawad", "24", "09 534554432", "student", Address{"moroco", "cnatra", "jarnose", "305555"}},
 		{"joha", "30", "09 534554432", "shef", Address{"moroco", "safro", "koarnose", "545555"}},
 		{"jamous", "23", "09 534554432", "doctor", Address{"moroco", "safi", "saniya", "905555"}},
+		{"koko", "23", "09 534554432", "doctor", Address{"moroco", "safi", "saniya", "905555"}},
+		{"dodo", "23", "09 534554432", "doctor", Address{"moroco", "safi", "saniya", "905555"}},
 	}
 
 	for _, value := range users {
@@ -226,7 +232,13 @@ func main() {
 	}
 	fmt.Println("all users is : ", allusers)
 
-	//if err := db.Delete("user", "john"); err != nil {
-	//fmt.Println(err)
-	//}
+	if err := db.Delete("users", "adam"); err != nil {
+		fmt.Println(err)
+	}
+
+	newRecords, err := db.ReadAll("users")
+	for _, f := range newRecords {
+		fmt.Println(f)
+	}
+
 }
