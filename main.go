@@ -3,9 +3,38 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 )
 
 const version = "0.0.1"
+
+type Logger interface {
+	Fatal(string ...interface{})
+	Error(string ...interface{})
+	Waren(string ...interface{})
+	Info(string ...interface{})
+	Debug(string ...interface{})
+	Trace(string ...interface{})
+}
+
+type Driver struct {
+	mutex  sync.Mutex
+	mutexs map[string]*sync.Mutex
+	dir    string
+	log    Loger
+}
+
+type Option struct {
+	Logger
+}
+
+func New() {
+
+}
+
+func Write() error {
+	return nil
+}
 
 type Person struct {
 	Name    string
