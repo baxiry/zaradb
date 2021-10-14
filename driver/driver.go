@@ -26,11 +26,11 @@ func NewDB(dir string) (*Driver, error) {
 		mutexes: make(map[string]*sync.Mutex),
 	}
 
-	if _, err := os.Stat(dir); err != nil {
-		log.Printf("using %s (database) already exists \n", dir)
+	_, err := os.Stat(dir)
+	if err != nil {
 		return &driver, nil
 	}
-	log.Printf("creating new databse at %s", dir)
+
 	return &driver, os.MkdirAll(dir, 0744)
 }
 

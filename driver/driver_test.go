@@ -1,10 +1,44 @@
 package driver
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
 	"testing"
 )
+
+// test db is exist ? db is just a directory
+
+func TestNewDB(t *testing.T) {
+	db, err := NewDB("./")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	_, err = os.Stat("./")
+	if os.IsNotExist(err) {
+		t.Errorf("db is not exist %v, %v", db, err)
+	}
+
+}
+
+// we need some data to test all driver functions
+type Person struct {
+	Name    string
+	Age     json.Number
+	Job     string
+	Contact string
+	Address Address
+}
+
+type Address struct {
+	City    string
+	State   string
+	Country string
+	Pincode json.Number
+}
 
 // cases:
 var users = []Person{
@@ -16,32 +50,15 @@ var users = []Person{
 	{"dodo", "23", "09 534554432", "doctor", Address{"moroco", "safi", "saniya", "905555"}},
 }
 
-// test db is exist ? db is just a directory
-func dbExists(path string) bool {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return false
-	}
-	return true
-}
-
-func TestNew(*testing.T) {
-	_, err := NewDB("./")
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	//return db
-	//if dbExists()
-}
-
 // Test Wrilte to db
-func TestWrite(*testing.T) {
+func TestWrite(t *testing.T) {
+
 	db, err := NewDB("./")
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	_, err = os.Stat("userso")
+	_, err = os.Stat("users")
 	if os.IsNotExist(err) {
 		if err != nil {
 			fmt.Println(err)
@@ -58,36 +75,48 @@ func TestWrite(*testing.T) {
 		}
 	}
 
+	files, err := ioutil.ReadDir("./users")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if len(files) != len(users) {
+		t.Errorf("something wrong")
+	}
+	fmt.Println("all ok")
+
+	//_ = os.Remove("users/adam.json")
 }
 
-/*
-   func TestReadAll(*testing.T) {
+// TEST ReadAll func
+func TestReadAll(*testing.T) {
 
-   	records, err := db.ReadAll("users")
-   	if err != nil {
-   		fmt.Println("Error", err)
-   	}
+	db, _ := NewDB("./")
 
+	records, err := db.ReadAll("users")
+	if err != nil {
+		fmt.Println("Error", err)
+	}
 
-   	fmt.Println(records)
+	fmt.Println(records)
 
-   	allusers := []Person{}
+	allusers := []Person{}
 
-   	for _, f := range records {
-   		userfound := Person{}
-   		if err := json.Unmarshal([]byte(f), &userfound); err != nil {
-   			fmt.Println(err)
-   		}
-   		allusers = append(allusers, userfound)
-   	}
-   	fmt.Println("all users is : ", allusers)
+	for _, f := range records {
+		userfound := Person{}
+		if err := json.Unmarshal([]byte(f), &userfound); err != nil {
+			fmt.Println(err)
+		}
+		allusers = append(allusers, userfound)
+	}
+	//fmt.Println("all users is : ", allusers)
 
-   	if err := db.Delete("users", "adam"); err != nil {
-   		fmt.Println(err)
-   	}
+	//if err := db.Delete("users", "adam"); err != nil {
+	//fmt.Println(err)
+	//}
 
-   	newRecords, err := db.ReadAll("users")
-   	for _, f := range newRecords {
-   		fmt.Println(f)
-   	}
-   }*/
+	newRecords, err := db.ReadAll("users")
+	for _, f := range newRecords {
+		fmt.Println(f)
+	}
+}

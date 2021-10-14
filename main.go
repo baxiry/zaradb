@@ -68,12 +68,4 @@ func main() {
 		fmt.Println(err)
 	}
 
-	newRecords, err := db.ReadAll("users")
-	if err != nil {
-		fmt.Println(err)
-	}
-	for _, f := range newRecords {
-
-		fmt.Println(f)
-	}
 }

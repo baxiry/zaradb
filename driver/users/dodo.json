@@ -1,0 +1,12 @@
+{
+  "Name": "dodo",
+  "Age": 23,
+  "Job": "09 534554432",
+  "Contact": "doctor",
+  "Address": {
+    "City": "moroco",
+    "State": "safi",
+    "Country": "saniya",
+    "Pincode": 905555
+  }
+}
