@@ -39,24 +39,6 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func writeFile(path, data string) {
-	f, err := os.Create(path)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer f.Close()
-
-	_, err2 := f.WriteString(data)
-
-	if err2 != nil {
-		log.Fatal(err2)
-	}
-
-	fmt.Println("done")
-}
-
 func readFile(path string) string {
 	data := ""
 	f, err := os.Open(path)
@@ -81,4 +63,22 @@ func readFile(path string) string {
 	}
 
 	return data
+}
+
+func writeFile(path, data string) {
+	f, err := os.Create(path)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer f.Close()
+
+	_, err2 := f.WriteString(data)
+
+	if err2 != nil {
+		log.Fatal(err2)
+	}
+
+	fmt.Println("done")
 }
