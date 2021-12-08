@@ -7,12 +7,11 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 )
 
 func process(w http.ResponseWriter, r *http.Request) {
 
-	filename := strings.Split(r.URL.RawQuery, "=")[1]
+	filename := r.URL.Query().Get("filename")
 	fmt.Println("filename is : ", filename)
 
 	switch r.Method {
