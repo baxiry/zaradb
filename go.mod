@@ -8,7 +8,6 @@ require (
 	github.com/melbahja/goph v1.3.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pkg/sftp v1.13.4 // indirect
-	github.com/sfreiberg/simplessh v0.0.0-20180301191542-495cbb862a9c // indirect
 	golang.org/x/crypto v0.0.0-20211202192323-5770296d904e // indirect
 	golang.org/x/sys v0.0.0-20211031064116-611d5d643895 // indirect
 )
