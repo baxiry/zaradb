@@ -8,10 +8,15 @@ import (
 	"github.com/melbahja/goph"
 )
 
+// zip -r lilgo.zip lilgo
+
 var (
 	//address = "172.105.241.152"
 	address  = "158.247.195.235"
 	password = "e1J=xHytspxhhscx"
+
+	//namefile = "lilgo.zip"
+	//path     = "/root/"
 )
 
 func main() {
@@ -22,11 +27,11 @@ func main() {
 		fmt.Printf("%T\n", err.Error())
 		os.Exit(1)
 	}
-
 	// Defer closing the network connection.
 	defer client.Close()
 
-	fmt.Println("close client")
+	err = client.Download("/root/lilgo.zip", "lilgo.zip")
+	fmt.Println("error is :", err)
 
 	// Execute your command.
 	out, err := client.Run("ls")
@@ -37,14 +42,4 @@ func main() {
 
 	// Get your output as []byte.
 	fmt.Println("list is :\n", string(out))
-
-	// Execute your command.
-	out, err = client.Run("ls /")
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Get your output as []byte.
-	fmt.Println("root list is :\n", string(out))
 }

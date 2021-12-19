@@ -1,4 +1,4 @@
-module botsaver
+module saverbot
 
 go 1.17
 

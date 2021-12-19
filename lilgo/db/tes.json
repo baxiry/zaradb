@@ -1,0 +1,156 @@
+{
+  "SelfToken": "",
+  "SelfStatus": false,
+  "Prefix": "y",
+  "Setkey": ".",
+  "Rname": "bot",
+  "Authoken": [
+    "u2fa8102d168b6db6054d510ea64121d0:aWF0OiAxNjE1MzMzMDgxOTU1Cg==..M/VYD+BpTlccWEDfuNiIyHvPHbY=",
+    "uce303f1e5aab7414ace386fc066393dc:aWF0OiAxNjE1MzM0NTU1OTM1Cg==..Njr3MV2/Epj4Iq3AsnFGF/PR8Fk=",
+    "ub35b81c0b88c298490117027a686ad0e:aWF0OiAxNjE1MzMzNjMxNjkwCg==..1mSJ5aobb4BkptuldiwxyBgpcHQ=",
+    "uac154b3d535ce4caaff04406ca625607:aWF0OiAxNjE1MzI3MTgxODE2Cg==..MM8ILLMYiosKKqM9tt0CEag89+4=",
+    "u4a83d6817c2663c2eb6af85850dcf5ff:aWF0OiAxNjE1MzEzMjUyNTY3Cg==..6hB4Cv1lNJE0euAkKSNZcbZkF8Q=",
+    "ue2b0f66513509db37a8e1ef39d1b1007:aWF0OiAxNjE1MzEyNTU3OTAwCg==..3Xt7zcs21euNcd95Lj9rSpxNzm4=",
+    "u06c9e2672fd263c94cb41cdaf7f48fe8:aWF0OiAxNjE1MzExOTAyNDUzCg==..u8kjPFhOBU67yLxREUhofZvEHSE=",
+    "ubf431dc95cf135ca71f1979d941f5bb5:aXNzdWVkVG86IHViZjQzMWRjOTVjZjEzNWNhNzFmMTk3OWQ5NDFmNWJiNQppYXQ6IDE2Mzg2NTU5MDAwNTEK.dHlwZTogWVdUCmFsZzogSE1BQ19TSEExCg==.NGw2SiXfYLa0nWyss8kCEAvw0e0=",
+    "uc94058f297292202508dccd5da9895d3:aXNzdWVkVG86IHVjOTQwNThmMjk3MjkyMjAyNTA4ZGNjZDVkYTk4OTVkMwppYXQ6IDE2Mzg2NTYwMTk3OTcK.dHlwZTogWVdUCmFsZzogSE1BQ19TSEExCg==.arXvtu5exFzDVCqH89T4BNLE0Bg=",
+    "ueb869599b764a93735a24977443c2bfa:aXNzdWVkVG86IHVlYjg2OTU5OWI3NjRhOTM3MzVhMjQ5Nzc0NDNjMmJmYQppYXQ6IDE2Mzg2NTYyMDAwOTkK.dHlwZTogWVdUCmFsZzogSE1BQ19TSEExCg==.0XpcVx4uVpdZ4aUnLM2EZZ5+ITY="
+  ],
+  "Bot": [],
+  "Buyer": [
+    "ud389edb1aee8458c05853713ff65859b",
+    "u27603a2c021c18746b7aa34e3d2b2220",
+    "u7b566e01279ac3dcf0108e8248b67e41",
+    "ufc1bc0158f087fed049adc12842c16f1",
+    "uc28dc54132c87f6289cefde977325204",
+    "ua9aa57b02350b7139a0ba7a8c519e59c"
+  ],
+  "Owner": [],
+  "Master": [],
+  "Admin": [],
+  "Blacklist": [],
+  "Fucklist": [],
+  "Premlist": [],
+  "Whitelist": [],
+  "Backuplist": [
+    "u2fa8102d168b6db6054d510ea64121d0",
+    "uce303f1e5aab7414ace386fc066393dc",
+    "ub35b81c0b88c298490117027a686ad0e",
+    "uac154b3d535ce4caaff04406ca625607",
+    "u4a83d6817c2663c2eb6af85850dcf5ff",
+    "ue2b0f66513509db37a8e1ef39d1b1007",
+    "u06c9e2672fd263c94cb41cdaf7f48fe8",
+    "ubf431dc95cf135ca71f1979d941f5bb5",
+    "uc94058f297292202508dccd5da9895d3",
+    "ueb869599b764a93735a24977443c2bfa"
+  ],
+  "ForceQr": false,
+  "ForceInv": true,
+  "VictimMode": false,
+  "FastMode": false,
+  "QrMode": true,
+  "MixMode": false,
+  "KillMode": false,
+  "NukeJoin": false,
+  "AutoPurge": false,
+  "AutoPro": false,
+  "AntiTag": false,
+  "Identict": false,
+  "AjsStay": {},
+  "BotStay": {
+    "c4f95c46373d3657c97b3c2657c7aff9b": [
+      "u2fa8102d168b6db6054d510ea64121d0",
+      "uce303f1e5aab7414ace386fc066393dc",
+      "ub35b81c0b88c298490117027a686ad0e",
+      "uac154b3d535ce4caaff04406ca625607",
+      "u4a83d6817c2663c2eb6af85850dcf5ff",
+      "ue2b0f66513509db37a8e1ef39d1b1007",
+      "u06c9e2672fd263c94cb41cdaf7f48fe8"
+    ],
+    "c65daa4bf7f49f21e6931cdb253afd637": [
+      "u2fa8102d168b6db6054d510ea64121d0",
+      "uce303f1e5aab7414ace386fc066393dc",
+      "ub35b81c0b88c298490117027a686ad0e",
+      "uac154b3d535ce4caaff04406ca625607",
+      "u4a83d6817c2663c2eb6af85850dcf5ff",
+      "ue2b0f66513509db37a8e1ef39d1b1007",
+      "u06c9e2672fd263c94cb41cdaf7f48fe8",
+      "ubf431dc95cf135ca71f1979d941f5bb5",
+      "uc94058f297292202508dccd5da9895d3",
+      "ueb869599b764a93735a24977443c2bfa"
+    ],
+    "c69fed793f9e6e0fe485d921f50810b64": [
+      "u2fa8102d168b6db6054d510ea64121d0",
+      "uce303f1e5aab7414ace386fc066393dc",
+      "ub35b81c0b88c298490117027a686ad0e",
+      "uac154b3d535ce4caaff04406ca625607",
+      "u4a83d6817c2663c2eb6af85850dcf5ff",
+      "ue2b0f66513509db37a8e1ef39d1b1007",
+      "u06c9e2672fd263c94cb41cdaf7f48fe8",
+      "ubf431dc95cf135ca71f1979d941f5bb5",
+      "uc94058f297292202508dccd5da9895d3",
+      "ueb869599b764a93735a24977443c2bfa"
+    ],
+    "cf87c5a515f403c754b6b0ed91ee98b77": [
+      "u2fa8102d168b6db6054d510ea64121d0",
+      "uce303f1e5aab7414ace386fc066393dc",
+      "ub35b81c0b88c298490117027a686ad0e",
+      "uac154b3d535ce4caaff04406ca625607",
+      "u4a83d6817c2663c2eb6af85850dcf5ff",
+      "ue2b0f66513509db37a8e1ef39d1b1007",
+      "u06c9e2672fd263c94cb41cdaf7f48fe8"
+    ]
+  },
+  "OwnStay": {
+    "c65daa4bf7f49f21e6931cdb253afd637": [
+      "ue0e449e732547220748cfc4822acc206",
+      "u1df2596ac56322d9c005295f2a7ce910"
+    ]
+  },
+  "AdmStay": {},
+  "BanGroup": {},
+  "NameGroup": {},
+  "ProName": {},
+  "ProQr": [
+    "c69fed793f9e6e0fe485d921f50810b64",
+    "c65daa4bf7f49f21e6931cdb253afd637"
+  ],
+  "ProKick": [
+    "c69fed793f9e6e0fe485d921f50810b64",
+    "c65daa4bf7f49f21e6931cdb253afd637"
+  ],
+  "ProInvite": [
+    "c69fed793f9e6e0fe485d921f50810b64",
+    "c65daa4bf7f49f21e6931cdb253afd637"
+  ],
+  "ProCancel": [
+    "c69fed793f9e6e0fe485d921f50810b64",
+    "c65daa4bf7f49f21e6931cdb253afd637"
+  ],
+  "ProJoin": [],
+  "Message": {
+    "MWelcome": "oh hi, welcome @!",
+    "MRespon": "hi sir @!",
+    "MUnban": "Cleared %v blacklist.",
+    "MBye": "",
+    "MFlag": "● Hi Bots ●",
+    "Msider": "oh hi, i see u @!",
+    "MFfresh": " ✓",
+    "MLimit": " ✘"
+  },
+  "Command": {
+    "CBanlist": "",
+    "CClearban": "",
+    "CCount": "",
+    "CKick": "",
+    "CLeave": "",
+    "COutall": "",
+    "COut": "",
+    "CRespon": "",
+    "CSetting": "",
+    "CSet": "",
+    "CSpeed": "",
+    "CStatus": "",
+    "CUnsend": ""
+  }
+}
