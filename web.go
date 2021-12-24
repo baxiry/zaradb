@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func main() {
+func mainc() {
 	fmt.Println("service is runing")
 	http.HandleFunc("/", indexPage)
 	http.ListenAndServe(":8080", nil)

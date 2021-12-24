@@ -28,35 +28,24 @@ func main() {
 	defer client.Close()
 	log.Println("ssh client oppend, Done")
 
-	/*
-			// zip the client bot app
-			cmd, err := client.Command("zip", "-r", "lilgo.zip ", "lilgo")
-			checkErr("client.Command():", err)
+	// zip the client bot app
+	cmd, err := client.Command("zip", "-r", "lilgo.zip ", "lilgo")
+	checkErr("client.Command():", err)
 
-			err = cmd.Run()
-			checkErr("cmd.Run():", err)
-			log.Println("ziped remot file, Done")
+	err = cmd.Run()
+	checkErr("cmd.Run():", err)
+	log.Println("ziped remot file, Done")
 
-			// Download the zeppet bot app
-			err = client.Download("/root/lilgo.zip", "lilgo.zip")
-			checkErr("err with client.Download()", err)
-			log.Println("Download botApp.zip, Done")
+	// Download the zeppet bot app
+	err = client.Download("/root/lilgo.zip", "lilgo.zip")
+	checkErr("err with client.Download()", err)
+	log.Println("Download botApp.zip, Done")
 
-			// Upload new bot app to new host
-			err = client.Upload("web.go", "/root/web.go")
-			checkErr("error with deploy(): ", err)
+	// Upload new bot app to new host
+	err = client.Upload("web.go", "/root/web.go")
+	checkErr("error with deploy(): ", err)
 
-		// run lineBot in new host
-		cmd, err := client.Command("/root/web &")
-		checkErr("client.Command():", err)
-
-		err = cmd.Run()
-		checkErr("cmd.Run():", err)
-		log.Println("run bot... Done")
-
-	*/
 	// run lineBot in new host
-
 	go func() {
 		_, err = client.Run("/root/web &")
 		checkErr("client.Run():", err)
