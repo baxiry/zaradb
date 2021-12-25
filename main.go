@@ -1,56 +1,61 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
-	"time"
+	"sync"
 
 	"github.com/melbahja/goph"
 )
 
-// zip -r lilgo.zip lilgo
-
-var (
-	//address = "172.105.241.152"
-	address  = "158.247.195.235"
-	password = "e1J=xHytspxhhscx"
-
-	//namefile = "lilgo.zip"
-	//path     = "/root/"
-
-)
+type Host struct {
+	Address  string
+	Password string
+}
 
 func main() {
+	hosts, err := loadHosts("hosts.json")
+	if err != nil {
+		log.Fatalln("err whith loadHosts() function:\n", err)
+	}
 
-	//client, err := goph.New("root", address, goph.Password(password))
-	client, err := goph.NewUnknown("root", address, goph.Password(password))
+	client, err := goph.NewUnknown("root", hosts[0].Address, goph.Password(hosts[0].Password))
 	checkErr("goph.NewUnknown():", err)
 	defer client.Close()
 	log.Println("ssh client oppend, Done")
+	/*
+		// zip the client bot app
+		cmd, err := client.Command("zip", "-r", "lilgo.zip ", "lilgo")
+		checkErr("client.Command():", err)
 
-	// zip the client bot app
-	cmd, err := client.Command("zip", "-r", "lilgo.zip ", "lilgo")
-	checkErr("client.Command():", err)
+		err = cmd.Run()
+		checkErr("cmd.Run():", err)
+		log.Println("ziped remot file, Done")
 
-	err = cmd.Run()
-	checkErr("cmd.Run():", err)
-	log.Println("ziped remot file, Done")
-
-	// Download the zeppet bot app
-	err = client.Download("/root/lilgo.zip", "lilgo.zip")
-	checkErr("err with client.Download()", err)
-	log.Println("Download botApp.zip, Done")
-
+		// Download the zeppet bot app
+		err = client.Download("/root/lilgo.zip", "lilgo.zip")
+		checkErr("err with client.Download()", err)
+		log.Println("Download botApp.zip, Done")
+	*/
 	// Upload new bot app to new host
-	err = client.Upload("web.go", "/root/web.go")
+	err = client.Upload("hosts.json", "/root/hosts.json")
 	checkErr("error with deploy(): ", err)
 
 	// run lineBot in new host
+	wg := sync.WaitGroup{}
+	wg.Add(1)
 	go func() {
-		_, err = client.Run("/root/web &")
+		defer wg.Done()
+
+		output, err := client.Run("ls")
 		checkErr("client.Run():", err)
+		fmt.Println(string(output))
 	}()
-	time.Sleep(time.Second * 2)
+	wg.Wait()
+	//time.Sleep(time.Second * 5)
 
 	// mybe we need enabling bot as a service with systemkd
 
@@ -66,6 +71,21 @@ func main() {
 	//}
 }
 
+func loadHosts(file string) ([]Host, error) {
+
+	hosts := make([]Host, 5)
+	data, err := ioutil.ReadFile(file)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(data, &hosts)
+	if err != nil {
+		return nil, err
+	}
+	return hosts, nil
+}
+
 // checkErr check error if exeste and close program
 func checkErr(at string, err error) {
 	if err != nil {
@@ -73,3 +93,5 @@ func checkErr(at string, err error) {
 		os.Exit(0)
 	}
 }
+
+// zip -r lilgo.zip lilgo
