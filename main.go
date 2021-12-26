@@ -11,9 +11,13 @@ import (
 	"github.com/melbahja/goph"
 )
 
+var wg sync.WaitGroup
+
 type Host struct {
-	Address  string
-	Password string
+	Address    string
+	Password   string
+	ClientName string
+	Active     bool
 }
 
 func main() {
@@ -22,53 +26,37 @@ func main() {
 		log.Fatalln("err whith loadHosts() function:\n", err)
 	}
 
-	client, err := goph.NewUnknown("root", hosts[0].Address, goph.Password(hosts[0].Password))
-	checkErr("goph.NewUnknown():", err)
-	defer client.Close()
-	log.Println("ssh client oppend, Done")
-	/*
-		// zip the client bot app
-		cmd, err := client.Command("zip", "-r", "lilgo.zip ", "lilgo")
-		checkErr("client.Command():", err)
+	for _, host := range hosts {
+		host := host
 
-		err = cmd.Run()
-		checkErr("cmd.Run():", err)
-		log.Println("ziped remot file, Done")
+		fmt.Println(host.Address)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
 
-		// Download the zeppet bot app
-		err = client.Download("/root/lilgo.zip", "lilgo.zip")
-		checkErr("err with client.Download()", err)
-		log.Println("Download botApp.zip, Done")
-	*/
-	// Upload new bot app to new host
-	err = client.Upload("hosts.json", "/root/hosts.json")
-	checkErr("error with deploy(): ", err)
+			client, err := goph.NewUnknown("root", host.Address, goph.Password(host.Password))
+			checkErr("goph.NewUnknown():", err)
+			defer client.Close()
+			log.Println("ssh client oppend, Done")
+			// Upload new bot app to new host
+			err = client.Upload("hosts.json", "/root/hosts.json")
+			checkErr("error with deploy(): ", err)
 
-	// run lineBot in new host
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+			// run lineBot in new host
 
-		output, err := client.Run("ls")
-		checkErr("client.Run():", err)
-		fmt.Println(string(output))
-	}()
+			output, err := client.Run("hostname -I")
+			checkErr("client.Run():", err)
+			fmt.Println("remote ip address is : ", string(output))
+
+		}()
+	}
 	wg.Wait()
-	//time.Sleep(time.Second * 5)
 
 	// mybe we need enabling bot as a service with systemkd
 
 	// check new client in clientFile one per huor
 
 	// deploying bot to this client
-
-	// Check is evrything is ok by executing ls command
-	//out, err := client.Run("ls")
-
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
 }
 
 func loadHosts(file string) ([]Host, error) {
@@ -94,4 +82,25 @@ func checkErr(at string, err error) {
 	}
 }
 
+/*
+	// zip the client bot app
+	cmd, err := client.Command("zip", "-r", "lilgo.zip ", "lilgo")
+	checkErr("client.Command():", err)
+
+	err = cmd.Run()
+	checkErr("cmd.Run():", err)
+	log.Println("ziped remot file, Done")
+
+	// Download the zeppet bot app
+	err = client.Download("/root/lilgo.zip", "lilgo.zip")
+	checkErr("err with client.Download()", err)
+	log.Println("Download botApp.zip, Done")
+*/
+
 // zip -r lilgo.zip lilgo
+// Check is evrything is ok by executing ls command
+//out, err := client.Run("ls")
+
+//if err != nil {
+//	log.Fatal(err)
+//}
