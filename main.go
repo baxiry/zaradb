@@ -14,10 +14,10 @@ import (
 var wg sync.WaitGroup
 
 type Host struct {
-	Address    string
-	Password   string
-	ClientName string
-	Active     bool
+	Address    string `json:"address"`
+	Password   string `json:"password"`
+	ClientName string `json:"clientName"`
+	Active     bool   `json:"active"`
 }
 
 func main() {
@@ -26,6 +26,25 @@ func main() {
 		log.Fatalln("err whith loadHosts() function:\n", err)
 	}
 
+	allhosts, err := loadHosts("hosts.json")
+	checkErr("loadHosts:", err)
+
+	activeHosts := filterActive(allhosts)
+	fmt.Println("all hosts is : ")
+	for _, host := range allhosts {
+		fmt.Println(host.ClientName)
+	}
+
+	fmt.Println()
+	fmt.Println("active hosts is : ")
+	for _, host := range activeHosts {
+		fmt.Println(host.ClientName)
+	}
+	os.Rename("test", activeHosts[0].ClientName)
+
+	os.Exit(0)
+
+	// importent
 	for _, host := range hosts {
 		host := host
 
@@ -57,6 +76,16 @@ func main() {
 	// check new client in clientFile one per huor
 
 	// deploying bot to this client
+}
+
+func filterActive(hosts []Host) []Host {
+	activeHosts := make([]Host, 0)
+	for _, host := range hosts {
+		if host.Active {
+			activeHosts = append(activeHosts, host)
+		}
+	}
+	return activeHosts
 }
 
 func loadHosts(file string) ([]Host, error) {
