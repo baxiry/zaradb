@@ -15,41 +15,38 @@ import (
 
 func main() {
 
-	allhosts, err := loadHosts("hosts.json")
-	activeHosts := filterActive(allhosts)
-	checkErr("loadHosts:", err)
-
-	client, err := goph.NewUnknown("root", activeHosts[0].Address, goph.Password(psw))
-	checkErr("goph.NewUnknown():", err)
-	defer client.Close()
-	output, err := client.Run("ls")
+	allhosts, err := loadHosts("actives.json")
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("whit load hosts func", err)
 	}
-	fmt.Println(string(output))
+	activeHosts := allhosts
+	//activeHosts := filterActive(allhosts)
+	//checkErr("loadHosts:", err)
 
 	//zip(client, activeHosts[0].ClientName, activeHosts[0].ClientName)
 
-	os.Exit(0)
-
-	os.Rename("test", activeHosts[0].ClientName)
+	//os.Rename("test", activeHosts[0].ClientName)
 
 	// importent
-	for _, host := range activeHosts {
+	for i, host := range activeHosts {
 		host := host
+		if i == 0 {
+			continue
+		}
 
 		fmt.Println(host.Address)
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
+			fmt.Println(host.Address)
 
 			client, err := goph.NewUnknown("root", host.Address, goph.Password(psw))
 			checkErr("goph.NewUnknown():", err)
 			defer client.Close()
 			log.Println("ssh client oppend, Done")
 			// Upload new bot app to new host
-			err = client.Upload("disactive.json", "/root/hosts.json")
-			checkErr("error with deploy(): ", err)
+			//err = client.Upload("disactive.json", "/root/hosts.json")
+			//checkErr("error with deploy(): ", err)
 
 			// run lineBot in new host
 
@@ -60,10 +57,11 @@ func main() {
 		}()
 	}
 
+	wg.Wait()
+	fmt.Println("Done")
 	// check new client in clientFile one per huor
 
 	// deploying bot to this client
-	wg.Wait()
 }
 
 var wg sync.WaitGroup
