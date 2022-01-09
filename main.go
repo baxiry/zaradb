@@ -19,10 +19,19 @@ func main() {
 	if err != nil {
 		fmt.Println("whit load hosts func", err)
 	}
-	activeHosts := allhosts
-	//activeHosts := filterActive(allhosts)
-	//checkErr("loadHosts:", err)
 
+	fmt.Println("all hosts:")
+	for _, h := range allhosts {
+		fmt.Println(h)
+	}
+
+	activeHosts := activeHosts(allhosts)
+
+	fmt.Println("\nactive hosts:")
+	for _, h := range activeHosts {
+		fmt.Println(h)
+	}
+	os.Exit(0)
 	//zip(client, activeHosts[0].ClientName, activeHosts[0].ClientName)
 
 	//os.Rename("test", activeHosts[0].ClientName)
@@ -84,7 +93,7 @@ func (Helper) writeData(file, data string) error {
 }
 
 // loadDisactive load addresses of disactive hosts
-func (Helper) loadDisactive(path string) ([]string, error) {
+func (Helper) disactiveHosts(path string) ([]string, error) {
 
 	bin, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -128,7 +137,8 @@ type Host struct {
 	Active     bool   `json:"active"`
 }
 
-func filterActive(hosts []Host) []Host {
+// activeHosts filter hosts and return just active hostes
+func activeHosts(hosts []Host) []Host {
 	activeHosts := make([]Host, 0)
 	for _, host := range hosts {
 		if host.Active {
@@ -216,7 +226,7 @@ func exitBot() {
 		ch <- true
 	})
 	go func() {
-		fmt.Println(http.ListenAndServe(":8080", nil))
+		fmt.Println(http.ListenAndServe(":80", nil))
 	}()
 
 	go func() {
