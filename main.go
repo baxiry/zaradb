@@ -8,16 +8,59 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/melbahja/goph"
 )
 
-type Helper struct{}
-
 var h Helper
 
-func main() {
+type Helper struct{}
 
+type Bot struct {
+	Owner   string `json:"owner"`
+	Address string `json:"address"`
+	Active  bool   `json:"active"`
+}
+
+var wg sync.WaitGroup
+
+func main() {
+	hosts, err := h.loadNewHosts()
+	if err != nil {
+		fmt.Println("err", err)
+
+	}
+	//disHost,_ := h.loadDisactiveIp()
+	//if err
+
+	for _, host := range hosts {
+		host := host
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if !h.isHostActive(host) {
+				h.appendIp("disactive.host", host)
+			}
+			fmt.Println(host+"\t  ", h.isHostActive(host))
+		}()
+	}
+	wg.Wait()
+}
+
+// move disactive address from newList host to disactive list host
+func (Helper) moveAddress(indexAddr int, to *[]string) {
+
+}
+
+// check if host is active ?
+func (Helper) isHostActive(host string) bool {
+	client, err := goph.NewUnknown("root", host, goph.Password(psw))
+	if err != nil {
+		return false
+	}
+	client.Close()
+	return true
 }
 
 // writeData updates/rewrites data into file
@@ -29,18 +72,54 @@ func (Helper) writeData(file, data string) error {
 	return err
 }
 
-// loadDisactive load addresses of disactive hosts
-func (Helper) disactiveHosts(path string) ([]string, error) {
+// return read new.host file and return hosts address as []stirng
+func (Helper) loadNewHosts() ([]string, error) {
 
-	bin, err := ioutil.ReadFile(path)
+	data, err := ioutil.ReadFile("new.host")
 	if err != nil {
 		return nil, err
 	}
-	return strings.Split(string(bin), "\n"), nil
+	hs := strings.Split(string(data), "\n")
+
+	hosts := make([]string, 0)
+
+	for _, v := range hs {
+
+		h := strings.Replace(v, " ", "", -1)
+		if len(h) < 6 {
+			continue
+		}
+		hosts = append(hosts, h)
+	}
+
+	return hosts, nil
+}
+
+// loadDisactive load addresses of disactive hosts
+func (Helper) loadDisactiveIp() ([]string, error) {
+
+	bin, err := ioutil.ReadFile("disactive.host")
+	if err != nil {
+		return nil, err
+	}
+
+	hs := strings.Split(string(bin), "\n")
+
+	hosts := make([]string, 0)
+
+	for _, v := range hs {
+
+		h := strings.Replace(v, " ", "", -1)
+		if len(h) < 6 {
+			continue
+		}
+		hosts = append(hosts, h)
+	}
+	return hosts, nil
 }
 
 // appendAddress appends new address to addressfile
-func (Helper) appendAddress(file, data string) {
+func (Helper) appendIp(file, data string) {
 	f, err := os.OpenFile(file,
 		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -68,12 +147,6 @@ func (Helper) unique(data []string) []string {
 	return hosts
 }
 
-type Bot struct {
-	Owner   string `json:"owner"`
-	Address string `json:"address"`
-	Active  bool   `json:"active"`
-}
-
 // activeHosts filter hosts and return just active hostes
 func (Helper) activeHosts(bots []Bot) []Bot {
 	activeBots := make([]Bot, 0)
@@ -81,14 +154,14 @@ func (Helper) activeHosts(bots []Bot) []Bot {
 		if bot.Active {
 			activeBots = append(activeBots, bot)
 		} else {
-			h.appendAddress("disactive.json", bot.Address)
+			h.appendIp("disactive.host", bot.Address)
 		}
 	}
 	return activeBots
 }
 
 // return list of bots type
-func (Helper) loadBots(file string) ([]Bot, error) {
+func (Helper) loadStatus(file string) ([]Bot, error) {
 
 	bots := make([]Bot, 5)
 	data, err := ioutil.ReadFile(file)
@@ -157,9 +230,9 @@ func (Helper) sendExit(address string) {
 const psw = "d7ombot123"
 
 // checkErr check error if exeste and close program
-func checkErr(at string, err error) {
+func checkErr(info string, err error) {
 	if err != nil {
-		log.Println(at, err)
+		log.Println(info, err)
 		os.Exit(0)
 	}
 }
