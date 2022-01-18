@@ -13,8 +13,6 @@ import (
 	"github.com/melbahja/goph"
 )
 
-var h Helper
-
 type Helper struct{}
 
 type Bot struct {
@@ -23,16 +21,50 @@ type Bot struct {
 	Active  bool   `json:"active"`
 }
 
-var wg sync.WaitGroup
+var (
+	h             Helper
+	wg            sync.WaitGroup
+	newHost       = "new.host"
+	disactiveHost = "disactive.host"
+	status        = "status.json"
+	clientsName   = "client.name"
+)
+
+func (Helper) removeAdder(i int, list []string) []string {
+	newList := append(list[:i], list[i+1:]...)
+	return newList
+}
 
 func main() {
-	hosts, err := h.loadNewHosts()
+
+	hosts, err := h.load(newHost)
 	if err != nil {
 		fmt.Println("err", err)
-
 	}
-	//disHost,_ := h.loadDisactiveIp()
-	//if err
+
+	fmt.Println("new hosts: ", len(hosts))
+	for _, host := range hosts {
+		fmt.Println(host)
+	}
+
+	disHost, err := h.load(disactiveHost)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println("\ndisactive hosts: ", len(disHost))
+	for i, Host := range disHost {
+		fmt.Println(i, Host)
+	}
+
+	os.Exit(0)
+
+	fmt.Println()
+	uhosts := h.unique(disHost)
+	h.update("disactive.host", uhosts)
+	for i, host := range uhosts {
+		fmt.Println(i, host)
+	}
 
 	for _, host := range hosts {
 		host := host
@@ -40,12 +72,16 @@ func main() {
 		go func() {
 			defer wg.Done()
 			if !h.isHostActive(host) {
+				//h.removeAdder(host, hosts)
 				h.appendIp("disactive.host", host)
+				//h.moveAddress()
 			}
 			fmt.Println(host+"\t  ", h.isHostActive(host))
 		}()
 	}
 	wg.Wait()
+	disHost = h.unique(disHost)
+
 }
 
 // move disactive address from newList host to disactive list host
@@ -64,18 +100,22 @@ func (Helper) isHostActive(host string) bool {
 }
 
 // writeData updates/rewrites data into file
-func (Helper) writeData(file, data string) error {
-	err := os.WriteFile(file, []byte(data+"\n"), 0644)
+func (Helper) update(file string, list []string) error {
+	data := ""
+	for _, item := range list {
+		data += item + "\n"
+	}
+	err := os.WriteFile(file, []byte(data), 0644)
 	if err != nil {
 		log.Println(err)
 	}
 	return err
 }
 
-// return read new.host file and return hosts address as []stirng
-func (Helper) loadNewHosts() ([]string, error) {
+// load loads file and return hosts address as []stirng
+func (Helper) load(file string) ([]string, error) {
 
-	data, err := ioutil.ReadFile("new.host")
+	data, err := ioutil.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}
@@ -95,6 +135,35 @@ func (Helper) loadNewHosts() ([]string, error) {
 	return hosts, nil
 }
 
+// appendAddress appends new address to addressfile
+func (Helper) appendIp(file, data string) {
+	f, err := os.OpenFile(file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Println(err)
+	}
+	defer f.Close()
+	if _, err := f.WriteString(data + "\n"); err != nil {
+		log.Println(err)
+	}
+}
+
+// filterList make list unique
+func (Helper) unique(list []string) []string {
+	mp := make(map[string]bool)
+	for _, h := range list {
+		mp[h] = true
+	}
+	ulist := make([]string, 0)
+	for h := range mp {
+		if h == "" {
+			break
+		}
+		ulist = append(ulist, h)
+	}
+	return ulist
+}
+
+/*
 // loadDisactive load addresses of disactive hosts
 func (Helper) loadDisactiveIp() ([]string, error) {
 
@@ -118,48 +187,7 @@ func (Helper) loadDisactiveIp() ([]string, error) {
 	return hosts, nil
 }
 
-// appendAddress appends new address to addressfile
-func (Helper) appendIp(file, data string) {
-	f, err := os.OpenFile(file,
-		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Println(err)
-	}
-	defer f.Close()
-	if _, err := f.WriteString(data + "\n"); err != nil {
-		log.Println(err)
-	}
-}
-
-// filterList make list unique
-func (Helper) unique(data []string) []string {
-	mp := make(map[string]bool)
-	for _, h := range data {
-		mp[h] = true
-	}
-	hosts := make([]string, 0)
-	for h := range mp {
-		if h == "" {
-			break
-		}
-		hosts = append(hosts, h)
-	}
-	return hosts
-}
-
-// activeHosts filter hosts and return just active hostes
-func (Helper) activeHosts(bots []Bot) []Bot {
-	activeBots := make([]Bot, 0)
-	for _, bot := range bots {
-		if bot.Active {
-			activeBots = append(activeBots, bot)
-		} else {
-			h.appendIp("disactive.host", bot.Address)
-		}
-	}
-	return activeBots
-}
-
+*/
 // return list of bots type
 func (Helper) loadStatus(file string) ([]Bot, error) {
 
@@ -174,6 +202,19 @@ func (Helper) loadStatus(file string) ([]Bot, error) {
 		return nil, err
 	}
 	return bots, nil
+}
+
+// activeHosts filter hosts and return just active hostes
+func (Helper) activeHosts(bots []Bot) []Bot {
+	activeBots := make([]Bot, 0)
+	for _, bot := range bots {
+		if bot.Active {
+			activeBots = append(activeBots, bot)
+		} else {
+			h.appendIp("disactive.host", bot.Address)
+		}
+	}
+	return activeBots
 }
 
 // TODO test zip function
