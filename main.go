@@ -22,12 +22,13 @@ type Bot struct {
 }
 
 var (
-	h             Helper
-	wg            sync.WaitGroup
-	newHost       = "new.host"
-	disactiveHost = "disactive.host"
-	status        = "status.json"
-	clientsName   = "client.name"
+	h              Helper
+	mutex          sync.Mutex
+	wg             sync.WaitGroup
+	newHosts       = "new.host"
+	disactiveHosts = "disactive.host"
+	status         = "status.json"
+	clientsName    = "client.name"
 )
 
 func (Helper) removeAdder(i int, list []string) []string {
@@ -37,7 +38,7 @@ func (Helper) removeAdder(i int, list []string) []string {
 
 func main() {
 
-	hosts, err := h.load(newHost)
+	hosts, err := h.load(newHosts)
 	if err != nil {
 		fmt.Println("err", err)
 	}
@@ -47,24 +48,21 @@ func main() {
 		fmt.Println(host)
 	}
 
-	disHost, err := h.load(disactiveHost)
+	uhosts := h.unique(hosts)
+
+	err = h.update(newHosts, uhosts)
+	if err != nil {
+		log.Fatal(err)
+	}
+	updatedNewHosts, err := h.load(newHosts)
 	if err != nil {
 		fmt.Println(err)
 	}
-
-	fmt.Println("\ndisactive hosts: ", len(disHost))
-	for i, Host := range disHost {
-		fmt.Println(i, Host)
-	}
-
-	os.Exit(0)
-
-	fmt.Println()
-	uhosts := h.unique(disHost)
-	h.update("disactive.host", uhosts)
-	for i, host := range uhosts {
+	fmt.Println("\nload new.host file after unique data: ")
+	for i, host := range updatedNewHosts {
 		fmt.Println(i, host)
 	}
+	os.Exit(0)
 
 	for _, host := range hosts {
 		host := host
@@ -80,7 +78,6 @@ func main() {
 		}()
 	}
 	wg.Wait()
-	disHost = h.unique(disHost)
 
 }
 
@@ -137,6 +134,8 @@ func (Helper) load(file string) ([]string, error) {
 
 // appendAddress appends new address to addressfile
 func (Helper) appendIp(file, data string) {
+	mutex.Lock()
+	defer mutex.Unlock()
 	f, err := os.OpenFile(file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Println(err)
@@ -186,8 +185,8 @@ func (Helper) loadDisactiveIp() ([]string, error) {
 	}
 	return hosts, nil
 }
-
 */
+
 // return list of bots type
 func (Helper) loadStatus(file string) ([]Bot, error) {
 
