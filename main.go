@@ -23,7 +23,6 @@ type Bot struct {
 
 var (
 	h              Helper
-	mutex          sync.Mutex
 	wg             sync.WaitGroup
 	newHosts       = "new.host"
 	disactiveHosts = "disactive.host"
@@ -32,8 +31,7 @@ var (
 )
 
 func (Helper) removeAdder(i int, list []string) []string {
-	newList := append(list[:i], list[i+1:]...)
-	return newList
+	return append(list[:i], list[i+1:]...)
 }
 
 func main() {
@@ -42,41 +40,36 @@ func main() {
 	if err != nil {
 		fmt.Println("err", err)
 	}
+	fmt.Println(hosts)
+	l := h.removeAdder(8, hosts)
+	fmt.Println()
+	fmt.Println(l)
+
+	os.Exit(0)
+
+	h.update(newHosts, hosts)
 
 	fmt.Println("new hosts: ", len(hosts))
 	for _, host := range hosts {
+		h.appendIp("disactive.host", host)
 		fmt.Println(host)
 	}
 
-	uhosts := h.unique(hosts)
-
-	err = h.update(newHosts, uhosts)
-	if err != nil {
-		log.Fatal(err)
-	}
-	updatedNewHosts, err := h.load(newHosts)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("\nload new.host file after unique data: ")
-	for i, host := range updatedNewHosts {
-		fmt.Println(i, host)
-	}
-	os.Exit(0)
-
-	for _, host := range hosts {
+	for i, host := range hosts {
 		host := host
+		i := i
 		wg.Add(1)
-		go func() {
+		go func(i int, host string) {
 			defer wg.Done()
 			if !h.isHostActive(host) {
-				//h.removeAdder(host, hosts)
 				h.appendIp("disactive.host", host)
+				//h.removeAdder(i, hosts)
 				//h.moveAddress()
 			}
 			fmt.Println(host+"\t  ", h.isHostActive(host))
-		}()
+		}(i, host)
 	}
+	h.update(newHosts, hosts)
 	wg.Wait()
 
 }
@@ -134,8 +127,6 @@ func (Helper) load(file string) ([]string, error) {
 
 // appendAddress appends new address to addressfile
 func (Helper) appendIp(file, data string) {
-	mutex.Lock()
-	defer mutex.Unlock()
 	f, err := os.OpenFile(file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Println(err)
