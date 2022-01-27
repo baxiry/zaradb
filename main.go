@@ -48,34 +48,6 @@ func (Helper) unzip(sshclient *goph.Client, dir string) error {
 	return nil
 }
 
-// Copies a file. and rename to name client
-func (Helper) copyBot(src string) error {
-	// Open the source file for reading
-	source, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer source.Close()
-
-	// Open the destination file for writing
-	d, err := os.Create(src + ".cp")
-	if err != nil {
-		return err
-	}
-
-	// Copy the contents of the source file into the destination file
-	if _, err := io.Copy(d, source); err != nil {
-		d.Close()
-		return err
-	}
-
-	// Return any errors that result from closing the destination file
-	// Will return nil if no errors occurred
-	return d.Close()
-}
-
-// copyLocalFile
-
 // File copies a single file from src to dst
 func (Helper) copyLocalFile(src, dst string) error {
 	var err error
@@ -139,17 +111,6 @@ func (Helper) copyLocalDir(src string, dst string) error {
 
 // run
 func main() {
-	//err := h.localZip("botLine", "jawad")
-	//checkErr("localZip", err)
-	err := h.copyLocalDir("testBot", "testBot"+"1")
-	checkErr("", err)
-	os.Exit(0)
-
-	err = h.copyBot("botLine")
-	if err != nil {
-		fmt.Println("ok err", err)
-	}
-	os.Exit(0)
 
 	// lead status bots
 	bots, err := h.loadStatus()
@@ -180,9 +141,10 @@ func main() {
 		if len(clients) < 1 {
 			break
 		}
+		// host := host // this line usefull just with concurrency code
 
-		host := host
 		active := h.isHostActive(host)
+
 		if !active { // if host is not active
 
 			h.appendAddr(disactiveHosts, host)
@@ -192,23 +154,21 @@ func main() {
 
 		} else { // if host is active
 
-			if h.hostInStatus(host, &bots) {
-
+			if h.hostInStatus(host, &bots) { // TODO why this ???
 				hosts = h.removeItem(host, hosts)
 				continue
 			}
+
 			if h.clientInStatus(clients[0], &bots) {
 				clients = h.removeItem(clients[0], clients)
 				continue
 			}
 
-			// zip and rename line bot with client name
+			err := h.copyLocalDir("testBot", clients[0])
+			checkErr("", err)
 
-			// crate new botline.zip for new client
-			//err = h.copyBot(botLine, clients[0]+"-bot.zip")
-			//if err != nil {
-			//	fmt.Println("err at copyBot func ", err)
-			//}
+			err = h.localZip(clients[0])
+			checkErr("localZip", err)
 
 			// deploy new clientbot.zip to her host
 			err = h.deploy(clients[0]+"-bot.zip", host)
@@ -216,15 +176,18 @@ func main() {
 				fmt.Println(err)
 			}
 
+			// add client-bot-Info to status.json file
 			bot.Owner = clients[0]
 			bot.Address = host
 			bot.Active = false
 			bots = append(bots, bot)
 
+			// remove host address from new-hosts list
 			hosts = h.removeItem(host, hosts)
+
+			// remove client name  from new client-list
 			clients = h.removeItem(clients[0], clients)
 
-			fmt.Println(host, active)
 		}
 	}
 
@@ -262,9 +225,9 @@ func main() {
 
 // TODO test localzip function
 //  zipfile.zip and clientName
-func (Helper) localZip(source, target string) error {
+func (Helper) localZip(source string) error {
 	// 1. Create a ZIP file and zip.Writer
-	f, err := os.Create(target + "-bot.zip")
+	f, err := os.Create(source + "-bot.zip")
 	if err != nil {
 		return err
 	}
@@ -320,7 +283,7 @@ func (Helper) localZip(source, target string) error {
 
 // TODO test zip function
 //  zipfile.zip and clientName
-func (Helper) remotezip(sshclient *goph.Client, outfile, dir string) error {
+func (Helper) remoteZip(sshclient *goph.Client, outfile, dir string) error {
 	// zip the client bot app
 	cmd, err := sshclient.Command("zip", "-r", outfile+".zip", dir)
 	if err != nil {
@@ -333,7 +296,7 @@ func (Helper) remotezip(sshclient *goph.Client, outfile, dir string) error {
 	return nil
 }
 
-// deploy deploy client-bot-line to client host
+// deploy deploy client-bot.zip to client host
 func (Helper) deploy(clientBot, hostBot string) error {
 	sshClient, err := goph.NewUnknown("root", hostBot, goph.Password(psw))
 
@@ -341,14 +304,9 @@ func (Helper) deploy(clientBot, hostBot string) error {
 		fmt.Println("error when create sshClient")
 		return err
 	}
-	err = sshClient.Upload("./"+clientBot, "/root/"+clientBot)
+	err = sshClient.Upload("./"+clientBot+"-bot.zip", "/root/"+clientBot+"-bot.zip")
 	if err != nil {
 		fmt.Println("error when upload")
-		return err
-	}
-
-	err = h.unzip(sshClient, "/root/"+clientBot+"-bot.zip")
-	if err != nil {
 		return err
 	}
 
@@ -532,6 +490,32 @@ func (Helper) sendExit(address string) {
 	}
 
 	fmt.Printf("body is : %s\n", body)
+}
+
+// Copies a file. and rename to name with .cp saffix
+func (Helper) copyFile(src string) error {
+	// Open the source file for reading
+	source, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+
+	// Open the destination file for writing
+	d, err := os.Create(src + ".cp")
+	if err != nil {
+		return err
+	}
+
+	// Copy the contents of the source file into the destination file
+	if _, err := io.Copy(d, source); err != nil {
+		d.Close()
+		return err
+	}
+
+	// Return any errors that result from closing the destination file
+	// Will return nil if no errors occurred
+	return d.Close()
 }
 
 const psw = "d7ombot123"
