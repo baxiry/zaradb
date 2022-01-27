@@ -1,14 +1,17 @@
 package main
 
 import (
+	"archive/zip"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"path"
+	"path/filepath"
 	"strings"
-	"sync"
 
 	"github.com/melbahja/goph"
 )
@@ -22,61 +25,389 @@ type Bot struct {
 }
 
 var (
-	h              Helper
-	wg             sync.WaitGroup
+	h Helper
+	//wg             sync.WaitGroup
 	newHosts       = "new.host"
 	disactiveHosts = "disactive.host"
-	status         = "status.json"
-	clientsName    = "client.name"
+	statusfile     = "status.json"
+	clientsName    = "clients.name"
+	botLine        = "testBot"
 )
 
-func (Helper) removeAdder(i int, list []string) []string {
-	return append(list[:i], list[i+1:]...)
+//  zipfile.zip and clientName
+func (Helper) unzip(sshclient *goph.Client, dir string) error {
+	// zip the client bot app
+	cmd, err := sshclient.Command("unzip", "-o", dir+".zip")
+	if err != nil {
+		return err
+	}
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func main() {
+// Copies a file. and rename to name client
+func (Helper) copyBot(src string) error {
+	// Open the source file for reading
+	source, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
 
+	// Open the destination file for writing
+	d, err := os.Create(src + ".cp")
+	if err != nil {
+		return err
+	}
+
+	// Copy the contents of the source file into the destination file
+	if _, err := io.Copy(d, source); err != nil {
+		d.Close()
+		return err
+	}
+
+	// Return any errors that result from closing the destination file
+	// Will return nil if no errors occurred
+	return d.Close()
+}
+
+// copyLocalFile
+
+// File copies a single file from src to dst
+func (Helper) copyLocalFile(src, dst string) error {
+	var err error
+	var srcfd *os.File
+	var dstfd *os.File
+	var srcinfo os.FileInfo
+
+	if srcfd, err = os.Open(src); err != nil {
+		return err
+	}
+	defer srcfd.Close()
+
+	if dstfd, err = os.Create(dst); err != nil {
+		return err
+	}
+	defer dstfd.Close()
+
+	if _, err = io.Copy(dstfd, srcfd); err != nil {
+		return err
+	}
+	if srcinfo, err = os.Stat(src); err != nil {
+		return err
+	}
+	return os.Chmod(dst, srcinfo.Mode())
+}
+
+// copyDir copies local botLine directory
+// this is copies a whole directory recursively
+func (Helper) copyLocalDir(src string, dst string) error {
+	var err error
+	var fds []os.FileInfo
+	var srcinfo os.FileInfo
+
+	if srcinfo, err = os.Stat(src); err != nil {
+		return err
+	}
+
+	if err = os.MkdirAll(dst, srcinfo.Mode()); err != nil {
+		return err
+	}
+
+	if fds, err = ioutil.ReadDir(src); err != nil {
+		return err
+	}
+	for _, fd := range fds {
+		srcfp := path.Join(src, fd.Name())
+		dstfp := path.Join(dst, fd.Name())
+
+		if fd.IsDir() {
+			if err = h.copyLocalDir(srcfp, dstfp); err != nil {
+				fmt.Println(err)
+			}
+		} else {
+			if err = h.copyLocalFile(srcfp, dstfp); err != nil {
+				fmt.Println(err)
+			}
+		}
+	}
+	return nil
+}
+
+// run
+func main() {
+	//err := h.localZip("botLine", "jawad")
+	//checkErr("localZip", err)
+	err := h.copyLocalDir("testBot", "testBot"+"1")
+	checkErr("", err)
+	os.Exit(0)
+
+	err = h.copyBot("botLine")
+	if err != nil {
+		fmt.Println("ok err", err)
+	}
+	os.Exit(0)
+
+	// lead status bots
+	bots, err := h.loadStatus()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// make list of new addresses
 	hosts, err := h.load(newHosts)
 	if err != nil {
 		fmt.Println("err", err)
 	}
-	fmt.Println(hosts)
-	l := h.removeAdder(8, hosts)
-	fmt.Println()
-	fmt.Println(l)
 
-	os.Exit(0)
+	fmt.Println(len(hosts), hosts)
+	// make list of new clients
+	clients, err := h.load(clientsName)
+	if err != nil {
+		fmt.Println("err", err)
+	}
+	fmt.Println(len(clients), " ", clients)
 
-	h.update(newHosts, hosts)
+	// new bot instanc
+	var bot Bot
 
-	fmt.Println("new hosts: ", len(hosts))
+	// ckake any new client or host and
+	// orginase all data in files
 	for _, host := range hosts {
-		h.appendIp("disactive.host", host)
-		fmt.Println(host)
+		if len(clients) < 1 {
+			break
+		}
+
+		host := host
+		active := h.isHostActive(host)
+		if !active { // if host is not active
+
+			h.appendAddr(disactiveHosts, host)
+			hosts = h.removeItem(host, hosts)
+
+			fmt.Println(host, active)
+
+		} else { // if host is active
+
+			if h.hostInStatus(host, &bots) {
+
+				hosts = h.removeItem(host, hosts)
+				continue
+			}
+			if h.clientInStatus(clients[0], &bots) {
+				clients = h.removeItem(clients[0], clients)
+				continue
+			}
+
+			// zip and rename line bot with client name
+
+			// crate new botline.zip for new client
+			//err = h.copyBot(botLine, clients[0]+"-bot.zip")
+			//if err != nil {
+			//	fmt.Println("err at copyBot func ", err)
+			//}
+
+			// deploy new clientbot.zip to her host
+			err = h.deploy(clients[0]+"-bot.zip", host)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			bot.Owner = clients[0]
+			bot.Address = host
+			bot.Active = false
+			bots = append(bots, bot)
+
+			hosts = h.removeItem(host, hosts)
+			clients = h.removeItem(clients[0], clients)
+
+			fmt.Println(host, active)
+		}
 	}
 
-	for i, host := range hosts {
-		host := host
-		i := i
-		wg.Add(1)
-		go func(i int, host string) {
-			defer wg.Done()
-			if !h.isHostActive(host) {
-				h.appendIp("disactive.host", host)
-				//h.removeAdder(i, hosts)
-				//h.moveAddress()
-			}
-			fmt.Println(host+"\t  ", h.isHostActive(host))
-		}(i, host)
+	err = h.update(newHosts, hosts)
+	if err != nil {
+		fmt.Println(err)
 	}
-	h.update(newHosts, hosts)
-	wg.Wait()
+	err = h.update(clientsName, clients)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	data, err := json.MarshalIndent(bots, "", "    ")
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = h.updateStatusf(data)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	disactive, err := h.load(disactiveHosts)
+	if err != nil {
+		fmt.Println(err)
+	}
+	disactive = h.unique(disactive)
+	err = h.update(disactiveHosts, disactive)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// check activated bots id status file and active them
 
 }
 
-// move disactive address from newList host to disactive list host
-func (Helper) moveAddress(indexAddr int, to *[]string) {
+// TODO test localzip function
+//  zipfile.zip and clientName
+func (Helper) localZip(source, target string) error {
+	// 1. Create a ZIP file and zip.Writer
+	f, err := os.Create(target + "-bot.zip")
+	if err != nil {
+		return err
+	}
+	defer f.Close()
 
+	writer := zip.NewWriter(f)
+	defer writer.Close()
+
+	// 2. Go through all the files of the source
+	return filepath.Walk(source, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// 3. Create a local file header
+		header, err := zip.FileInfoHeader(info)
+		if err != nil {
+			return err
+		}
+
+		// set compression
+		header.Method = zip.Deflate
+
+		// 4. Set relative path of a file as the header name
+		header.Name, err = filepath.Rel(filepath.Dir(source), path)
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			header.Name += "/"
+		}
+
+		// 5. Create writer for the file header and save content of the file
+		headerWriter, err := writer.CreateHeader(header)
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		f, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		_, err = io.Copy(headerWriter, f)
+		return err
+	})
+}
+
+// TODO test zip function
+//  zipfile.zip and clientName
+func (Helper) remotezip(sshclient *goph.Client, outfile, dir string) error {
+	// zip the client bot app
+	cmd, err := sshclient.Command("zip", "-r", outfile+".zip", dir)
+	if err != nil {
+		return err
+	}
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// deploy deploy client-bot-line to client host
+func (Helper) deploy(clientBot, hostBot string) error {
+	sshClient, err := goph.NewUnknown("root", hostBot, goph.Password(psw))
+
+	if err != nil {
+		fmt.Println("error when create sshClient")
+		return err
+	}
+	err = sshClient.Upload("./"+clientBot, "/root/"+clientBot)
+	if err != nil {
+		fmt.Println("error when upload")
+		return err
+	}
+
+	err = h.unzip(sshClient, "/root/"+clientBot+"-bot.zip")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// clientInStatus if client or host are in status
+func (h Helper) clientInStatus(owner string, bots *[]Bot) bool {
+	for _, bot := range *bots {
+		if owner == bot.Owner {
+			return true
+		}
+	}
+	return false
+}
+
+// InStatus if client or host are in status
+func (h Helper) hostInStatus(host string, bots *[]Bot) bool {
+	for _, bot := range *bots {
+		if host == bot.Address {
+			return true
+		}
+	}
+	return false
+}
+
+// updateStatusf update status file
+func (Helper) updateStatusf(data []byte) error {
+	if err := os.WriteFile(statusfile, []byte(data), 0644); err != nil {
+		return (err)
+	}
+	return nil
+}
+
+// return list of bots type
+func (Helper) loadStatus() ([]Bot, error) {
+
+	bots := make([]Bot, 5)
+	data, err := ioutil.ReadFile(statusfile)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(data, &bots)
+	if err != nil {
+		return nil, err
+	}
+	return bots, nil
+}
+
+// removeItem remove Item string from list and return new list
+func (Helper) removeItem(item string, list []string) []string {
+	newList := make([]string, 0)
+	for _, v := range list {
+		if item != v {
+			newList = append(newList, v)
+		}
+	}
+	return newList
 }
 
 // check if host is active ?
@@ -111,22 +442,22 @@ func (Helper) load(file string) ([]string, error) {
 	}
 	hs := strings.Split(string(data), "\n")
 
-	hosts := make([]string, 0)
+	list := make([]string, 0)
 
 	for _, v := range hs {
 
 		h := strings.Replace(v, " ", "", -1)
-		if len(h) < 6 {
+		if len(h) < 3 {
 			continue
 		}
-		hosts = append(hosts, h)
+		list = append(list, h)
 	}
 
-	return hosts, nil
+	return h.unique(list), nil
 }
 
 // appendAddress appends new address to addressfile
-func (Helper) appendIp(file, data string) {
+func (Helper) appendAddr(file, data string) {
 	f, err := os.OpenFile(file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Println(err)
@@ -153,73 +484,18 @@ func (Helper) unique(list []string) []string {
 	return ulist
 }
 
-/*
-// loadDisactive load addresses of disactive hosts
-func (Helper) loadDisactiveIp() ([]string, error) {
-
-	bin, err := ioutil.ReadFile("disactive.host")
-	if err != nil {
-		return nil, err
-	}
-
-	hs := strings.Split(string(bin), "\n")
-
-	hosts := make([]string, 0)
-
-	for _, v := range hs {
-
-		h := strings.Replace(v, " ", "", -1)
-		if len(h) < 6 {
-			continue
-		}
-		hosts = append(hosts, h)
-	}
-	return hosts, nil
-}
-*/
-
-// return list of bots type
-func (Helper) loadStatus(file string) ([]Bot, error) {
-
-	bots := make([]Bot, 5)
-	data, err := ioutil.ReadFile(file)
-	if err != nil {
-		return nil, err
-	}
-
-	err = json.Unmarshal(data, &bots)
-	if err != nil {
-		return nil, err
-	}
-	return bots, nil
-}
-
 // activeHosts filter hosts and return just active hostes
 func (Helper) activeHosts(bots []Bot) []Bot {
+
 	activeBots := make([]Bot, 0)
 	for _, bot := range bots {
 		if bot.Active {
 			activeBots = append(activeBots, bot)
 		} else {
-			h.appendIp("disactive.host", bot.Address)
+			h.appendAddr("disactive.host", bot.Address)
 		}
 	}
 	return activeBots
-}
-
-// TODO test zip function
-//  zipfile.zip and clientName
-func (Helper) zip(client *goph.Client, outfile, dir string) error {
-	// zip the client bot app
-	cmd, err := client.Command("zip", "-r", outfile+".zip", dir)
-	if err != nil {
-		return err
-	}
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 // exitBot
@@ -243,7 +519,7 @@ func (Helper) exitBot() {
 
 // send exitbot
 func (Helper) sendExit(address string) {
-	resp, err := http.Get("http://" + address + ":8080/exit")
+	resp, err := http.Get("http://" + address + "/exit")
 	if err != nil {
 		log.Fatal("Error getting response. ", err)
 	}
