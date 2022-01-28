@@ -34,10 +34,10 @@ var (
 	botLine        = "testBot"
 )
 
-//  zipfile.zip and clientName
-func (Helper) unzip(sshclient *goph.Client, dir string) error {
+//  unzipRemote unzip remote zipped file
+func (Helper) unzipRemote(sshclient *goph.Client, zippedfile string) error {
 	// zip the client bot app
-	cmd, err := sshclient.Command("unzip", "-o", dir+".zip")
+	cmd, err := sshclient.Command("unzip", "-o", "/root/"+zippedfile+"-bot.zip")
 	if err != nil {
 		return err
 	}
@@ -109,6 +109,10 @@ func (Helper) copyLocalDir(src string, dst string) error {
 	return nil
 }
 
+func (Helper) runRmoteBot() error {
+	return
+}
+
 // run
 func main() {
 
@@ -171,10 +175,18 @@ func main() {
 			checkErr("localZip", err)
 
 			// deploy new clientbot.zip to her host
-			err = h.deploy(clients[0]+"-bot.zip", host)
+			err = h.deploy(clients[0], host)
 			if err != nil {
 				fmt.Println(err)
 			}
+
+			// error with {Process exited with status 127} may becose no unzip tool install
+
+			client, err := goph.NewUnknown("root", host, goph.Password(psw))
+			checkErr("", err)
+
+			err = h.unzipRemote(client, clients[0])
+			checkErr("unzip remote file error ", err)
 
 			// add client-bot-Info to status.json file
 			bot.Owner = clients[0]
