@@ -7,11 +7,13 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/melbahja/goph"
 )
@@ -109,8 +111,24 @@ func (Helper) copyLocalDir(src string, dst string) error {
 	return nil
 }
 
-func (Helper) runRmoteBot() error {
-	return
+// TODO context pkg must be used in this function
+// runRmoteBot runc remote bot app
+func (Helper) runRmoteBot(sshClient *goph.Client, botDir string) error {
+	_, err := sshClient.Run("/root/" + botDir + "/testbot")
+
+	if err != nil {
+		return err
+	}
+	defer sshClient.Close()
+
+	return nil
+}
+
+// randSleep sleep program 100 to 1000 millisecond
+func (Helper) randSleep() {
+	rand.Seed(time.Now().UnixNano())
+	t := rand.Intn(900)
+	time.Sleep(time.Millisecond * time.Duration(t+100))
 }
 
 // run
@@ -141,11 +159,12 @@ func main() {
 
 	// ckake any new client or host and
 	// orginase all data in files
+
 	for _, host := range hosts {
 		if len(clients) < 1 {
 			break
 		}
-		// host := host // this line usefull just with concurrency code
+		host := host // this line usefull just with concurrency code
 
 		active := h.isHostActive(host)
 
@@ -182,11 +201,23 @@ func main() {
 
 			// error with {Process exited with status 127} may becose no unzip tool install
 
-			client, err := goph.NewUnknown("root", host, goph.Password(psw))
+			sshclient, err := goph.NewUnknown("root", host, goph.Password(psw))
 			checkErr("", err)
 
-			err = h.unzipRemote(client, clients[0])
+			err = h.unzipRemote(sshclient, clients[0])
 			checkErr("unzip remote file error ", err)
+
+			// TODO use context pakage
+			go func() {
+				fmt.Println()
+				// TODO out of runge error
+
+				fmt.Println("/root/" + clients[0] + "/testbot")
+				err := h.runRmoteBot(sshclient, clients[0])
+				if err != nil {
+					fmt.Println("err at run remot bot", err)
+				}
+			}()
 
 			// add client-bot-Info to status.json file
 			bot.Owner = clients[0]
@@ -201,6 +232,7 @@ func main() {
 			clients = h.removeItem(clients[0], clients)
 
 		}
+		h.randSleep()
 	}
 
 	err = h.update(newHosts, hosts)
@@ -216,6 +248,7 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
+
 	err = h.updateStatusf(data)
 	if err != nil {
 		fmt.Println(err)
@@ -230,6 +263,8 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	// check disactive bot and active it
 
 	// check activated bots id status file and active them
 
