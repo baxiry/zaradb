@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"os/exec"
+	"strings"
 	"time"
 )
 
@@ -35,12 +35,13 @@ func getip2() string {
 func main() {
 	ch := make(chan bool, 1)
 
-	http.HandleFunc("/info", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "html")
 
-		out := execute("pwd")
+		fmt.Fprintf(w, `<h3>Host Address : %s<br>Client name : %s<br><br><br>
+                       </h3><h2>Worning: type /exit to exit tis application</h2>`,
+			getip2(), getClientName("."))
 
-		fmt.Fprintf(w, "<h3>My Ip Address : %s<br>My Dir work : %s<br> Worning: type /exit to exit tis application</h3>", getip2(), out)
 	})
 
 	http.HandleFunc("/exit", func(w http.ResponseWriter, r *http.Request) {
@@ -65,12 +66,35 @@ func main() {
 	}
 }
 
-func execute(cmd string) string {
-	out, err := exec.Command(cmd).Output()
+// get client name
+func getClientName(path string) string {
 
+	// Open the directory.
+	outputDirRead, err := os.Open(path)
 	if err != nil {
-		fmt.Printf("%s", err)
+		return err.Error()
 	}
-	return string(out)
 
+	// Call Readdir to get all files.
+	outputDirFiles, err := outputDirRead.Readdir(0)
+	if err != nil {
+		return err.Error()
+	}
+
+	// Loop over files.
+	for _, dir := range outputDirFiles {
+
+		// Print name.
+		if dir.IsDir() && strings.HasSuffix(dir.Name(), "-bot") {
+
+			pathFile := path + "/" + dir.Name()[:len(dir.Name())-4] + ".info"
+
+			data, err := ioutil.ReadFile(pathFile)
+			if err != nil {
+				return err.Error()
+			}
+			return string(data)
+		}
+	}
+	return "no client name"
 }

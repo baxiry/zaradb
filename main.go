@@ -79,6 +79,7 @@ func (Helper) copyLocalFile(src, dst string) error {
 // copyDir copies local botLine directory
 // this is copies a whole directory recursively
 func (Helper) copyLocalDir(src string, dst string) error {
+	dst = dst + "-bot"
 	var err error
 	var fds []os.FileInfo
 	var srcinfo os.FileInfo
@@ -108,19 +109,31 @@ func (Helper) copyLocalDir(src string, dst string) error {
 			}
 		}
 	}
+
+	// creat a new file that containe client info,
+	clientInfo, err := os.Create(dst + "/" + dst + ".info")
+	if err != nil {
+		return err
+	}
+	defer clientInfo.Close()
+	clientInfo.WriteString(dst)
+
 	return nil
 }
 
 // TODO context pkg must be used in this function
 // runRmoteBot runc remote bot app
-func (Helper) runRmoteBot(sshClient *goph.Client, botDir string) error {
-	_, err := sshClient.Run("/root/" + botDir + "/testbot")
-
+func (Helper) runRmoteBot(host, botDir string) error {
+	sshClient, err := goph.NewUnknown("root", host, goph.Password(psw))
 	if err != nil {
 		return err
 	}
 	defer sshClient.Close()
 
+	_, err = sshClient.Run("~/" + botDir + "/testbot &")
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -154,19 +167,20 @@ func main() {
 	}
 	fmt.Println(len(clients), " ", clients)
 
-	// new bot instanc
+	// new bot instance
 	var bot Bot
 
-	// ckake any new client or host and
+	// chake any new client or host and
 	// orginase all data in files
 
 	for _, host := range hosts {
 		if len(clients) < 1 {
 			break
 		}
-		host := host // this line usefull just with concurrency code
+		//host := host // this line usefull just with concurrency code
+		clientName := clients[0]
 
-		active := h.isHostActive(host)
+		active := h.isHostActive(host) // TODO make this return sshClient
 
 		if !active { // if host is not active
 
@@ -182,19 +196,19 @@ func main() {
 				continue
 			}
 
-			if h.clientInStatus(clients[0], &bots) {
+			if h.clientInStatus(clientName, &bots) {
 				clients = h.removeItem(clients[0], clients)
 				continue
 			}
 
-			err := h.copyLocalDir("testBot", clients[0])
+			err := h.copyLocalDir("testBot", clientName)
 			checkErr("", err)
 
-			err = h.localZip(clients[0])
+			err = h.localZip(clientName)
 			checkErr("localZip", err)
 
 			// deploy new clientbot.zip to her host
-			err = h.deploy(clients[0], host)
+			err = h.deploy(clientName, host)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -212,24 +226,24 @@ func main() {
 				fmt.Println()
 				// TODO out of runge error
 
-				fmt.Println("/root/" + clients[0] + "/testbot")
-				err := h.runRmoteBot(sshclient, clients[0])
+				fmt.Println("/root/" + clientName + "/testbot")
+				err := h.runRmoteBot(host, clientName)
 				if err != nil {
 					fmt.Println("err at run remot bot", err)
 				}
 			}()
 
 			// add client-bot-Info to status.json file
-			bot.Owner = clients[0]
+			bot.Owner = clientName
 			bot.Address = host
-			bot.Active = false
+			//bot.Active = false
 			bots = append(bots, bot)
 
 			// remove host address from new-hosts list
 			hosts = h.removeItem(host, hosts)
 
 			// remove client name  from new client-list
-			clients = h.removeItem(clients[0], clients)
+			clients = h.removeItem(clientName, clients)
 
 		}
 		h.randSleep()
@@ -268,6 +282,7 @@ func main() {
 
 	// check activated bots id status file and active them
 
+	time.Sleep(time.Second * 5)
 }
 
 // TODO test localzip function
@@ -539,6 +554,7 @@ func (Helper) sendExit(address string) {
 	fmt.Printf("body is : %s\n", body)
 }
 
+// may be not need this func
 // Copies a file. and rename to name with .cp saffix
 func (Helper) copyFile(src string) error {
 	// Open the source file for reading
