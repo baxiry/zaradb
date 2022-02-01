@@ -132,25 +132,8 @@ func (Helper) deploy(clientBot, hostBot string) error {
 
 // run
 func main() {
-	// test run remote bot
+	//psw := password()
 
-	os.Exit(0)
-	/*
-		// test local zip
-		//err := h.zipLocalDir("hamza")
-		//if err != nil {
-		//	fmt.Println("zip local dir", err)
-		//}
-
-		//cli, err = goph.NewUnknown("root", "139.162.118.190", goph.Password(psw))
-		//if err != nil {
-		//	fmt.Println(err)
-		//}
-		//err = h.deploy("hamza", "139.162.118.190")
-		//if err != nil {
-		//	fmt.Println("deploy ", err)
-		}
-	*/
 	/*
 		sshcli, err := goph.NewUnknown("root", "139.162.100.216", goph.Password(psw))
 		if err != nil {
@@ -161,8 +144,35 @@ func main() {
 			fmt.Println("nuzip remot", err)
 		}
 		os.Exit(0)
+		 test local zip
+		err := h.zipLocalDir("hamza")
+		if err != nil {
+			fmt.Println("zip local dir", err)
+		}
+
+		cli, err = goph.NewUnknown("root", "139.162.118.190", goph.Password(psw))
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = h.deploy("hamza", "139.162.118.190")
+		if err != nil {
+			fmt.Println("deploy ", err)
+		}
+
+		go func() {
+
+			err := h.runRmoteBot("139.162.118.190", "hamza")
+			if err != nil {
+				fmt.Println(err)
+			}
+
+		}()
+		time.Sleep(time.Second * 10)
+
+			os.Exit(0)
 	*/
 	// lead status bots
+
 	bots, err := h.loadStatus()
 	if err != nil {
 		fmt.Println(err)
@@ -212,22 +222,22 @@ func main() {
 			}
 
 			if h.clientInStatus(clientName, &bots) {
-				clients = h.removeItem(clients[0], clients)
+				clients = h.removeItem(clientName, clients)
 				continue
 			}
 
-			err := h.copyLocalDir("testBot", clients[0])
+			err := h.copyLocalDir("testBot", clientName)
 			if err != nil {
 				log.Println("loadLocaDir", err)
 			}
 
-			err = h.zipLocalDir(clients[0])
+			err = h.zipLocalDir(clientName)
 			if err != nil {
 				log.Println("localZip error: ", err)
 			}
 
 			// deploy new clientbot.zip to her host
-			err = h.deploy(clients[0], host)
+			err = h.deploy(clientName, host)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -392,15 +402,18 @@ func (Helper) copyLocalDir(src string, dst string) error {
 
 // TODO context pkg must be used in this function
 // runRmoteBot runc remote bot app
+// note that botDir same clinet name
 func (Helper) runRmoteBot(host, botDir string) error {
 	sshClient, err := goph.NewUnknown("root", host, goph.Password(psw))
 	if err != nil {
+		fmt.Println("err when connete")
 		return err
 	}
 	defer sshClient.Close()
 
-	_, err = sshClient.Run("~/" + botDir + "/testbot")
+	_, err = sshClient.Run("/root/" + botDir + "-bot/testbot")
 	if err != nil {
+		fmt.Println("err when ")
 		return err
 	}
 	return nil
@@ -633,6 +646,15 @@ func (Helper) copyFile(src string) error {
 	// Return any errors that result from closing the destination file
 	// Will return nil if no errors occurred
 	return d.Close()
+}
+
+// to scure app read pass form seprite file
+func password() string {
+	data, err := ioutil.ReadFile(".mypass")
+	if err != nil {
+		return err.Error()
+	}
+	return string(data)
 }
 
 const psw = "d7ombot123"
