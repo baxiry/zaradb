@@ -87,7 +87,8 @@ func getClientName(path string) string {
 		// Print name.
 		if dir.IsDir() && strings.HasSuffix(dir.Name(), "-bot") {
 
-			pathFile := path + "/" + dir.Name()[:len(dir.Name())-4] + ".info"
+			pathFile := dir.Name() + "/" + dir.Name() + ".info"
+			fmt.Println("open :", pathFile)
 
 			data, err := ioutil.ReadFile(pathFile)
 			if err != nil {
@@ -96,5 +97,11 @@ func getClientName(path string) string {
 			return string(data)
 		}
 	}
-	return "no client name"
+	data, err := ioutil.ReadFile("hamza-bot.info")
+	if err != nil {
+		return err.Error()
+	}
+	return string(data)
+
+	//return "no client name"
 }
