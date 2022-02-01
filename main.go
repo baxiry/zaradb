@@ -114,7 +114,7 @@ func (Helper) zipLocalDir(source string) error {
 
 // deploy deploy client-bot.zip to client host
 func (Helper) deploy(clientBot, hostBot string) error {
-	sshClient, err := goph.NewUnknown("root", hostBot, goph.Password(psw))
+	sshClient, err := goph.NewUnknown("root", hostBot, goph.Password(password()))
 	if err != nil {
 		return err
 	}
@@ -130,9 +130,29 @@ func (Helper) deploy(clientBot, hostBot string) error {
 	return nil
 }
 
+// to scure app read pass form seprite file
+func password() string {
+	data, err := ioutil.ReadFile(".mypass")
+	if err != nil {
+		return err.Error()
+	}
+	psw := string(data)
+	return psw[:len(psw)-1]
+}
+
 // run
 func main() {
-	//psw := password()
+	fmt.Println("." + password() + ".")
+	go func() {
+		err := h.runRmoteBot("139.162.118.190", "hamza")
+		if err != nil {
+			fmt.Println(err)
+		}
+
+	}()
+	time.Sleep(time.Second * 10)
+
+	os.Exit(0)
 
 	/*
 		sshcli, err := goph.NewUnknown("root", "139.162.100.216", goph.Password(psw))
@@ -160,7 +180,6 @@ func main() {
 		}
 
 		go func() {
-
 			err := h.runRmoteBot("139.162.118.190", "hamza")
 			if err != nil {
 				fmt.Println(err)
@@ -244,7 +263,7 @@ func main() {
 
 			// error with {Process exited with status 127} may becose no unzip tool install
 
-			sshclient, err := goph.NewUnknown("root", host, goph.Password(psw))
+			sshclient, err := goph.NewUnknown("root", host, goph.Password(password()))
 			if err != nil {
 				log.Println("ssh connection error", err)
 			}
@@ -404,7 +423,7 @@ func (Helper) copyLocalDir(src string, dst string) error {
 // runRmoteBot runc remote bot app
 // note that botDir same clinet name
 func (Helper) runRmoteBot(host, botDir string) error {
-	sshClient, err := goph.NewUnknown("root", host, goph.Password(psw))
+	sshClient, err := goph.NewUnknown("root", host, goph.Password(password()))
 	if err != nil {
 		fmt.Println("err when connete")
 		return err
@@ -499,7 +518,7 @@ func (Helper) removeItem(item string, list []string) []string {
 
 // check if host is active ?
 func (Helper) isHostActive(host string) bool {
-	client, err := goph.NewUnknown("root", host, goph.Password(psw))
+	client, err := goph.NewUnknown("root", host, goph.Password(password()))
 	if err != nil {
 		return false
 	}
@@ -647,17 +666,6 @@ func (Helper) copyFile(src string) error {
 	// Will return nil if no errors occurred
 	return d.Close()
 }
-
-// to scure app read pass form seprite file
-func password() string {
-	data, err := ioutil.ReadFile(".mypass")
-	if err != nil {
-		return err.Error()
-	}
-	return string(data)
-}
-
-const psw = "d7ombot123"
 
 // checkErr check error if exeste and close program
 func checkErr(info string, err error) {
