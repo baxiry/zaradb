@@ -31,7 +31,7 @@ var (
 	//wg             sync.WaitGroup
 	newHosts       = "new.host"
 	disactiveHosts = "disactive.host"
-	statusfile     = "status.json"
+	statusfile     = "statusb.json"
 	clientsName    = "clients.name"
 	botLine        = "testBot"
 )
@@ -50,103 +50,108 @@ func (Helper) unzipRemote(sshclient *goph.Client, zippedfile string) error {
 	return nil
 }
 
-// File copies a single file from src to dst
-func (Helper) copyLocalFile(src, dst string) error {
-	var err error
-	var srcfd *os.File
-	var dstfd *os.File
-	var srcinfo os.FileInfo
-
-	if srcfd, err = os.Open(src); err != nil {
+// TODO test localzip function
+//  zipfile.zip and clientName
+func (Helper) zipLocalDir(source string) error {
+	// 1. Create a ZIP file and zip.Writer
+	f, err := os.Create(source + "-bot.zip")
+	if err != nil {
+		fmt.Println("err at os.create")
 		return err
 	}
-	defer srcfd.Close()
+	defer f.Close()
 
-	if dstfd, err = os.Create(dst); err != nil {
-		return err
-	}
-	defer dstfd.Close()
+	writer := zip.NewWriter(f)
+	defer writer.Close()
 
-	if _, err = io.Copy(dstfd, srcfd); err != nil {
-		return err
-	}
-	if srcinfo, err = os.Stat(src); err != nil {
-		return err
-	}
-	return os.Chmod(dst, srcinfo.Mode())
-}
-
-// copyDir copies local botLine directory
-// this is copies a whole directory recursively
-func (Helper) copyLocalDir(src string, dst string) error {
-	dst = dst + "-bot"
-	var err error
-	var fds []os.FileInfo
-	var srcinfo os.FileInfo
-
-	if srcinfo, err = os.Stat(src); err != nil {
-		return err
-	}
-
-	if err = os.MkdirAll(dst, srcinfo.Mode()); err != nil {
-		return err
-	}
-
-	if fds, err = ioutil.ReadDir(src); err != nil {
-		return err
-	}
-	for _, fd := range fds {
-		srcfp := path.Join(src, fd.Name())
-		dstfp := path.Join(dst, fd.Name())
-
-		if fd.IsDir() {
-			if err = h.copyLocalDir(srcfp, dstfp); err != nil {
-				fmt.Println(err)
-			}
-		} else {
-			if err = h.copyLocalFile(srcfp, dstfp); err != nil {
-				fmt.Println(err)
-			}
+	// 2. Go through all the files of the source
+	return filepath.Walk(source+"-bot", func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			fmt.Println("err at filepath.Walk")
+			return err
 		}
-	}
 
-	// creat a new file that containe client info,
-	clientInfo, err := os.Create(dst + "/" + dst + ".info")
-	if err != nil {
-		return err
-	}
-	defer clientInfo.Close()
-	clientInfo.WriteString(dst)
+		// 3. Create a local file header
+		header, err := zip.FileInfoHeader(info)
+		if err != nil {
+			fmt.Println("err at zip.FileInfoHeader")
+			return err
+		}
 
-	return nil
-}
+		// set compression
+		header.Method = zip.Deflate
 
-// TODO context pkg must be used in this function
-// runRmoteBot runc remote bot app
-func (Helper) runRmoteBot(host, botDir string) error {
-	sshClient, err := goph.NewUnknown("root", host, goph.Password(psw))
-	if err != nil {
-		return err
-	}
-	defer sshClient.Close()
+		// 4. Set relative path of a file as the header name
+		header.Name, err = filepath.Rel(filepath.Dir(source), path)
+		if err != nil {
+			fmt.Println("err at zip.Rel")
+			return err
+		}
+		if info.IsDir() {
+			header.Name += "/"
+		}
 
-	_, err = sshClient.Run("~/" + botDir + "/testbot &")
-	if err != nil {
-		return err
-	}
-	return nil
-}
+		// 5. Create writer for the file header and save content of the file
+		headerWriter, err := writer.CreateHeader(header)
+		if err != nil {
+			fmt.Println("err at writer.CreatHeader")
+			return err
+		}
 
-// randSleep sleep program 100 to 1000 millisecond
-func (Helper) randSleep() {
-	rand.Seed(time.Now().UnixNano())
-	t := rand.Intn(900)
-	time.Sleep(time.Millisecond * time.Duration(t+100))
+		if info.IsDir() {
+			return nil
+		}
+
+		f, err := os.Open(path)
+		if err != nil {
+			fmt.Println("open path")
+			return err
+		}
+		defer f.Close()
+
+		_, err = io.Copy(headerWriter, f)
+		if err != nil {
+			fmt.Println("io.Copy")
+			return err
+		}
+		return nil
+
+	})
 }
 
 // run
 func main() {
+	err := h.copyLocalDir("testBot", "hamza")
+	if err != nil {
+		fmt.Println("copy local dir", err)
+	}
 
+	// test local zip
+	err = h.zipLocalDir("hamza")
+	if err != nil {
+		fmt.Println("zip local dir", err)
+	}
+
+	//cli, err = goph.NewUnknown("root", "139.162.118.190", goph.Password(psw))
+	//if err != nil {
+	//	fmt.Println(err)
+	//}
+	err = h.deploy("homza", "139.162.118.190")
+	if err != nil {
+		fmt.Println("deploy ", err)
+	}
+	os.Exit(0)
+	/*
+		sshcli, err := goph.NewUnknown("root", "139.162.100.216", goph.Password(psw))
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = h.unzipRemote(sshcli, "rema")
+		if err != nil {
+			fmt.Println("nuzip remot", err)
+		}
+		os.Exit(0)
+	*/
 	// lead status bots
 	bots, err := h.loadStatus()
 	if err != nil {
@@ -201,14 +206,18 @@ func main() {
 				continue
 			}
 
-			err := h.copyLocalDir("testBot", clientName)
-			checkErr("", err)
+			err := h.copyLocalDir("testBot", clients[0])
+			if err != nil {
+				log.Println("loadLocaDir", err)
+			}
 
-			err = h.localZip(clientName)
-			checkErr("localZip", err)
+			err = h.zipLocalDir(clients[0])
+			if err != nil {
+				log.Println("localZip error: ", err)
+			}
 
 			// deploy new clientbot.zip to her host
-			err = h.deploy(clientName, host)
+			err = h.deploy(clients[0], host)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -216,18 +225,22 @@ func main() {
 			// error with {Process exited with status 127} may becose no unzip tool install
 
 			sshclient, err := goph.NewUnknown("root", host, goph.Password(psw))
-			checkErr("", err)
+			if err != nil {
+				log.Println("ssh connection error", err)
+			}
+			defer sshclient.Close()
 
 			err = h.unzipRemote(sshclient, clients[0])
-			checkErr("unzip remote file error ", err)
+			if err != nil {
+				fmt.Println("unzipRemote error", err)
+			}
 
 			// TODO use context pakage
 			go func() {
-				fmt.Println()
-				// TODO out of runge error
 
 				fmt.Println("/root/" + clientName + "/testbot")
-				err := h.runRmoteBot(host, clientName)
+				err := h.runRmoteBot(host, clients[0])
+
 				if err != nil {
 					fmt.Println("err at run remot bot", err)
 				}
@@ -243,11 +256,14 @@ func main() {
 			hosts = h.removeItem(host, hosts)
 
 			// remove client name  from new client-list
-			clients = h.removeItem(clientName, clients)
+			clients = h.removeItem(clients[0], clients)
+
+			// some time
 
 		}
 		h.randSleep()
 	}
+	os.Exit(0)
 
 	err = h.update(newHosts, hosts)
 	if err != nil {
@@ -285,64 +301,109 @@ func main() {
 	time.Sleep(time.Second * 5)
 }
 
-// TODO test localzip function
-//  zipfile.zip and clientName
-func (Helper) localZip(source string) error {
-	// 1. Create a ZIP file and zip.Writer
-	f, err := os.Create(source + "-bot.zip")
+// File copies a single file from src to dst
+func (Helper) copyLocalFile(src, dst string) error {
+	var err error
+	var srcfd *os.File
+	var dstfd *os.File
+	var srcinfo os.FileInfo
+
+	if srcfd, err = os.Open(src); err != nil {
+		return err
+	}
+	defer srcfd.Close()
+
+	if dstfd, err = os.Create(dst); err != nil {
+		return err
+	}
+	defer dstfd.Close()
+
+	if _, err = io.Copy(dstfd, srcfd); err != nil {
+		return err
+	}
+	if srcinfo, err = os.Stat(src); err != nil {
+		return err
+	}
+	return os.Chmod(dst, srcinfo.Mode())
+}
+
+// copyDir copies local botLine directory
+// this is copies a whole directory recursively
+func (Helper) copyLocalDir(src string, dst string) error {
+	dst = dst + "-bot"
+	var err error
+	var fds []os.FileInfo
+	var srcinfo os.FileInfo
+
+	if srcinfo, err = os.Stat(src); err != nil {
+		fmt.Println("err: os.Stat")
+		return err
+	}
+
+	if err = os.MkdirAll(dst, srcinfo.Mode()); err != nil {
+		fmt.Println("err: os.MakeAll")
+		return err
+	}
+
+	if fds, err = ioutil.ReadDir(src); err != nil {
+		fmt.Println("err: ioutil.ReadDir")
+		return err
+	}
+	for _, fd := range fds {
+		srcfp := path.Join(src, fd.Name())
+		dstfp := path.Join(dst, fd.Name())
+
+		if fd.IsDir() {
+			if err = h.copyLocalDir(srcfp, dstfp); err != nil {
+
+				fmt.Println("err: recoursive 1")
+				fmt.Println(err)
+			}
+		} else {
+			if err = h.copyLocalFile(srcfp, dstfp); err != nil {
+				fmt.Println("err: recoursive 2")
+				fmt.Println(err)
+			}
+		}
+	}
+
+	// creat a new file that containe client info,
+	clientInfo, err := os.Create(dst + "/" + dst + ".info")
+	if err != nil {
+
+		fmt.Println("creat file info when copping dir")
+		return err
+	}
+	defer clientInfo.Close()
+	clientInfo.WriteString(dst)
+
+	return nil
+}
+
+// TODO context pkg must be used in this function
+// runRmoteBot runc remote bot app
+func (Helper) runRmoteBot(host, botDir string) error {
+	sshClient, err := goph.NewUnknown("root", host, goph.Password(psw))
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer sshClient.Close()
 
-	writer := zip.NewWriter(f)
-	defer writer.Close()
-
-	// 2. Go through all the files of the source
-	return filepath.Walk(source, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		// 3. Create a local file header
-		header, err := zip.FileInfoHeader(info)
-		if err != nil {
-			return err
-		}
-
-		// set compression
-		header.Method = zip.Deflate
-
-		// 4. Set relative path of a file as the header name
-		header.Name, err = filepath.Rel(filepath.Dir(source), path)
-		if err != nil {
-			return err
-		}
-		if info.IsDir() {
-			header.Name += "/"
-		}
-
-		// 5. Create writer for the file header and save content of the file
-		headerWriter, err := writer.CreateHeader(header)
-		if err != nil {
-			return err
-		}
-
-		if info.IsDir() {
-			return nil
-		}
-
-		f, err := os.Open(path)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-
-		_, err = io.Copy(headerWriter, f)
+	_, err = sshClient.Run("~/" + botDir + "/testbot")
+	if err != nil {
 		return err
-	})
+	}
+	return nil
 }
 
+// randSleep sleep program 100 to 1000 millisecond
+func (Helper) randSleep() {
+	rand.Seed(time.Now().UnixNano())
+	t := rand.Intn(900)
+	time.Sleep(time.Millisecond * time.Duration(t+100))
+}
+
+// run
 // TODO test zip function
 //  zipfile.zip and clientName
 func (Helper) remoteZip(sshclient *goph.Client, outfile, dir string) error {
@@ -366,7 +427,7 @@ func (Helper) deploy(clientBot, hostBot string) error {
 		fmt.Println("error when create sshClient")
 		return err
 	}
-	err = sshClient.Upload("./"+clientBot+"-bot.zip", "/root/"+clientBot+"-bot.zip")
+	err = sshClient.Upload(clientBot+"-bot.zip", "/root/"+clientBot+"-bot.zip")
 	if err != nil {
 		fmt.Println("error when upload")
 		return err
