@@ -40,6 +40,7 @@ var (
 func (Helper) unzipRemote(sshclient *goph.Client, zippedfile string) error {
 	// zip the client bot app
 	cmd, err := sshclient.Command("unzip", "-o", "/root/"+zippedfile+"-bot.zip")
+	//cmd, err := sshclient.Command("tar", "-xf", "/root/"+zippedfile+"-bot.zip")
 	if err != nil {
 		return err
 	}
@@ -114,7 +115,7 @@ func (Helper) zipLocalDir(source string) error {
 
 // deploy deploy client-bot.zip to client host
 func (Helper) deploy(clientBot, hostBot string) error {
-	sshClient, err := goph.NewUnknown("root", hostBot, goph.Password(password()))
+	sshClient, err := goph.NewUnknown("root", hostBot, goph.Password(h.getPass()))
 	if err != nil {
 		return err
 	}
@@ -131,7 +132,7 @@ func (Helper) deploy(clientBot, hostBot string) error {
 }
 
 // to scure app read pass form seprite file
-func password() string {
+func (Helper) getPass() string {
 	data, err := ioutil.ReadFile(".mypass")
 	if err != nil {
 		return err.Error()
@@ -140,43 +141,64 @@ func password() string {
 	return psw[:len(psw)-1]
 }
 
+// TODO context pkg must be used in this function
+// runRmoteBot runc remote bot app
+// note that botDir same clinet name
+func (Helper) runRmoteBot(host, botDir string) error {
+	sshClient, err := goph.NewUnknown("root", host, goph.Password(h.getPass()))
+	if err != nil {
+		fmt.Println("err when connete")
+		return err
+	}
+	defer sshClient.Close()
+
+	_, err = sshClient.Run("/root/" + botDir + "-bot/testbot &")
+	if err != nil {
+		fmt.Println("err when ")
+		return err
+	}
+	return nil
+}
+
 // run
 func main() {
 	/*
-		sshcli, err := goph.NewUnknown("root", "139.162.100.216", goph.Password(psw))
+
+		sshcli, err := goph.NewUnknown("root", "139.162.100.216", goph.Password(h.getPass()))
 		if err != nil {
 			fmt.Println(err)
 		}
-		err = h.unzipRemote(sshcli, "rema")
+		err = h.unzipRemote(sshcli, "mohammed")
 		if err != nil {
 			fmt.Println("nuzip remot", err)
 		}
 		os.Exit(0)
-		 test local zip
-		err := h.zipLocalDir("hamza")
-		if err != nil {
-			fmt.Println("zip local dir", err)
-		}
 
-		cli, err = goph.NewUnknown("root", "139.162.118.190", goph.Password(psw))
-		if err != nil {
-			fmt.Println(err)
-		}
-		err = h.deploy("hamza", "139.162.118.190")
-		if err != nil {
-			fmt.Println("deploy ", err)
-		}
+			err := h.zipLocalDir("hamza")
+			if err != nil {
+				fmt.Println("zip local dir", err)
+			}
 
-		go func() {
-			err := h.runRmoteBot("139.162.118.190", "hamza")
+			cli, err = goph.NewUnknown("root", "139.162.118.190", goph.Password(psw))
 			if err != nil {
 				fmt.Println(err)
 			}
+			err = h.deploy("hamza", "139.162.118.190")
+			if err != nil {
+				fmt.Println("deploy ", err)
+			}
 
-		}()
-		time.Sleep(time.Second * 10)
 
-			os.Exit(0)
+			go func() {
+				err := h.runRmoteBot("139.162.118.190", "hamza")
+				if err != nil {
+					fmt.Println("err after long time : ", err)
+				}
+
+			}()
+			time.Sleep(time.Minute * 60)
+
+			os.Exit(1)
 	*/
 	// lead status bots
 
@@ -209,8 +231,9 @@ func main() {
 		if len(clients) < 1 {
 			break
 		}
-		//host := host // this line usefull just with concurrency code
 		clientName := clients[0]
+
+		//host := host // this line usefull just with concurrency code
 
 		active := h.isHostActive(host) // TODO make this return sshClient
 
@@ -251,13 +274,13 @@ func main() {
 
 			// error with {Process exited with status 127} may becose no unzip tool install
 
-			sshclient, err := goph.NewUnknown("root", host, goph.Password(password()))
+			sshclient, err := goph.NewUnknown("root", host, goph.Password(h.getPass()))
 			if err != nil {
 				log.Println("ssh connection error", err)
 			}
 			defer sshclient.Close()
 
-			err = h.unzipRemote(sshclient, clients[0])
+			err = h.unzipRemote(sshclient, clientName)
 			if err != nil {
 				fmt.Println("unzipRemote error", err)
 			}
@@ -265,8 +288,9 @@ func main() {
 			// TODO use context pakage
 			go func() {
 
-				fmt.Println("/root/" + clientName + "/testbot")
-				err := h.runRmoteBot(host, clients[0])
+				fmt.Println("go run /root/" + clientName + "/testbot.go")
+
+				err := h.runRmoteBot(host, clientName)
 
 				if err != nil {
 					fmt.Println("err at run remot bot", err)
@@ -283,10 +307,9 @@ func main() {
 			hosts = h.removeItem(host, hosts)
 
 			// remove client name  from new client-list
-			clients = h.removeItem(clients[0], clients)
-
+			clients = h.removeItem(clientName, clients)
 			// some time
-
+			h.randSleep()
 		}
 		h.randSleep()
 	}
@@ -407,25 +430,6 @@ func (Helper) copyLocalDir(src string, dst string) error {
 	return nil
 }
 
-// TODO context pkg must be used in this function
-// runRmoteBot runc remote bot app
-// note that botDir same clinet name
-func (Helper) runRmoteBot(host, botDir string) error {
-	sshClient, err := goph.NewUnknown("root", host, goph.Password(password()))
-	if err != nil {
-		fmt.Println("err when connete")
-		return err
-	}
-	defer sshClient.Close()
-
-	_, err = sshClient.Run("/root/" + botDir + "-bot/testbot")
-	if err != nil {
-		fmt.Println("err when ")
-		return err
-	}
-	return nil
-}
-
 // randSleep sleep program 100 to 1000 millisecond
 func (Helper) randSleep() {
 	rand.Seed(time.Now().UnixNano())
@@ -506,7 +510,7 @@ func (Helper) removeItem(item string, list []string) []string {
 
 // check if host is active ?
 func (Helper) isHostActive(host string) bool {
-	client, err := goph.NewUnknown("root", host, goph.Password(password()))
+	client, err := goph.NewUnknown("root", host, goph.Password(h.getPass()))
 	if err != nil {
 		return false
 	}
