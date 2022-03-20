@@ -168,7 +168,7 @@ func Copylocalfile(src, dst string) error {
 
 // Copydir copies local botline directory
 // this is copies a whole directory recursively
-func Copylocaldir(src string, dst string) error {
+func CopyDir(src string, dst string) error {
 	dst = dst + "-bot"
 	var err error
 	var fds []os.FileInfo
@@ -193,7 +193,7 @@ func Copylocaldir(src string, dst string) error {
 		dstfp := filepath.Join(dst, fd.Name())
 
 		if fd.IsDir() {
-			if err = Copylocaldir(srcfp, dstfp); err != nil {
+			if err = CopyDir(srcfp, dstfp); err != nil {
 
 				fmt.Println("err: recoursive 1")
 				fmt.Println(err)
@@ -227,7 +227,6 @@ func Randsleep() {
 	time.Sleep(time.Millisecond * time.Duration(t+100))
 }
 
-// run
 // todo test zip function
 //  zipfile.zip and clientname
 func RemoteZip(sshclient *goph.Client, outfile, dir string) error {
@@ -278,7 +277,7 @@ func Update(file string, list []string) error {
 }
 
 // load loads file and return hosts address as []stirng
-func Load(file string) ([]string, error) {
+func LoadAsList(file string) ([]string, error) {
 
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
@@ -300,8 +299,8 @@ func Load(file string) ([]string, error) {
 	return Unique(list), nil
 }
 
-// appendaddress appends new address to addressfile
-func Appendaddr(file, data string) {
+// AppendToFile appends new address to addressfile
+func AppenToFile(file, data string) {
 	f, err := os.OpenFile(file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Println(err)
