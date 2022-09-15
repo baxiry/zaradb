@@ -1,0 +1,4 @@
+github.com/cornelk/hashmap v1.0.8 h1:nv0AWgw02n+iDcawr5It4CjQIAcdMMKRrs10HOJYlrc=
+github.com/cornelk/hashmap v1.0.8/go.mod h1:RfZb7JO3RviW/rT6emczVuC/oxpdz4UsSB2LJSclR1k=
+github.com/tech-branch/tbkv v1.0.0 h1:vsOwpLR59Q9s5OwaI+436VDa012PCqGlhO3d8H462XA=
+github.com/tech-branch/tbkv v1.0.0/go.mod h1:vtX+9E/MOMymhUzQA1PJ0/kTmHhvY9G3Qg7qWoUaQHg=

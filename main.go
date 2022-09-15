@@ -1,71 +1,183 @@
 package main
 
 import (
-	"encoding/json"
+	"bufio"
+	"errors"
 	"fmt"
-	"mydb/driver"
+	"io"
+	"io/ioutil"
+	"math/rand"
+	"os"
+	"strconv"
+	"sync"
+	"time"
 )
 
-type Person struct {
-	Name    string
-	Age     json.Number
-	Job     string
-	Contact string
-	Address Address
-}
+//last serial is 10010000
 
-type Address struct {
-	City    string
-	State   string
-	Country string
-	Pincode json.Number
-}
+var wg sync.WaitGroup
 
 func main() {
-	dir := "./"
-	db, err := driver.NewDB(dir)
 
+	start := time.Now()
+
+	args := os.Args
+	if len(args) < 2 {
+		fmt.Println("inter arg")
+		return
+	}
+
+	loops, err := strconv.Atoi(args[1])
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 
-	users := []Person{
-		{"adam", "23", "09 534554432", "teacher", Address{"moroco", "sla", "harnose", "605555"}},
-		{"jawad", "24", "09 534554432", "student", Address{"moroco", "cnatra", "jarnose", "305555"}},
-		{"joha", "30", "09 534554432", "shef", Address{"moroco", "safro", "koarnose", "545555"}},
-		{"jamous", "23", "09 534554432", "doctor", Address{"moroco", "safi", "saniya", "905555"}},
-		{"koko", "23", "09 534554432", "doctor", Address{"moroco", "safi", "saniya", "905555"}},
-		{"dodo", "23", "09 534554432", "doctor", Address{"moroco", "safi", "saniya", "905555"}},
+	// read data
+
+	lendata := 0
+
+	ch := make(chan string, 2)
+	var str string
+
+	for i := 0; i < loops; i++ {
+
+		v := rand.Intn(201000-1) + 1 // range is min to max
+
+		wg.Add(1)
+		go func() {
+			d, _ := ioutil.ReadFile("/Users/fedora/repo/test/" + strconv.Itoa(v) + "_file.txt")
+			s := string(d[0])
+			ch <- s
+		}()
 	}
 
-	for _, value := range users {
-		db.Write("users", value.Name, Person{
-			Name:    value.Name,
-			Age:     value.Age,
-			Contact: value.Contact,
-			Job:     value.Job,
-			Address: value.Address,
-		})
+	for i := 0; i < loops; i++ {
+		str += <-ch
 	}
-	records, err := db.ReadAll("users")
-	if err != nil {
-		fmt.Println("Error", err)
-	}
-	fmt.Println(records)
 
-	allusers := []Person{}
+	lendata += len(str)
 
-	for _, f := range records {
-		userfound := Person{}
-		if err := json.Unmarshal([]byte(f), &userfound); err != nil {
-			fmt.Println(err)
+	println("size of data : ", lendata)
+	println("duration ms  : ", time.Since(start).Milliseconds())
+
+	os.Exit(0)
+
+	data := args[2]
+	for i := 0; i < loops; i++ {
+
+		n := strconv.Itoa(i)
+		path := "/Users/fedora/repo/test/" + n + "_file.txt"
+		err = os.WriteFile(path, []byte(n+data+"\n"), 0644)
+		if err != nil {
+			println("err is : ", err)
 		}
-		allusers = append(allusers, userfound)
-	}
-	fmt.Println("all users is : ", allusers)
 
-	if err := db.Delete("users", "adam"); err != nil {
+	}
+
+	wg.Wait()
+	println("duration: ", time.Since(start).Milliseconds())
+	os.Exit(0)
+
+	////////////////////////////////
+
+}
+
+// create new files with new data
+func creatFiles(from, to int) (err error) {
+	for i := from; i < to; i++ {
+		n := strconv.Itoa(i)
+		path := "/Users/fedora/repo/test/" + n + "_file.txt"
+		err = os.WriteFile(path, []byte(n+" this is a stirng"), 0644)
+		if err != nil {
+
+			return err
+		}
+	}
+	return nil
+}
+
+// generate data to file
+func generateLinse(n int) {
+	s := "This is a string\n"
+
+	for i := 0; i <= n; i++ {
+		snum := strconv.Itoa(i)
+		ioutil.WriteFile(snum+"_file.txt", []byte(snum+" "+s), 0644)
+	}
+
+}
+
+func generateLinesToFile(n int, file string) {
+	//Append second line
+	f, err := os.OpenFile(file, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
 		fmt.Println(err)
 	}
+	defer f.Close()
 
+	for i := 0; i < 1000000; i++ {
+		snum := strconv.Itoa(i)
+		//write directly into file
+		f.Write([]byte(snum + " This is a string\n"))
+
+	}
+}
+
+func ReadLine(r io.Reader, lineNum int) (line string, lastLine int, err error) {
+	sc := bufio.NewScanner(r)
+	for sc.Scan() {
+		lastLine++
+		if lastLine == lineNum {
+			// you can return sc.Bytes() if you need output in []bytes
+			return sc.Text(), lastLine, sc.Err()
+		}
+	}
+	return line, lastLine, io.EOF
+}
+
+// read multi files
+func readFiles(from, to int) {
+
+	for i := from; i < to; i++ {
+		n := strconv.Itoa(i)
+		d, err := ioutil.ReadFile("/Users/fedora/repo/test/" + n + "_file.txt")
+		if err != nil {
+			panic(err)
+		}
+		fmt.Print(string(d))
+	}
+}
+
+func readSpicificLine(fn string, n int) (string, error) {
+	if n < 1 {
+		return "", fmt.Errorf("invalid request: line %d", n)
+	}
+	f, err := os.Open(fn)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	bf := bufio.NewReader(f)
+	var line string
+	for lnum := 0; lnum < n; lnum++ {
+		line, err = bf.ReadString('\n')
+		if err == io.EOF {
+			switch lnum {
+			case 0:
+				return "", errors.New("no lines in file")
+			case 1:
+				return "", errors.New("only 1 line")
+			default:
+				return "", fmt.Errorf("only %d lines", lnum)
+			}
+		}
+		if err != nil {
+			return "", err
+		}
+	}
+	if line == "" {
+		return "", fmt.Errorf("line %d empty", n)
+	}
+	return line, nil
 }
