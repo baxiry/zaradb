@@ -13,17 +13,67 @@ import (
 	"time"
 )
 
+// "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+var Latters = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"}
+
 //last serial is 10010000
 
 var wg sync.WaitGroup
 
+// get last serial
+func GenerateID(latters []string) (serial string) {
+	var i int
+	for i = 0; i < 10; i++ {
+		serial += latters[rand.Intn(35)+1]
+	}
+	return serial
+}
+
 func main() {
+	rand.Seed(time.Now().UnixNano())
+	r := GenerateID(Latters)
+	fmt.Println(r)
 
+	for i := 0; i < 1000000; i++ {
+		GenerateID(Latters)
+	}
+	//readsfiles()
+	//fmt.Println(creatFiles())
+}
+
+// create new files with new data
+func creatFiles() (err error) {
 	start := time.Now()
-
 	args := os.Args
 	if len(args) < 2 {
-		fmt.Println("inter arg")
+		fmt.Println("inter numver arg")
+		return
+	}
+
+	to, err := strconv.Atoi(args[1])
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	for i := 0; i < to; i++ {
+		n := strconv.Itoa(i)
+		path := "/Users/fedora/repo/test/" + n + "_file.txt"
+		err = os.WriteFile(path, []byte(n+" this is a stirng"), 0644)
+		if err != nil {
+			return
+		}
+	}
+	println("duration ms  : ", time.Since(start).Milliseconds())
+	return
+}
+
+// read data form Mutli files
+func readsfiles() {
+	start := time.Now()
+	args := os.Args
+	if len(args) < 2 {
+		fmt.Println("inter numver arg")
 		return
 	}
 
@@ -33,97 +83,29 @@ func main() {
 		return
 	}
 
-	// read data
-
 	lendata := 0
 
-	ch := make(chan string, 2)
-	var str string
-
-	for i := 0; i < loops; i++ {
-
-		v := rand.Intn(201000-1) + 1 // range is min to max
+	for j := 0; j < 100; j++ {
 
 		wg.Add(1)
 		go func() {
-			d, _ := ioutil.ReadFile("/Users/fedora/repo/test/" + strconv.Itoa(v) + "_file.txt")
-			s := string(d[0])
-			ch <- s
+			defer wg.Done()
+
+			for i := 0; i < loops; i++ {
+				//v := rand.Intn(201000-1) + 1 // range is min to max
+				d, _ := os.ReadFile("/Users/fedora/repo/test/" + strconv.Itoa(i) + "_file.txt")
+				lendata += len(string(d[0]))
+			}
 		}()
-	}
 
-	for i := 0; i < loops; i++ {
-		str += <-ch
+		wg.Wait()
 	}
-
-	lendata += len(str)
 
 	println("size of data : ", lendata)
 	println("duration ms  : ", time.Since(start).Milliseconds())
-
-	os.Exit(0)
-
-	data := args[2]
-	for i := 0; i < loops; i++ {
-
-		n := strconv.Itoa(i)
-		path := "/Users/fedora/repo/test/" + n + "_file.txt"
-		err = os.WriteFile(path, []byte(n+data+"\n"), 0644)
-		if err != nil {
-			println("err is : ", err)
-		}
-
-	}
-
-	wg.Wait()
-	println("duration: ", time.Since(start).Milliseconds())
-	os.Exit(0)
-
-	////////////////////////////////
-
 }
 
-// create new files with new data
-func creatFiles(from, to int) (err error) {
-	for i := from; i < to; i++ {
-		n := strconv.Itoa(i)
-		path := "/Users/fedora/repo/test/" + n + "_file.txt"
-		err = os.WriteFile(path, []byte(n+" this is a stirng"), 0644)
-		if err != nil {
-
-			return err
-		}
-	}
-	return nil
-}
-
-// generate data to file
-func generateLinse(n int) {
-	s := "This is a string\n"
-
-	for i := 0; i <= n; i++ {
-		snum := strconv.Itoa(i)
-		ioutil.WriteFile(snum+"_file.txt", []byte(snum+" "+s), 0644)
-	}
-
-}
-
-func generateLinesToFile(n int, file string) {
-	//Append second line
-	f, err := os.OpenFile(file, os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer f.Close()
-
-	for i := 0; i < 1000000; i++ {
-		snum := strconv.Itoa(i)
-		//write directly into file
-		f.Write([]byte(snum + " This is a string\n"))
-
-	}
-}
-
+// find a line
 func ReadLine(r io.Reader, lineNum int) (line string, lastLine int, err error) {
 	sc := bufio.NewScanner(r)
 	for sc.Scan() {
@@ -136,19 +118,7 @@ func ReadLine(r io.Reader, lineNum int) (line string, lastLine int, err error) {
 	return line, lastLine, io.EOF
 }
 
-// read multi files
-func readFiles(from, to int) {
-
-	for i := from; i < to; i++ {
-		n := strconv.Itoa(i)
-		d, err := ioutil.ReadFile("/Users/fedora/repo/test/" + n + "_file.txt")
-		if err != nil {
-			panic(err)
-		}
-		fmt.Print(string(d))
-	}
-}
-
+// read
 func readSpicificLine(fn string, n int) (string, error) {
 	if n < 1 {
 		return "", fmt.Errorf("invalid request: line %d", n)
@@ -180,4 +150,15 @@ func readSpicificLine(fn string, n int) (string, error) {
 		return "", fmt.Errorf("line %d empty", n)
 	}
 	return line, nil
+}
+
+// generate data to file
+func generateLinse(n int) {
+	s := "This is a string\n"
+
+	for i := 0; i <= n; i++ {
+		snum := strconv.Itoa(i)
+		ioutil.WriteFile(snum+"_file.txt", []byte(snum+" "+s), 0644)
+	}
+
 }
