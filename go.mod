@@ -1,6 +1,6 @@
 module mydb
 
-go 1.17
+go 1.19
 
 require (
 	github.com/cornelk/hashmap v1.0.8 // indirect
