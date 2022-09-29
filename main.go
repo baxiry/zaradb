@@ -2,13 +2,11 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 	"os"
 	"strings"
 )
 
-// TODO create db
 // TODO rename db
 // TODO delete db
 
@@ -20,21 +18,40 @@ import (
 // TODO show collects
 // TODO switch bitween dbs
 
-func CreateDB(dbName string) (err error) {
-	_, err = os.Stat(rootPath + dbName)
+func RenameDB(oldPath, newPath string) string {
 
+	err := os.Rename(oldPath, newPath)
+
+	if err != nil {
+		return err.Error()
+	}
+	return "Done"
+}
+
+func main() {
+
+	println(mydb_art)
+	println(mydb_art1)
+	println(mydb_art2)
+	err := CreateDB("peoples")
+	fmt.Println(err)
+	//	err = RenameDB("peoples", "books")
+	fmt.Println(err)
+}
+
+func DeleteDB(path string) string {
+
+	return ""
+}
+func CreateDB(dbName string) string {
+	_, err := os.Stat(rootPath + dbName)
 	if os.IsNotExist(err) {
-		err = os.MkdirAll(rootPath+dbName, 0755)
+		err = os.MkdirAll(rootPath+dbName+"/.Crash/", 0755)
 		if err != nil {
-			log.Fatal(err)
+			return err.Error()
 		}
 	}
-	return nil
-
-}
-func main() {
-	err := CreateDB("dbdir")
-	fmt.Println(err)
+	return "Done"
 }
 
 // rootPath = "/Users/fedora/.mydb/test/"
@@ -63,7 +80,7 @@ func Select(path string) (data string, err error) {
 
 // Delete remove document
 func Delete(path string) (err error) {
-	err = os.Remove(path)
+	err = os.Rename(path, ".Crash/"+path)
 	if err != nil {
 		return err
 	}
