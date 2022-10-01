@@ -7,8 +7,7 @@ import (
 	"strings"
 )
 
-// TODO rename db
-// TODO delete db
+// TODO delete db ?!
 
 // TODO create collecte
 // TODO rename collecte
@@ -18,44 +17,36 @@ import (
 // TODO show collects
 // TODO switch bitween dbs
 
-func RenameDB(oldPath, newPath string) string {
-
-	err := os.Rename(oldPath, newPath)
-
-	if err != nil {
-		return err.Error()
-	}
-	return "Done"
-}
-
 func main() {
-
-	println(mydb_art)
-	println(mydb_art1)
-	println(mydb_art2)
-	err := CreateDB("peoples")
-	fmt.Println(err)
-	//	err = RenameDB("peoples", "books")
-	fmt.Println(err)
+	fmt.Println(CreateDB("universities"))
 }
 
-func DeleteDB(path string) string {
-
-	return ""
+// CreateDB create db TODO return this directly
+func CreateDB(dbName string) (err error) {
+	// _, err = os.Stat("go.mod")
+	//	if os.IsNotExist(err) {
+	return os.MkdirAll(rootPath+dbName+"/.Trash/", 0755)
+	// }
+	// return err
 }
-func CreateDB(dbName string) string {
-	_, err := os.Stat(rootPath + dbName)
-	if os.IsNotExist(err) {
-		err = os.MkdirAll(rootPath+dbName+"/.Crash/", 0755)
-		if err != nil {
-			return err.Error()
-		}
-	}
-	return "Done"
+
+func DeleteDB(dbName string) string {
+	return dbName + " db deleted!"
+}
+
+// RemoveDB remove db to .Trash dir
+func RemoveDB(dbName string) (err error) {
+	return RenameDB(dbName, ".Trash/"+dbName)
+}
+
+// RenameDB rename db.
+func RenameDB(oldPath, newPath string) (err error) {
+	return os.Rename(oldPath, newPath)
 }
 
 // rootPath = "/Users/fedora/.mydb/test/"
-// Update data
+
+// Update update document data
 func Update(serial, data string) (err error) {
 
 	// TODO add ''where'' statment enstead serial
