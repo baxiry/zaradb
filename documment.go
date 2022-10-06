@@ -28,7 +28,6 @@ func Select(path string) (data string, err error) {
 		return "", err
 	}
 	return string(bdata), nil
-
 }
 
 // Delete remove document

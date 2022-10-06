@@ -15,6 +15,15 @@ import (
 // TODO switch bitween dbs
 
 func main() {
-	fmt.Println(CreateDB("testdb"))
-	fmt.Println(Create("users"))
+	dbname, err := CreateDB("testdb1")
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("create db:", dbname)
+
+	colname, err := CreateCl(dbname + "/users1")
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("create collection :", colname)
 }

@@ -3,12 +3,15 @@ package main
 import "os"
 
 // CreateDB create db TODO return this directly
-func CreateDB(dbName string) (err error) {
+func CreateDB(dbName string) (dbname string, err error) {
 	// _, err = os.Stat("go.mod")
-	//	if os.IsNotExist(err) {
-	return os.MkdirAll(rootPath+dbName+"/.Trash/", 0755)
-	// }
-	// return err
+	//	if os.IsNotExist(err) {return err}
+
+	err = os.MkdirAll(rootPath+dbName+"/.Trash/", 0755)
+	if err != nil {
+		return dbname, err
+	}
+	return dbName, nil
 }
 
 // DeleteDB delete db (free hard drive).
