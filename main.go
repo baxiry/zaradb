@@ -27,10 +27,12 @@ func arguments() string {
 }
 
 func main() {
+	dbName := ""
+
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		fmt.Print("> ")
+		fmt.Printf("%s> ", dbName)
 		query, _ := reader.ReadString('\n')
 		if query == "bye\n" {
 			println("Bye!")
@@ -40,23 +42,67 @@ func main() {
 		words := strings.Split(query, " ")
 
 		switch {
+		// query language
+		case strings.HasPrefix(words[0], "db."):
+			if dbName == "" {
+				fmt.Println("select database first [use db_name]")
+				continue
+			}
+			dbPath := rootPath + dbName
+			_ = dbPath
+
+			stmt := strings.Split(query, ".")
+
+			if len(stmt) < 2 {
+				fmt.Println("messing collection. try somting like: db.collection.find()")
+				continue
+			}
+			if len(stmt) < 3 {
+				fmt.Println("messing query function. .find(), .update(), .remove()")
+				continue
+			}
+			collect := stmt[1]
+			command := stmt[2]
+			if collect == "" || command == "" {
+				fmt.Println("Error. messing collection or command.")
+				continue
+			}
+			dbPath += collect
+
+			fmt.Println("collection : ", collect)
+			fmt.Println("command : ", command)
+			switch {
+			}
+
 		case words[0] == "use":
-			CreateDB(strings.Replace(words[1], "\n", "", 1))
+			dbName = strings.Replace(words[1], "\n", "", 1)
+
+			_, err := os.Stat(rootPath + dbName)
+			if os.IsNotExist(err) {
+				p, err := CreateDB(dbName)
+				if err != nil {
+					fmt.Println("Error", err)
+				}
+				fmt.Println(p, "database created!")
+				continue
+			}
 
 		case words[0] == "dbs":
 
-			dbs, err := os.ReadDir("./")
+			dbs, err := os.ReadDir(rootPath)
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
 			}
 
 			for _, dir := range dbs {
 				if dir.IsDir() {
-					print(dir.Name(), "")
+					print(dir.Name(), " ")
 				}
 			}
 			println()
 
+		case words[0] == "help\n":
+			fmt.Println(help_messages)
 		case words[0] == "\n":
 			continue
 		default:
@@ -66,6 +112,35 @@ func main() {
 	}
 
 	//fmt.Println(query())
+}
+
+// data bases //////////////////////////////////////////////////////
+
+// CreateDB create db TODO return this directly
+func CreateDB(dbName string) (dbname string, err error) {
+	// _, err = os.Stat("go.mod")
+	//	if os.IsNotExist(err) {return err}
+
+	err = os.MkdirAll(rootPath+dbName+"/.Trash/", 0755)
+	if err != nil {
+		return dbname, err
+	}
+	return dbName, nil
+}
+
+// DeleteDB delete db (free hard drive).
+func DeleteDB(dbName string) string {
+	return dbName + " db deleted!"
+}
+
+// Remove remove db to .Trash dir
+func RemoveDB(dbName string) (err error) {
+	return RenameDB(dbName, ".Trash/"+dbName)
+}
+
+// Rename rename db.
+func RenameDB(oldPath, newPath string) (err error) {
+	return os.Rename(oldPath, newPath)
 }
 
 // documents /////////////////////////////////////////////////
@@ -117,35 +192,6 @@ func getIndexes(path string) []string {
 		fmt.Println(err)
 	}
 	return strings.Split(string(data), " ")
-}
-
-// data bases //////////////////////////////////////////////////////
-
-// CreateDB create db TODO return this directly
-func CreateDB(dbName string) (dbname string, err error) {
-	// _, err = os.Stat("go.mod")
-	//	if os.IsNotExist(err) {return err}
-
-	err = os.MkdirAll(rootPath+dbName+"/.Trash/", 0755)
-	if err != nil {
-		return dbname, err
-	}
-	return dbName, nil
-}
-
-// DeleteDB delete db (free hard drive).
-func DeleteDB(dbName string) string {
-	return dbName + " db deleted!"
-}
-
-// Remove remove db to .Trash dir
-func RemoveDB(dbName string) (err error) {
-	return RenameDB(dbName, ".Trash/"+dbName)
-}
-
-// Rename rename db.
-func RenameDB(oldPath, newPath string) (err error) {
-	return os.Rename(oldPath, newPath)
 }
 
 // collections //////////////////////////////////////////////////////////////////////
