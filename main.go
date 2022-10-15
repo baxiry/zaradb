@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
 	"strings"
@@ -18,100 +19,64 @@ import (
 // TODO show collects
 // TODO switch bitween dbs
 
+func main() {
+	reader := bufio.NewReader(os.Stdin)
+
+	for {
+		fmt.Print("> ")
+
+		args, err := reader.ReadString('\n')
+		if err != nil {
+			log.Fatal(err)
+		}
+		args = strings.Replace(args, "\n", "", 1)
+
+		switch {
+		case args == "dbs":
+			ListDir("")
+
+		case args == "help":
+			println(help_messages)
+
+		case args != "":
+			if PathExist(args) {
+				ListDir(args)
+			}
+
+			println("what ?")
+
+		default:
+		}
+	}
+}
+
 func arguments() string {
 	args := os.Args
 	if len(args) < 2 {
-		return "not enoght arguments"
+		return ""
 	}
 	return args[1]
 }
 
-func main() {
-	dbName := ""
-
-	reader := bufio.NewReader(os.Stdin)
-
-	for {
-		fmt.Printf("%s> ", dbName)
-		query, _ := reader.ReadString('\n')
-		if query == "bye\n" {
-			println("Bye!")
-			break
-		}
-
-		words := strings.Split(query, " ")
-
-		switch {
-		// query language
-		case strings.HasPrefix(words[0], "db."):
-			if dbName == "" {
-				fmt.Println("select database first [use db_name]")
-				continue
-			}
-			dbPath := rootPath + dbName
-			_ = dbPath
-
-			stmt := strings.Split(query, ".")
-
-			if len(stmt) < 2 {
-				fmt.Println("messing collection. try somting like: db.collection.find()")
-				continue
-			}
-			if len(stmt) < 3 {
-				fmt.Println("messing query function. .find(), .update(), .remove()")
-				continue
-			}
-			collect := stmt[1]
-			command := stmt[2]
-			if collect == "" || command == "" {
-				fmt.Println("Error. messing collection or command.")
-				continue
-			}
-			dbPath += collect
-
-			fmt.Println("collection : ", collect)
-			fmt.Println("command : ", command)
-			switch {
-			}
-
-		case words[0] == "use":
-			dbName = strings.Replace(words[1], "\n", "", 1)
-
-			_, err := os.Stat(rootPath + dbName)
-			if os.IsNotExist(err) {
-				p, err := CreateDB(dbName)
-				if err != nil {
-					fmt.Println("Error", err)
-				}
-				fmt.Println(p, "database created!")
-				continue
-			}
-
-		case words[0] == "dbs":
-
-			dbs, err := os.ReadDir(rootPath)
-			if err != nil {
-				fmt.Println(err)
-			}
-
-			for _, dir := range dbs {
-				if dir.IsDir() {
-					print(dir.Name(), " ")
-				}
-			}
-			println()
-
-		case words[0] == "help\n":
-			fmt.Println(help_messages)
-		case words[0] == "\n":
-			continue
-		default:
-			println("what do you means ?")
-		}
-
+func PathExist(subPath string) bool {
+	_, err := os.Stat(rootPath + subPath)
+	if os.IsNotExist(err) {
+		return false
 	}
+	return true
+}
 
-	//fmt.Println(query())
+func ListDir(path string) {
+	dbs, err := os.ReadDir(rootPath + path)
+	if err != nil {
+		fmt.Println(err)
+	}
+	for _, dir := range dbs {
+		if dir.IsDir() {
+			print(dir.Name(), " ")
+		}
+	}
+	println()
 }
 
 // data bases //////////////////////////////////////////////////////
