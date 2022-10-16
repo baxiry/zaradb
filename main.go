@@ -10,14 +10,7 @@ import (
 )
 
 // TODO delete db ?!
-
-// TODO create collecte
-// TODO rename collecte
 // TODO delete collecte
-
-// TODO show dbs
-// TODO show collects
-// TODO switch bitween dbs
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
@@ -39,15 +32,38 @@ func main() {
 			println(help_messages)
 
 		case args != "":
-			if PathExist(args) {
-				ListDir(args)
+			if !strings.Contains(args, ".") {
+				continue
+			}
+			queries := strings.Split(args, ".")
+			if len(queries) < 3 {
+				println("Err bad query trye somting like : db_name.collecte_name.find()")
+				continue
+			}
+			if !PathExist(queries[1]) {
+				CreateCl(queries[1])
+
+				fmt.Printf(" %s collection is created\n", queries[1])
+				continue
 			}
 
-			println("what ?")
+			if queries[2] == "" {
+				println("bad messing command.")
+				continue
+
+			}
+			switch queries[2] {
+			case "insert()":
+				println("inserted")
+			case "find()":
+				println("find all")
+			}
+			println(queries[2], "succeses!")
 
 		default:
 		}
 	}
+
 }
 
 func arguments() string {
@@ -71,12 +87,19 @@ func ListDir(path string) {
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	dirs := 0
 	for _, dir := range dbs {
-		if dir.IsDir() {
+		if dir.IsDir() && string(dir.Name()[0]) != "." {
+			dirs++
 			print(dir.Name(), " ")
 		}
 	}
-	println()
+	if dirs > 0 {
+		println()
+		return
+	}
+	println(path, "is impty")
 }
 
 // data bases //////////////////////////////////////////////////////
@@ -162,15 +185,13 @@ func getIndexes(path string) []string {
 // collections //////////////////////////////////////////////////////////////////////
 // type Collection string
 
-// CreateDB create db TODO return this directly
+// CreateCl create collection
 func CreateCl(cPath string) (colname string, err error) { // db and collection Path
-	// _, err = os.Stat("go.mod")
-	//	if os.IsNotExist(err) {
-	err = os.MkdirAll(cPath+"/.Trash/", 0755)
+	err = os.MkdirAll(rootPath+cPath+"/.Trash/", 0755)
 	return colname, err
 }
 
-// Delete delete db (free hard drive).
+// TODO Delete delete collection (free hard drive). //
 func DeleteCl(cPath string) string {
 	return cPath + " collection deleted!"
 }
