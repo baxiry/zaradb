@@ -9,9 +9,6 @@ import (
 	"strings"
 )
 
-// TODO delete db ?!
-// TODO delete collecte
-
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 
@@ -22,7 +19,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		args = strings.Replace(args, "\n", "", 1)
+		args = strings.TrimSpace(args)
 
 		switch {
 		case args == "dbs":
