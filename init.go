@@ -6,12 +6,24 @@ import (
 	"time"
 )
 
-var help_messages = `command              description:
+var help_messages = `command & description:
 -----------------------------------------------------------------
-bye . . . . . . . . . . exit quit q : exit mydb client.
-dbs . . . . . . . . . . show all databases.
-use <db_name> . . . . . switch to exist db, or create new db if not exist.
-collects  . . . . . . . shw all collections in selected db.`
+help :
+   get this help message.
+
+dbs  :
+   show exist databases.
+
+dbName : 
+   shw all collections in selected db. Not: collection = table.
+
+dbName.collectionName.find :
+   find * record in dbName.collectionName .
+
+dbName.collectionName.insert {...}:
+   insert new record to dbName.collection.
+   Note: make sure that data is a json. 
+`
 
 var (
 	wg       sync.WaitGroup

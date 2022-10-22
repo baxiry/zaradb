@@ -1,72 +1,72 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"log"
 	"math/rand"
 	"os"
 	"strings"
 )
 
 func main() {
-	reader := bufio.NewReader(os.Stdin)
+	stmt := arguments()
 
-	for {
-		fmt.Print("> ")
+	switch {
+	case stmt == "dbs":
+		ListDir("")
 
-		args, err := reader.ReadString('\n')
-		if err != nil {
-			log.Fatal(err)
+	case stmt != "":
+
+		if !strings.Contains(stmt, ".") {
+			ListDir(stmt)
+			return
 		}
-		args = strings.TrimSpace(args)
 
-		switch {
-		case args == "dbs":
-			ListDir("")
+		queries := strings.Split(stmt, ".")
 
-		case args == "help":
-			println(help_messages)
-
-		case args != "":
-			if !strings.Contains(args, ".") {
-				continue
-			}
-			queries := strings.Split(args, ".")
-			if len(queries) < 3 {
-				println("Err bad query trye somting like : db_name.collecte_name.find()")
-				continue
-			}
-			if !PathExist(queries[1]) {
-				CreateCl(queries[1])
-
-				fmt.Printf(" %s collection is created\n", queries[1])
-				continue
-			}
-
-			if queries[2] == "" {
-				println("bad messing command.")
-				continue
-
-			}
-			switch queries[2] {
-			case "insert()":
-				println("inserted")
-			case "find()":
-				println("find all")
-			}
-			println(queries[2], "succeses!")
-
-		default:
+		ln := len(queries)
+		if ln == 1 {
+			println("Err bad query! type help command")
+			return
 		}
+
+		if strings.Contains(queries[1], "find") {
+			ListDir(queries[0])
+			return
+		}
+
+		if !PathExist(queries[1]) {
+			fmt.Printf("Err  %s not exist \n", queries[1])
+			fmt.Printf("create new collection by:\n%s.%s.create()\n", queries[0], queries[1])
+			return
+		}
+
+		if ln < 3 {
+			fmt.Println("Err empty collection")
+			return
+		}
+
+		if queries[2] == "create" {
+			CreateCl(queries[1])
+			fmt.Printf(" %s collection is created\n", queries[1])
+			return
+		}
+
+	//
+	case stmt == "":
+		println("empty query")
+
+	case stmt == "help":
+		println(help_messages)
+
+	default:
 	}
-
 }
 
 func arguments() string {
 	args := os.Args
 	if len(args) < 2 {
-		return ""
+		fmt.Println("not enought arguments")
+		os.Exit(0)
 	}
 	return args[1]
 }
