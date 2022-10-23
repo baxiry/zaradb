@@ -15,8 +15,11 @@ func main() {
 		ListDir("")
 
 	case stmt != "":
-
 		if !strings.Contains(stmt, ".") {
+			if !PathExist(stmt) {
+				fmt.Printf("%s db is not exist\ntry: dbs command to lest exist dbs\n", stmt)
+				return
+			}
 			ListDir(stmt)
 			return
 		}
@@ -41,7 +44,7 @@ func main() {
 		}
 
 		if ln < 3 {
-			fmt.Println("Err empty collection")
+			fmt.Println("Err operation is not mentioned\n try : .insert() .find() .update() .delete")
 			return
 		}
 
