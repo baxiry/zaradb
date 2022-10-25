@@ -8,70 +8,50 @@ import (
 )
 
 func main() {
-	stmt := arguments()
+	args := arguments()
 
 	switch {
-	case stmt == "dbs":
-		ListDir("")
+	case len(args) >= 4:
+		switch args[3] {
+		case "find":
+			println("arg is find")
 
-	case stmt != "":
-		if !strings.Contains(stmt, ".") {
-			if !PathExist(stmt) {
-				fmt.Printf("%s db is not exist\ntry: dbs command to lest exist dbs\n", stmt)
-				return
-			}
-			ListDir(stmt)
-			return
+		case "insert":
+			println("arg is insert")
+
+		case "update":
+			println("arg is update")
+
+		case "delete":
+			println("arg is delete")
+		} // end switch args[3]
+
+	case len(args) == 3:
+		println("Err query not complet")
+	case len(args) == 2:
+
+		switch args[1] {
+
+		case "dbs":
+			ListDir("")
+		case "help":
+			println(help_messages)
+		default:
+			ListDir(args[1])
 		}
-
-		queries := strings.Split(stmt, ".")
-
-		ln := len(queries)
-		if ln == 1 {
-			println("Err bad query! type help command")
-			return
-		}
-
-		if strings.Contains(queries[1], "find") {
-			ListDir(queries[0])
-			return
-		}
-
-		if !PathExist(queries[1]) {
-			fmt.Printf("Err  %s not exist \n", queries[1])
-			fmt.Printf("create new collection by:\n%s.%s.create()\n", queries[0], queries[1])
-			return
-		}
-
-		if ln < 3 {
-			fmt.Println("Err operation is not mentioned\n try : .insert() .find() .update() .delete")
-			return
-		}
-
-		if queries[2] == "create" {
-			CreateCl(queries[1])
-			fmt.Printf(" %s collection is created\n", queries[1])
-			return
-		}
-
-	//
-	case stmt == "":
-		println("empty query")
-
-	case stmt == "help":
-		println(help_messages)
 
 	default:
+		fmt.Println("Finally get default")
 	}
 }
 
-func arguments() string {
-	args := os.Args
-	if len(args) < 2 {
+func arguments() (args []string) {
+	args = os.Args
+	if len(args) < 2 || args[1] == "" {
 		fmt.Println("not enought arguments")
-		os.Exit(0)
+		return
 	}
-	return args[1]
+	return args
 }
 
 func PathExist(subPath string) bool {
