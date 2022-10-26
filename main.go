@@ -7,37 +7,64 @@ import (
 	"strings"
 )
 
+func getJson(str string) (json string) {
+	var start, end int32
+
+	var i int32
+	for i = 0; i < int32(len(str)); i++ {
+		if str[i] == '{' {
+			start = i
+			break
+		}
+	}
+
+	for i = int32(len(str)) - 1; i >= 0; i-- {
+		if str[i] == '}' {
+			end = i
+			break
+		}
+	}
+
+	fmt.Println(str[start : end+1])
+
+	return str[start:end]
+}
+
 func main() {
-	args := arguments()
+	query := arguments()
+	fmt.Println(query[2])
+	getJson(query[2])
 
 	switch {
-	case len(args) >= 4:
-		switch args[3] {
-		case "find":
+	case len(query) >= 3:
+		switch {
+		case strings.HasPrefix(query[2], "find"):
 			println("arg is find")
 
-		case "insert":
+		case strings.HasPrefix(query[2], "insert"):
 			println("arg is insert")
 
-		case "update":
+			fmt.Println("data is : ", query[3:])
+
+		case strings.HasPrefix(query[2], "update"):
 			println("arg is update")
 
-		case "delete":
+		case strings.HasPrefix(query[2], "delete"):
 			println("arg is delete")
 		} // end switch args[3]
 
-	case len(args) == 3:
+	case len(query) == 3:
 		println("Err query not complet")
-	case len(args) == 2:
+	case len(query) == 2:
 
-		switch args[1] {
+		switch query[1] {
 
 		case "dbs":
 			ListDir("")
 		case "help":
 			println(help_messages)
 		default:
-			ListDir(args[1])
+			ListDir(query[1])
 		}
 
 	default:
@@ -51,7 +78,7 @@ func arguments() (args []string) {
 		fmt.Println("not enought arguments")
 		return
 	}
-	return args
+	return strings.Split(args[1], ".")
 }
 
 func PathExist(subPath string) bool {
@@ -82,6 +109,68 @@ func ListDir(path string) {
 	println(path, "is impty")
 }
 
+// documents /////////////////////////////////////////////////
+
+// Update update document data
+func Insert(data string) (err error) {
+	// TODO add ''where'' statment ensteade serial
+	err = os.WriteFile(GenSerial(6), []byte(data), 0644)
+	if err != nil {
+		fmt.Println("Insert ", err)
+	}
+	return
+}
+
+// rootPath = "/Users/fedora/.mydb/test/"
+
+// Select reads data form docs
+func Select(path string) (data string, err error) {
+
+	bdata, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	return string(bdata), nil
+}
+
+// Update update document data
+func Update(serial, data string) (err error) {
+
+	// TODO add ''where'' statment ensteade serial
+
+	err = os.WriteFile(serial, []byte(data), 0644)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Delete remove document
+func Delete(path string) (err error) {
+	err = os.Rename(path, ".Crash/"+path)
+	if err != nil {
+		return err
+	}
+	return
+}
+
+// GenSerial generate serial for Doc
+func GenSerial(length int) (serial string) {
+	var i int
+	for i = 0; i < length; i++ {
+		serial += Latters[rand.Intn(ListLen)+1]
+	}
+	return serial
+}
+
+func getIndexes(path string) []string {
+	data, err := Select(path)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return strings.Split(string(data), " ")
+}
+
 // data bases //////////////////////////////////////////////////////
 
 // CreateDB create db TODO return this directly
@@ -109,57 +198,6 @@ func RemoveDB(dbName string) (err error) {
 // Rename rename db.
 func RenameDB(oldPath, newPath string) (err error) {
 	return os.Rename(oldPath, newPath)
-}
-
-// documents /////////////////////////////////////////////////
-
-// rootPath = "/Users/fedora/.mydb/test/"
-// Update update document data
-func Update(serial, data string) (err error) {
-
-	// TODO add ''where'' statment ensteade serial
-
-	err = os.WriteFile(serial, []byte(data), 0644)
-	if err != nil {
-		return
-	}
-	return
-}
-
-// Select reads data form docs
-func Select(path string) (data string, err error) {
-
-	bdata, err := os.ReadFile(path)
-	if err != nil {
-		return "", err
-	}
-	return string(bdata), nil
-}
-
-// Delete remove document
-func Delete(path string) (err error) {
-	err = os.Rename(path, ".Crash/"+path)
-	if err != nil {
-		return err
-	}
-	return
-}
-
-// GenSerial generate serial for Doc
-func GenSerial(length int) (serial string) {
-	var i int
-	for i = 0; i < length; i++ {
-		serial += Latters[rand.Intn(ListLen)+1]
-	}
-	return serial
-}
-
-func getIndexes(path string) []string {
-	data, err := Select(path)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return strings.Split(string(data), " ")
 }
 
 // collections //////////////////////////////////////////////////////////////////////
