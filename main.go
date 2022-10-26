@@ -17,23 +17,17 @@ func getJson(str string) (json string) {
 			break
 		}
 	}
-
 	for i = int32(len(str)) - 1; i >= 0; i-- {
 		if str[i] == '}' {
 			end = i
 			break
 		}
 	}
-
-	fmt.Println(str[start : end+1])
-
-	return str[start:end]
+	return str[start : end+1]
 }
 
 func main() {
 	query := arguments()
-	fmt.Println(query[2])
-	getJson(query[2])
 
 	switch {
 	case len(query) >= 3:
@@ -42,9 +36,12 @@ func main() {
 			println("arg is find")
 
 		case strings.HasPrefix(query[2], "insert"):
-			println("arg is insert")
 
-			fmt.Println("data is : ", query[3:])
+			path := rootPath + query[0] + "/" + query[1] + "/"
+			Insert(path, getJson(query[2]))
+
+			println("arg is insert")
+			println("data is ", query[2])
 
 		case strings.HasPrefix(query[2], "update"):
 			println("arg is update")
@@ -70,6 +67,68 @@ func main() {
 	default:
 		fmt.Println("Finally get default")
 	}
+}
+
+// documents /////////////////////////////////////////////////
+
+// Update update document data
+func Insert(path, data string) (err error) {
+	// TODO add ''where'' statment ensteade serial
+	serial := GenSerial(LEN_SERIAL)
+
+	fmt.Println("path : ", path+serial)
+
+	err = os.WriteFile(path+serial, []byte(data), 0644)
+	if err != nil {
+		fmt.Println("Insert ", err)
+		return
+	}
+
+	f, err := os.OpenFile(path+"/indexes", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	defer f.Close()
+
+	if _, err = f.WriteString(serial + " "); err != nil {
+		fmt.Println("Err save indexes ", err)
+	}
+
+	return
+}
+
+// rootPath = "/Users/fedora/.mydb/test/"
+
+// Select reads data form docs
+func Select(path string) (data string, err error) {
+
+	bdata, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	return string(bdata), nil
+}
+
+// Update update document data
+func Update(serial, data string) (err error) {
+
+	// TODO add ''where'' statment ensteade serial
+
+	err = os.WriteFile(serial, []byte(data), 0644)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Delete remove document
+func Delete(path string) (err error) {
+	err = os.Rename(path, ".Crash/"+path)
+	if err != nil {
+		return err
+	}
+	return
 }
 
 func arguments() (args []string) {
@@ -107,51 +166,6 @@ func ListDir(path string) {
 		return
 	}
 	println(path, "is impty")
-}
-
-// documents /////////////////////////////////////////////////
-
-// Update update document data
-func Insert(data string) (err error) {
-	// TODO add ''where'' statment ensteade serial
-	err = os.WriteFile(GenSerial(6), []byte(data), 0644)
-	if err != nil {
-		fmt.Println("Insert ", err)
-	}
-	return
-}
-
-// rootPath = "/Users/fedora/.mydb/test/"
-
-// Select reads data form docs
-func Select(path string) (data string, err error) {
-
-	bdata, err := os.ReadFile(path)
-	if err != nil {
-		return "", err
-	}
-	return string(bdata), nil
-}
-
-// Update update document data
-func Update(serial, data string) (err error) {
-
-	// TODO add ''where'' statment ensteade serial
-
-	err = os.WriteFile(serial, []byte(data), 0644)
-	if err != nil {
-		return
-	}
-	return
-}
-
-// Delete remove document
-func Delete(path string) (err error) {
-	err = os.Rename(path, ".Crash/"+path)
-	if err != nil {
-		return err
-	}
-	return
 }
 
 // GenSerial generate serial for Doc
@@ -206,6 +220,14 @@ func RenameDB(oldPath, newPath string) (err error) {
 // CreateCl create collection
 func CreateCl(cPath string) (colname string, err error) { // db and collection Path
 	err = os.MkdirAll(rootPath+cPath+"/.Trash/", 0755)
+	if err != nil {
+		return "", err
+	}
+	f, err := os.Create(rootPath + cPath + "/indexes")
+	if err != nil {
+		return "", err
+	}
+	f.Close()
 	return colname, err
 }
 
