@@ -33,15 +33,12 @@ func main() {
 	case len(query) >= 3:
 		switch {
 		case strings.HasPrefix(query[2], "find"):
-			println("arg is find")
+			fmt.Println(" find by ", getJson(query[2]))
 
 		case strings.HasPrefix(query[2], "insert"):
-
 			path := rootPath + query[0] + "/" + query[1] + "/"
 			Insert(path, getJson(query[2]))
-
-			println("arg is insert")
-			println("data is ", query[2])
+			println("insert", getJson(query[2]))
 
 		case strings.HasPrefix(query[2], "update"):
 			println("arg is update")
@@ -50,18 +47,18 @@ func main() {
 			println("arg is delete")
 		} // end switch args[3]
 
-	case len(query) == 3:
-		println("Err query not complet")
 	case len(query) == 2:
+		println("Err query not complet")
+	case len(query) == 1:
 
-		switch query[1] {
+		switch query[0] {
 
 		case "dbs":
 			ListDir("")
 		case "help":
 			println(help_messages)
 		default:
-			ListDir(query[1])
+			ListDir(query[0])
 		}
 
 	default:
