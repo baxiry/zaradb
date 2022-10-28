@@ -5,25 +5,14 @@ import (
 	"math/rand"
 	"os"
 	"strings"
+
+	"github.com/tidwall/gjson"
 )
 
-func getJson(str string) (json string) {
-	var start, end int32
-
-	var i int32
-	for i = 0; i < int32(len(str)); i++ {
-		if str[i] == '{' {
-			start = i
-			break
-		}
-	}
-	for i = int32(len(str)) - 1; i >= 0; i-- {
-		if str[i] == '}' {
-			end = i
-			break
-		}
-	}
-	return str[start : end+1]
+func getId(json string) string {
+	value := gjson.Get(json, "_id")
+	println(value.String())
+	return value.String()
 }
 
 func main() {
@@ -34,6 +23,11 @@ func main() {
 		switch {
 		case strings.HasPrefix(query[2], "find"):
 			fmt.Println(" find by ", getJson(query[2]))
+			getId(query[2])
+			d, err := Select(rootPath + query[0] + "/" + query[1] + "/" + getId(query[2]))
+
+			fmt.Println(err)
+			fmt.Println("data is ", d)
 
 		case strings.HasPrefix(query[2], "insert"):
 			path := rootPath + query[0] + "/" + query[1] + "/"
@@ -64,6 +58,25 @@ func main() {
 	default:
 		fmt.Println("Finally get default")
 	}
+}
+
+func getJson(str string) (json string) {
+	var start, end int32
+
+	var i int32
+	for i = 0; i < int32(len(str)); i++ {
+		if str[i] == '{' {
+			start = i
+			break
+		}
+	}
+	for i = int32(len(str)) - 1; i >= 0; i-- {
+		if str[i] == '}' {
+			end = i
+			break
+		}
+	}
+	return str[start : end+1]
 }
 
 // documents /////////////////////////////////////////////////
