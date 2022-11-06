@@ -11,47 +11,49 @@ import (
 var wg sync.WaitGroup
 
 func main() {
-
 	path := "example.data"
-	file, err := os.Open(path)
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		panic(err)
+
+		println(err)
 	}
 	defer file.Close()
 
-	data := "Hi_World! "
-	file2, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file2, err := os.Open(path)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer file2.Close()
 
+	// data := "Hi_World! "
+
 	start := time.Now()
 
 	src := ""
 
 	for i := 0; i < 1000000; i++ {
-		// src = getVal(file, int64(i+34))
-		AppendData(file2, data)
+
+		//	AppendData(file, data)
+		src = getVal(file2, int64(i))
 	}
 
 	fmt.Println(src)
 	fmt.Println("Done ", time.Since(start))
-
+	fmt.Println("Zise", GetFileSize(path))
 }
 
 func AppendData(file *os.File, data string) {
-
 	_, err := file.WriteString(data)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 }
 
 func getVal(file *os.File, at int64) string {
 	buffer := make([]byte, 10)
 	// read at
+
 	n, err := file.ReadAt(buffer, at)
 	if err != nil && err != io.EOF {
 		panic(err)
