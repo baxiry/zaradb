@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -26,16 +27,15 @@ func main() {
 	}
 	defer file2.Close()
 
-	// data := "Hi_World! "
+	data := "Hi__World! "
 
 	start := time.Now()
 
 	src := ""
 
-	for i := 0; i < 1000000; i++ {
-
-		//	AppendData(file, data)
-		src = getVal(file2, int64(i))
+	for i := 0; i < 10; i++ {
+		AppendData(file, data+strconv.Itoa(i))
+		//src = getVal(file2, int64(i))
 	}
 
 	fmt.Println(src)
@@ -43,17 +43,19 @@ func main() {
 	fmt.Println("Zise", GetFileSize(path))
 }
 
-func AppendData(file *os.File, data string) {
-	_, err := file.WriteString(data)
-	if err != nil {
-		panic(err)
-	}
+// AppendData to file opend with os.O_APPEND|os.O_CREATE|os.O_WRONLY params
+func AppendData(file *os.File, data string) (err error) {
+	a, err := file.WriteString(data)
+
+	println("a is : ", a)
+	fmt.Println("size : ")
+	return
 }
 
 func getVal(file *os.File, at int64) string {
 	buffer := make([]byte, 10)
-	// read at
 
+	// read at
 	n, err := file.ReadAt(buffer, at)
 	if err != nil && err != io.EOF {
 		panic(err)
