@@ -17,6 +17,7 @@ func getId(json string) string {
 
 func main() {
 	query := arguments()
+	fmt.Println("query is : ", query)
 
 	switch {
 	case len(query) >= 3:
@@ -24,9 +25,12 @@ func main() {
 		case strings.HasPrefix(query[2], "find"):
 			fmt.Println(" find by ", getJson(query[2]))
 			getId(query[2])
-			d, err := Select(rootPath + query[0] + "/" + query[1] + "/" + getId(query[2]))
 
-			fmt.Println(err)
+			d, err := Select(rootPath + query[0] + "/" + query[1] + "/" + getId(query[2]))
+			if err != nil {
+				fmt.Println("error is :", err)
+			}
+
 			fmt.Println("data is ", d)
 
 		case strings.HasPrefix(query[2], "insert"):
