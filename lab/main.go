@@ -6,65 +6,71 @@ import (
 	"os"
 	"strconv"
 	"sync"
-	"time"
 )
 
 var wg sync.WaitGroup
 
+func genData(n int) (data string) {
+	num := strconv.Itoa(n)
+	data = num
+	for i := 0; i < 10-len(num); i++ {
+		data += "_"
+
+	}
+	return data
+}
+
 func main() {
 	path := "example.data"
-	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-
-		println(err)
-	}
-	defer file.Close()
-
-	file2, err := os.Open(path)
+	file, err := Opendb(path)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer file2.Close()
-
-	data := "Hi__World! "
-
-	start := time.Now()
+	defer file.Close()
 
 	src := ""
 
-	for i := 0; i < 10; i++ {
-		AppendData(file, data+strconv.Itoa(i))
-		//src = getVal(file2, int64(i))
+	for i := 0; i < 1000; i++ {
+		AppendData(file, genData(i))
 	}
 
-	fmt.Println(src)
-	fmt.Println("Done ", time.Since(start))
-	fmt.Println("Zise", GetFileSize(path))
+	fmt.Println("size", FileSize(path))
+
+	for i := 0; i < 1000; i++ {
+		src = getVal(file, int64(10*i), 10)
+		fmt.Println(src)
+	}
+
 }
 
-// AppendData to file opend with os.O_APPEND|os.O_CREATE|os.O_WRONLY params
+// AppendData to file
 func AppendData(file *os.File, data string) (err error) {
-	a, err := file.WriteString(data)
-
-	println("a is : ", a)
-	fmt.Println("size : ")
+	lnb, err := file.WriteString(data)
+	println("len bytes is : ", lnb)
 	return
 }
 
-func getVal(file *os.File, at int64) string {
-	buffer := make([]byte, 10)
+func getVal(file *os.File, at int64, ln int) string {
+	buffer := make([]byte, ln)
 
 	// read at
 	n, err := file.ReadAt(buffer, at)
 	if err != nil && err != io.EOF {
+		fmt.Println("file size is : ", FileSize(file.Name()))
+		fmt.Println("at is ", at)
 		panic(err)
 	}
 	// out the buffer content
 	return string(buffer[:n])
 }
 
-func GetFileSize(path string) int64 {
+func Opendb(path string) (*os.File, error) {
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
+	return file, err
+}
+
+func FileSize(path string) int64 {
 	file, err := os.Stat(path)
 	if err != nil {
 		fmt.Println(err)
@@ -73,7 +79,7 @@ func GetFileSize(path string) int64 {
 	return file.Size()
 }
 
-func IsExest(path string) bool {
+func IsExist(path string) bool {
 	if _, err := os.Stat(path); err == nil {
 		return true
 	}
