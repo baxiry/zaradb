@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/tidwall/gjson"
@@ -34,30 +33,21 @@ func main() {
 
 }
 
-func getId(json string) string {
-	value := gjson.Get(json, "_id")
-	println(value.String())
-	return value.String()
+func Opendb(path string) (*os.File, error) {
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
+	return file, err
 }
 
-func genData(n int) (data string) {
-	num := strconv.Itoa(n)
-	data = num
-	for i := 0; i < 10-len(num); i++ {
-		data += "_"
-
-	}
-	return data
+// AppendData appends data string to file
+// return len or size of file and err
+func AppendData(file *os.File, data string) (int, error) {
+	lenByte, err := file.WriteString(data)
+	return lenByte, err
 }
 
-// AppendData to file
-func AppendData(file *os.File, data string) (err error) {
-	lnb, err := file.WriteString(data)
-	println("len bytes is : ", lnb)
-	return
-}
-
-func getVal(file *os.File, at int64, ln int) string {
+// GetVal return data string.
+// take file pointr, at int64 & len of data will read
+func GetVal(file *os.File, at int64, ln int) string {
 	buffer := make([]byte, ln)
 
 	// read at
@@ -71,11 +61,14 @@ func getVal(file *os.File, at int64, ln int) string {
 	return string(buffer[:n])
 }
 
-func Opendb(path string) (*os.File, error) {
-	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
-	return file, err
+// getField get json field from json string
+func getField(field, json string) string {
+	value := gjson.Get(json, field)
+	//println(value.String())
+	return value.String()
 }
 
+// check file size
 func FileSize(path string) int64 {
 	file, err := os.Stat(path)
 	if err != nil {
@@ -85,12 +78,15 @@ func FileSize(path string) int64 {
 	return file.Size()
 }
 
+// check if path is exist
 func IsExist(path string) bool {
 	if _, err := os.Stat(path); err == nil {
 		return true
 	}
 	return false
 }
+
+// simplest query language
 func queryLang() {
 	query := arguments()
 	fmt.Println("query is : ", query)
@@ -140,7 +136,7 @@ func queryLang() {
 	}
 }
 
-func getJson(str string) (json string) {
+func getQueryJson(str string) (json string) {
 	var start, end int32
 
 	var i int32
@@ -158,8 +154,6 @@ func getJson(str string) (json string) {
 	}
 	return str[start : end+1]
 }
-
-// documents /////////////////////////////////////////////////
 
 // Update update document data
 func Insert(path, data string) (err error) {
@@ -194,6 +188,7 @@ func arguments() (args []string) {
 	return strings.Split(args[1], ".")
 }
 
+// /////////////////////////////////////////////////////////////////////////////////////
 func PathExist(subPath string) bool {
 	_, err := os.Stat(rootPath + subPath)
 	if os.IsNotExist(err) {
