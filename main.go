@@ -2,12 +2,37 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
+	"io"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/tidwall/gjson"
 )
+
+func main() {
+	path := "example.db"
+	file, err := Opendb(path)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer file.Close()
+
+	src := ""
+
+	for i := 0; i < 1000; i++ {
+		AppendData(file, genData(i))
+	}
+
+	fmt.Println("size", FileSize(path))
+
+	for i := 0; i < 1000; i++ {
+		src = getVal(file, int64(10*i), 10)
+		fmt.Println(src)
+	}
+
+}
 
 func getId(json string) string {
 	value := gjson.Get(json, "_id")
@@ -15,7 +40,58 @@ func getId(json string) string {
 	return value.String()
 }
 
-func main() {
+func genData(n int) (data string) {
+	num := strconv.Itoa(n)
+	data = num
+	for i := 0; i < 10-len(num); i++ {
+		data += "_"
+
+	}
+	return data
+}
+
+// AppendData to file
+func AppendData(file *os.File, data string) (err error) {
+	lnb, err := file.WriteString(data)
+	println("len bytes is : ", lnb)
+	return
+}
+
+func getVal(file *os.File, at int64, ln int) string {
+	buffer := make([]byte, ln)
+
+	// read at
+	n, err := file.ReadAt(buffer, at)
+	if err != nil && err != io.EOF {
+		fmt.Println("file size is : ", FileSize(file.Name()))
+		fmt.Println("at is ", at)
+		panic(err)
+	}
+	// out the buffer content
+	return string(buffer[:n])
+}
+
+func Opendb(path string) (*os.File, error) {
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
+	return file, err
+}
+
+func FileSize(path string) int64 {
+	file, err := os.Stat(path)
+	if err != nil {
+		fmt.Println(err)
+		return -1
+	}
+	return file.Size()
+}
+
+func IsExist(path string) bool {
+	if _, err := os.Stat(path); err == nil {
+		return true
+	}
+	return false
+}
+func queryLang() {
 	query := arguments()
 	fmt.Println("query is : ", query)
 
@@ -87,28 +163,7 @@ func getJson(str string) (json string) {
 
 // Update update document data
 func Insert(path, data string) (err error) {
-	// TODO add ''where'' statment ensteade serial
-	serial := GenSerial(LEN_SERIAL)
-
-	fmt.Println("path : ", path+serial)
-
-	err = os.WriteFile(path+serial, []byte(data), 0644)
-	if err != nil {
-		fmt.Println("Insert ", err)
-		return
-	}
-
-	f, err := os.OpenFile(path+"/indexes", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	defer f.Close()
-
-	if _, err = f.WriteString(serial + " "); err != nil {
-		fmt.Println("Err save indexes ", err)
-	}
-
+	// TODO add ''where'' statment insteade by serial
 	return
 }
 
@@ -116,32 +171,17 @@ func Insert(path, data string) (err error) {
 
 // Select reads data form docs
 func Select(path string) (data string, err error) {
-
-	bdata, err := os.ReadFile(path)
-	if err != nil {
-		return "", err
-	}
-	return string(bdata), nil
+	return data, nil
 }
 
 // Update update document data
 func Update(serial, data string) (err error) {
-
 	// TODO add ''where'' statment ensteade serial
-
-	err = os.WriteFile(serial, []byte(data), 0644)
-	if err != nil {
-		return
-	}
 	return
 }
 
 // Delete remove document
 func Delete(path string) (err error) {
-	err = os.Rename(path, ".Crash/"+path)
-	if err != nil {
-		return err
-	}
 	return
 }
 
@@ -182,24 +222,19 @@ func ListDir(path string) {
 	println(path, "is impty")
 }
 
-// GenSerial generate serial for Doc
-func GenSerial(length int) (serial string) {
-	var i int
-	for i = 0; i < length; i++ {
-		serial += Latters[rand.Intn(ListLen)+1]
-	}
-	return serial
-}
-
 func getIndexes(path string) []string {
-	data, err := Select(path)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return strings.Split(string(data), " ")
+	return []string{}
 }
 
-// data bases //////////////////////////////////////////////////////
+// Rename rename db.
+func RenameDB(oldPath, newPath string) (err error) {
+	return os.Rename(oldPath, newPath)
+}
+
+// Remove remove db to .Trash dir
+func RemoveDB(dbName string) (err error) {
+	return RenameDB(dbName, ".Trash/"+dbName)
+}
 
 // CreateDB create db TODO return this directly
 func CreateDB(dbName string) (dbname string, err error) {
@@ -216,46 +251,4 @@ func CreateDB(dbName string) (dbname string, err error) {
 // DeleteDB delete db (free hard drive).
 func DeleteDB(dbName string) string {
 	return dbName + " db deleted!"
-}
-
-// Remove remove db to .Trash dir
-func RemoveDB(dbName string) (err error) {
-	return RenameDB(dbName, ".Trash/"+dbName)
-}
-
-// Rename rename db.
-func RenameDB(oldPath, newPath string) (err error) {
-	return os.Rename(oldPath, newPath)
-}
-
-// collections //////////////////////////////////////////////////////////////////////
-// type Collection string
-
-// CreateCl create collection
-func CreateCl(cPath string) (colname string, err error) { // db and collection Path
-	err = os.MkdirAll(rootPath+cPath+"/.Trash/", 0755)
-	if err != nil {
-		return "", err
-	}
-	f, err := os.Create(rootPath + cPath + "/indexes")
-	if err != nil {
-		return "", err
-	}
-	f.Close()
-	return colname, err
-}
-
-// TODO Delete delete collection (free hard drive). //
-func DeleteCl(cPath string) string {
-	return cPath + " collection deleted!"
-}
-
-// Remove remove db to .Trash dir
-func RemoveCl(cPath string) (err error) {
-	return RenameCl(cPath, ".Trash/"+cPath)
-}
-
-// Rename rename db.
-func RenameCl(oldPath, newPath string) (err error) {
-	return os.Rename(oldPath, newPath)
 }
