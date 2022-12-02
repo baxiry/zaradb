@@ -1,17 +1,5 @@
 package main
 
-import "strconv"
-
-func genData(n int) (data string) {
-	num := strconv.Itoa(n)
-	data = num
-	for i := 0; i < 10-len(num); i++ {
-		data += "_"
-
-	}
-	return data
-}
-
 var jsonString = `{
     "_id": "6346bf270b115859bfbca0fa",
     "index": 0,

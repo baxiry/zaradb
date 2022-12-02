@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/tidwall/gjson"
@@ -18,21 +19,21 @@ func main() {
 	}
 	defer file.Close()
 
-	src := ""
+	AppendData(file, "hello")
 
-	for i := 0; i < 1000; i++ {
-		AppendData(file, genData(i))
-	}
-
-	fmt.Println("size", FileSize(path))
-
-	for i := 0; i < 1000; i++ {
-		src = getVal(file, int64(10*i), 10)
-		fmt.Println(src)
-	}
-
+	src := GetVal(file, 10, 0)
+	fmt.Println(src)
 }
 
+func genData(n int) (data string) {
+	num := strconv.Itoa(n)
+	data = num
+	for i := 0; i < 10-len(num); i++ {
+		data += "_"
+
+	}
+	return data
+}
 func Opendb(path string) (*os.File, error) {
 	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
 	return file, err
@@ -90,53 +91,9 @@ func IsExist(path string) bool {
 func queryLang() {
 	query := arguments()
 	fmt.Println("query is : ", query)
-
-	switch {
-	case len(query) >= 3:
-		switch {
-		case strings.HasPrefix(query[2], "find"):
-			fmt.Println(" find by ", getJson(query[2]))
-			getId(query[2])
-
-			d, err := Select(rootPath + query[0] + "/" + query[1] + "/" + getId(query[2]))
-			if err != nil {
-				fmt.Println("error is :", err)
-			}
-
-			fmt.Println("data is ", d)
-
-		case strings.HasPrefix(query[2], "insert"):
-			path := rootPath + query[0] + "/" + query[1] + "/"
-			Insert(path, getJson(query[2]))
-			println("insert", getJson(query[2]))
-
-		case strings.HasPrefix(query[2], "update"):
-			println("arg is update")
-
-		case strings.HasPrefix(query[2], "delete"):
-			println("arg is delete")
-		} // end switch args[3]
-
-	case len(query) == 2:
-		println("Err query not complet")
-	case len(query) == 1:
-
-		switch query[0] {
-
-		case "dbs":
-			ListDir("")
-		case "help":
-			println(help_messages)
-		default:
-			ListDir(query[0])
-		}
-
-	default:
-		fmt.Println("Finally get default")
-	}
 }
 
-func getQueryJson(str string) (json string) {
+func getJson(str string) (json string) {
 	var start, end int32
 
 	var i int32
