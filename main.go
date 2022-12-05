@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/tidwall/gjson"
 )
+
+var lentCol = 255
 
 func main() {
 	path := "example.db"
@@ -25,25 +26,10 @@ func main() {
 	fmt.Println(src)
 }
 
-func genData(n int) (data string) {
-	num := strconv.Itoa(n)
-	data = num
-	for i := 0; i < 10-len(num); i++ {
-		data += "_"
-
-	}
-	return data
-}
+// Opendb opens | create  new file db
 func Opendb(path string) (*os.File, error) {
 	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
 	return file, err
-}
-
-// AppendData appends data string to file
-// return len or size of file and err
-func AppendData(file *os.File, data string) (int, error) {
-	lenByte, err := file.WriteString(data)
-	return lenByte, err
 }
 
 // GetVal return data string.
@@ -60,6 +46,13 @@ func GetVal(file *os.File, at int64, ln int) string {
 	}
 	// out the buffer content
 	return string(buffer[:n])
+}
+
+// AppendData appends data string to file
+// return len or size of file and err
+func AppendData(file *os.File, data string) (int, error) {
+	lenByte, err := file.WriteString(data)
+	return lenByte, err
 }
 
 // getField get json field from json string

@@ -3,6 +3,7 @@ module mydb
 go 1.19
 
 require (
+	github.com/mattn/go-sqlite3 v1.14.16 // indirect
 	github.com/tidwall/btree v1.4.2 // indirect
 	github.com/tidwall/buntdb v1.2.10 // indirect
 	github.com/tidwall/gjson v1.14.3 // indirect
