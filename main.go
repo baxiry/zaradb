@@ -4,45 +4,64 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/tidwall/gjson"
 )
 
-var lentCol = 255
-
 func main() {
-	path := "example.db"
-	file, err := Opendb(path)
+	file, err := Opendbs("example.db")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer file.Close()
 
-	AppendData(file, "hello")
+	start := time.Now()
+	data := ""
+	size := 0
+	for i := 0; i < 10000000; i++ {
+		data = " hello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello word"
+		size += len(data)
+		AppendData(file, strconv.Itoa(i)+data)
+	}
 
-	src := GetVal(file, 10, 0)
-	fmt.Println(src)
+	fmt.Println("write duration: ", time.Since(start))
+
+	start = time.Now()
+	leen := 0
+	op := 0
+
+	for i := 0; i < 10000000000; i += 100 {
+		leen += len(GetVal(file, int64(i), len(data)))
+		op++
+	}
+
+	fmt.Println("len of geted data : ", leen)
+	fmt.Println("no op", op)
+	fmt.Println("duration read : ", time.Since(start))
 }
 
+func openIndexes() {}
+
 // Opendb opens | create  new file db
-func Opendb(path string) (*os.File, error) {
+func Opendbs(path string) (*os.File, error) {
 	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
 	return file, err
 }
 
 // GetVal return data string.
 // take file pointr, at int64 & len of data will read
-func GetVal(file *os.File, at int64, ln int) string {
-	buffer := make([]byte, ln)
+func GetVal(file *os.File, at int64, buff int) string {
+	buffer := make([]byte, buff)
 
 	// read at
 	n, err := file.ReadAt(buffer, at)
 	if err != nil && err != io.EOF {
-		fmt.Println("file size is : ", FileSize(file.Name()))
-		fmt.Println("at is ", at)
-		panic(err)
+		fmt.Println(err)
+		return ""
 	}
 	// out the buffer content
 	return string(buffer[:n])
@@ -60,16 +79,6 @@ func getField(field, json string) string {
 	value := gjson.Get(json, field)
 	//println(value.String())
 	return value.String()
-}
-
-// check file size
-func FileSize(path string) int64 {
-	file, err := os.Stat(path)
-	if err != nil {
-		fmt.Println(err)
-		return -1
-	}
-	return file.Size()
 }
 
 // check if path is exist
@@ -145,26 +154,6 @@ func PathExist(subPath string) bool {
 		return false
 	}
 	return true
-}
-
-func ListDir(path string) {
-	dbs, err := os.ReadDir(rootPath + path)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	dirs := 0
-	for _, dir := range dbs {
-		if dir.IsDir() && string(dir.Name()[0]) != "." {
-			dirs++
-			print(dir.Name(), " ")
-		}
-	}
-	if dirs > 0 {
-		println()
-		return
-	}
-	println(path, "is impty")
 }
 
 func getIndexes(path string) []string {
