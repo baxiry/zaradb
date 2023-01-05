@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/tidwall/gjson"
 )
@@ -19,32 +17,20 @@ func main() {
 	}
 	defer file.Close()
 
-	start := time.Now()
-	data := ""
-	size := 0
-	for i := 0; i < 10000000; i++ {
-		data = " hello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello wordhello word"
-		size += len(data)
-		AppendData(file, strconv.Itoa(i)+data)
+	data := "?hhhhhhhhhhتتتتتتتتتت?"
+	for i := 0; i < 10; i++ {
+		AppendData(file, data)
 	}
+	ld := len(data)
 
-	fmt.Println("write duration: ", time.Since(start))
-
-	start = time.Now()
-	leen := 0
-	op := 0
-
-	for i := 0; i < 10000000000; i += 100 {
-		leen += len(GetVal(file, int64(i), len(data)))
-		op++
+	lenfile, _ := os.Stat("example.db")
+	lf := lenfile.Size()
+	for i := 0; i < int(lf); i += ld {
+		data = GetVal(file, int64(i), ld)
+		fmt.Println(data)
 	}
-
-	fmt.Println("len of geted data : ", leen)
-	fmt.Println("no op", op)
-	fmt.Println("duration read : ", time.Since(start))
+	fmt.Println("len data ", len(data))
 }
-
-func openIndexes() {}
 
 // Opendb opens | create  new file db
 func Opendbs(path string) (*os.File, error) {

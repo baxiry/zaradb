@@ -18,8 +18,8 @@ func main() {
 	defer db.Close()
 	start := time.Now()
 	db.Update(func(tx *buntdb.Tx) error {
-		for i := 0; i < 1000000; i++ {
-			tx.Set(strconv.Itoa(i), `{"name":{"first":"Tom","last":"Joh\nnson"},"age":38}`, nil)
+		for i := 0; i < 6000; i++ {
+			tx.Set(strconv.Itoa(i), `{"name":{"first":"Tom","last":"Joh\nnson"},"age":38,"list":[{"first":"Tom","last":"Joh\nnson"},{"first":"Tom","last":"Joh\nnson"},{"first":"Tom","last":"Joh\nnson"},{"first":"Tom","last":"Joh\nnson"},{"first":"Tom","last":"Joh\nnson"},{"first":"Tom","last":"Joh\nnson"},{"first":"Tom","last":"Joh\nnson"},{"first":"Tom","last":"Joh\nnson"},{"first":"Tom","last":"Joh\nnson"},{"first":"Tom","last":"Joh\nnson"},{"first":"Tom","last":"Joh\nnson"},]}`, nil)
 		}
 		return nil
 	})
@@ -41,4 +41,5 @@ func main() {
 	})
 
 	fmt.Println("read duration : ", time.Since(start))
+	time.Sleep(time.Second * 5)
 }
