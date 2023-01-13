@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
 	"os"
-	"time"
 )
 
 func ListDir(path string) {
@@ -25,9 +23,4 @@ func ListDir(path string) {
 		return
 	}
 	println(path, "is impty")
-}
-
-// seedRand , use this func suparatly for nice performence
-func seedRand() {
-	rand.Seed(time.Now().Unix())
 }

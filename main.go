@@ -10,7 +10,8 @@ import (
 )
 
 func main() {
-	file, err := Opendbs("example.db")
+	dbFile := "example.db"
+	file, err := Opendbs(dbFile)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -23,7 +24,7 @@ func main() {
 	}
 	ld := len(data)
 
-	lenfile, _ := os.Stat("example.db")
+	lenfile, _ := os.Stat(dbFile)
 	lf := lenfile.Size()
 	for i := 0; i < int(lf); i += ld {
 		data = GetVal(file, int64(i), ld)
