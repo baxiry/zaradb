@@ -4,9 +4,9 @@ import (
 	"sync"
 )
 
-var wg sync.WaitGroup
+const rootPath = "/Users/fedora/.mydb/"
 
-var rootPath = "/Users/fedora/.mydb/"
+var wg sync.WaitGroup
 
 var help_messages = `command & description:
 -----------------------------------------------------------------

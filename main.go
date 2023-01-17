@@ -5,12 +5,15 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/tidwall/gjson"
 )
 
 func main() {
+	startTime := time.Now()
 	dbFile := "example.db"
+
 	file, err := Opendbs(dbFile)
 	if err != nil {
 		fmt.Println(err)
@@ -18,19 +21,27 @@ func main() {
 	}
 	defer file.Close()
 
-	data := "?hhhhhhhhhhتتتتتتتتتت?"
-	for i := 0; i < 10; i++ {
+	data := "tested data ok"
+	for i := 0; i < 1000000; i++ {
 		AppendData(file, data)
 	}
-	ld := len(data)
 
-	lenfile, _ := os.Stat(dbFile)
-	lf := lenfile.Size()
-	for i := 0; i < int(lf); i += ld {
-		data = GetVal(file, int64(i), ld)
-		fmt.Println(data)
+	fmt.Println("Duration: ", time.Since(startTime))
+
+	startTime = time.Now()
+	stat, err := os.Stat(dbFile)
+	if err != nil {
 	}
-	fmt.Println("len data ", len(data))
+
+	lenData := len(data)
+	lend := 0
+	for i := 0; i < 1000000*lenData; i += lenData {
+		lend += len(GetVal(file, int64(i), lenData))
+	}
+
+	fmt.Println(lend)
+	fmt.Println(stat.Size())
+	fmt.Println("Duration: ", time.Since(startTime))
 }
 
 // Opendb opens | create  new file db
