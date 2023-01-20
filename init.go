@@ -1,10 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"sync"
 )
 
 const rootPath = "/Users/fedora/.mydb/"
+
+func init() {
+	fmt.Println(rootPath)
+}
 
 var wg sync.WaitGroup
 
