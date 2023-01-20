@@ -5,13 +5,11 @@ import (
 	"io"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/tidwall/gjson"
 )
 
 func main() {
-	startTime := time.Now()
 	dbFile := "example.db"
 
 	file, err := Opendbs(dbFile)
@@ -22,26 +20,11 @@ func main() {
 	defer file.Close()
 
 	data := "tested data ok"
-	for i := 0; i < 1000000; i++ {
-		AppendData(file, data)
-	}
+	AppendData(file, data)
 
-	fmt.Println("Duration: ", time.Since(startTime))
+	getedData := GetVal(file, 0, 14)
 
-	startTime = time.Now()
-	stat, err := os.Stat(dbFile)
-	if err != nil {
-	}
-
-	lenData := len(data)
-	lend := 0
-	for i := 0; i < 1000000*lenData; i += lenData {
-		lend += len(GetVal(file, int64(i), lenData))
-	}
-
-	fmt.Println(lend)
-	fmt.Println(stat.Size())
-	fmt.Println("Duration: ", time.Since(startTime))
+	fmt.Println(getedData)
 }
 
 // Opendb opens | create  new file db
