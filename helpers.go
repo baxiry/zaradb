@@ -5,6 +5,7 @@ import (
 	"os"
 )
 
+// ListDir prints all directories
 func ListDir(path string) {
 	dbs, err := os.ReadDir(rootPath + path)
 	if err != nil {
@@ -25,6 +26,7 @@ func ListDir(path string) {
 	println(path, "is impty")
 }
 
+// PathExist check if path exists & return boolean
 func PathExist(subPath string) bool {
 	_, err := os.Stat(rootPath + subPath)
 	if os.IsNotExist(err) {
@@ -33,12 +35,13 @@ func PathExist(subPath string) bool {
 	return true
 }
 
-func getIndexes(path string) []string {
-	return []string{}
+// LastIndex return last index in table
+func LastIndex(path string) int {
+	return 0
 }
 
-// Rename rename db.
-func RenameDB(oldPath, newPath string) (err error) {
+// Rename renames db.
+func RenameDB(oldPath, newPath string) error {
 	return os.Rename(oldPath, newPath)
 }
 
@@ -48,13 +51,13 @@ func RemoveDB(dbName string) (err error) {
 }
 
 // CreateDB create db TODO return this directly
-func CreateDB(dbName string) (dbname string, err error) {
+func CreateDB(dbName string) (string, error) {
 	// _, err = os.Stat("go.mod")
 	//	if os.IsNotExist(err) {return err}
 
-	err = os.MkdirAll(rootPath+dbName+"/.Trash/", 0755)
+	err := os.MkdirAll(rootPath+dbName+"/.Trash/", 0755)
 	if err != nil {
-		return dbname, err
+		return dbName, err
 	}
 	return dbName, nil
 }
