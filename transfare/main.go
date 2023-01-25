@@ -8,11 +8,10 @@ import (
 )
 
 var (
-	localPath  = "local paht here"
-	remotePath = "rempte path here"
-	remoteIP   = "type remote path here"
-	ipAddres   = "remote ip addres here" // prefere to read it from sepatrate file
-	password   = ""                      //remote pass must be in serparate file . use Getpass function
+	localPath  = "./text.txt"
+	remotePath = "/root"
+	ipAddres   = "172.104.94.107" // prefere to read it from sepatrate file
+	password   = "d7ombot123@"    //remote pass must be in serparate file . use Getpass function
 )
 
 func main() {
@@ -36,8 +35,7 @@ func transfare(remoteIP, password string) error {
 
 func upload(client *scp.Client, localPath, remotePath string) error {
 	// upload file
-	return client.CopyFileToRemote(localPath, remotePath, &scp.FileTransferOption{})
-
+	return client.CopyDirToRemote(localPath, remotePath, &scp.DirTransferOption{})
 }
 
 // to scure app read pass form seprite file
