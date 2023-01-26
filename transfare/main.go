@@ -10,8 +10,8 @@ import (
 var (
 	localPath  = "./text.txt"
 	remotePath = "/root"
-	ipAddres   = "172.104.94.107" // prefere to read it from sepatrate file
-	password   = "d7ombot123@"    //remote pass must be in serparate file . use Getpass function
+	ipAddres   = "" // prefere to read it from sepatrate file
+	password   = "" //remote pass must be in serparate file . use Getpass function
 )
 
 func main() {
