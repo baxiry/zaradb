@@ -36,7 +36,7 @@ func AppendData(file *os.File, data string) (int, error) {
 	return lenByte, err
 }
 
-// getField get json field from json string
+// getField get field from json string
 func getField(field, json string) string {
 	value := gjson.Get(json, field)
 	//println(value.String())
@@ -51,6 +51,7 @@ func IsExist(path string) bool {
 	return false
 }
 
+// get json data from stdin argument
 func getJson(str string) (json string) {
 	var start, end int32
 

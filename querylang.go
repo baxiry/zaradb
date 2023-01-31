@@ -17,8 +17,8 @@ func Insert(path, data string) (err error) {
 // rootPath = "/Users/fedora/.mydb/test/"
 
 // Select reads data form docs
-func Select(path string) (data string, err error) {
-	return data, nil
+func Select(path string) (data string) {
+	return data
 }
 
 // Update update document data

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"sync"
 )
 
 const rootPath = "/Users/fedora/.mydb/"
@@ -11,9 +10,7 @@ func init() {
 	fmt.Println(rootPath)
 }
 
-var wg sync.WaitGroup
-
-var help_messages = `command & description:
+const help_messages = `command & description:
 -----------------------------------------------------------------
 help :
    get this help message.
