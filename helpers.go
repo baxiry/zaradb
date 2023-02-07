@@ -5,6 +5,14 @@ import (
 	"os"
 )
 
+// check if path is exist
+func IsExist(path string) bool {
+	if _, err := os.Stat(path); err == nil {
+		return true
+	}
+	return false
+}
+
 // ListDir prints all directories
 func ListDir(path string) {
 	dbs, err := os.ReadDir(rootPath + path)

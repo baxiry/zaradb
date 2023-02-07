@@ -31,3 +31,23 @@ func Update(serial, data string) (err error) {
 func Delete(path string) (err error) {
 	return
 }
+
+// get json data from stdin argument
+func getQueryJsonArgs(str string) (json string) {
+	var start, end int32
+
+	var i int32
+	for i = 0; i < int32(len(str)); i++ {
+		if str[i] == '{' {
+			start = i
+			break
+		}
+	}
+	for i = int32(len(str)) - 1; i >= 0; i-- {
+		if str[i] == '}' {
+			end = i
+			break
+		}
+	}
+	return str[start : end+1]
+}
