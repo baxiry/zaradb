@@ -8,16 +8,18 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-// Opendb opens | create  new file db
+// TODO check if named returns improves performence ?!
+
+// Opendb opens | create new file
 func Opendbs(path string) (*os.File, error) {
 	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
 	return file, err
 }
 
-// GetVal return data string.
-// take file pointr, at int64 & len of data will read
+// GetVal returns data as string.
+// it take file pointr, at int64 & len of data that will read
 func GetVal(file *os.File, at int64, buff int) string {
-	// TODO my be nice idea to make buffer global  to reuse it
+	// TODO check if reusing global buffer fast !
 	buffer := make([]byte, buff)
 
 	// read at
@@ -30,8 +32,8 @@ func GetVal(file *os.File, at int64, buff int) string {
 	return string(buffer[:n])
 }
 
-// AppendData appends data string to file
-// return len or size of file and err
+// AppendData appends data to file
+// return lenght of file or err
 func AppendData(file *os.File, data string) (int, error) {
 	lenByte, err := file.WriteString(data)
 	return lenByte, err
