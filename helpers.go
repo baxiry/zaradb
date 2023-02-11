@@ -13,7 +13,7 @@ func IsExist(path string) bool {
 	return false
 }
 
-// ListDir prints all directories
+// ListDir show all directories in path
 func ListDir(path string) {
 	dbs, err := os.ReadDir(rootPath + path)
 	if err != nil {
@@ -34,7 +34,7 @@ func ListDir(path string) {
 	println(path, "is impty")
 }
 
-// PathExist check if path exists & return boolean
+// PathExist check if path exists
 func PathExist(subPath string) bool {
 	_, err := os.Stat(rootPath + subPath)
 	if os.IsNotExist(err) {
@@ -58,7 +58,7 @@ func RemoveDB(dbName string) (err error) {
 	return RenameDB(dbName, ".Trash/"+dbName)
 }
 
-// CreateDB create db TODO return this directly
+// CreateDB create db. TODO return this directly
 func CreateDB(dbName string) (string, error) {
 	// _, err = os.Stat("go.mod")
 	//	if os.IsNotExist(err) {return err}
@@ -70,7 +70,7 @@ func CreateDB(dbName string) (string, error) {
 	return dbName, nil
 }
 
-// DeleteDB delete db (free hard drive).
+// DeleteDB deletes db. (free hard drive).
 func DeleteDB(dbName string) string {
 	return dbName + " db deleted!"
 }
