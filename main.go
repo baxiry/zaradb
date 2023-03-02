@@ -8,8 +8,22 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-func whatLen(data string) int {
-	return 0
+// get index by id
+func getIndex(id int64, indexFile *os.File) string {
+	// id here convert to at
+
+	// read indexs file
+	// TODO check if reusing global buffer fast !
+	buffer := make([]byte, 20)
+
+	// read at
+	n, err := indexFile.ReadAt(buffer, id*20)
+	if err != nil && err != io.EOF {
+		fmt.Println(err)
+		return ""
+	}
+	// out the buffer content
+	return string(buffer[:n])
 }
 
 func main() {
@@ -18,12 +32,11 @@ func main() {
 
 	file, err := Opendbs(dbFile)
 	if err != nil {
-		fmt.Println(err)
-		return
+		panic(err)
 	}
 	defer file.Close()
 
-	data := "tested data ok"
+	data := "01234567890123456789"
 	AppendData(file, data)
 
 	getedData := GetVal(file, 0, 14)
