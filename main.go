@@ -4,29 +4,32 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/tidwall/gjson"
 )
 
-// get index by id
-func getIndex(id int64, indexFile *os.File) string {
+// convertAt convert location string to at and size int64
+func convertAt(location string) (at, size int64) {
+
 	// id here convert to at
+	loc := strings.Trim(location, " ")
+	sloc := strings.Split(loc, "-")
 
-	// read indexs file
-	// TODO check if reusing global buffer fast !
-	buffer := make([]byte, 20)
+	id, _ := strconv.Atoi(sloc[0])
 
-	// read at
-	n, err := indexFile.ReadAt(buffer, id*20)
-	if err != nil && err != io.EOF {
-		fmt.Println(err)
-		return ""
-	}
-	// out the buffer content
-	return string(buffer[:n])
+	siz, _ := strconv.Atoi(sloc[1])
+
+	return int64(id), int64(siz)
 }
 
 func main() {
+
+	at, size := convertAt("1755-666666")
+	fmt.Println(at)
+	fmt.Println(size)
+	os.Exit(0)
 
 	dbFile := "../example.db"
 
