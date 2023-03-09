@@ -10,27 +10,44 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-// hello world how are you ?
-
 // convertAt convert location string to at and size int64
 func convertAt(location string) (at, size int64) {
-
 	// id here convert to at
 	loc := strings.Trim(location, " ")
 	sloc := strings.Split(loc, "-")
-
 	id, _ := strconv.Atoi(sloc[0])
-
 	siz, _ := strconv.Atoi(sloc[1])
-
 	return int64(id), int64(siz)
+}
+
+// NewPage create new file db page
+func NewPage(id int) {
+	// page is a file with som headrs to store data
+
+	id = id / 1000
+	fmt.Println("file name is ", id)
+
+	sid := strconv.Itoa(id)
+
+	file, err := os.Create(sid)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	// fill header file
+	for i := 0; i < 1000; i++ {
+		if _, err := file.WriteString(" ."); err != nil {
+			panic(err)
+		}
+	}
 }
 
 func main() {
 
-	at, size := convertAt("1755-666666")
-	fmt.Println(at)
-	fmt.Println(size)
+	NewFileDb(999)
+	NewFileDb(1000)
+
 	os.Exit(0)
 
 	dbFile := "../example.db"
