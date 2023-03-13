@@ -37,7 +37,7 @@ func NewPage(id int) {
 
 	// fill header file
 	for i := 0; i < 1000; i++ {
-		if _, err := file.WriteString(" ."); err != nil {
+		if _, err := file.WriteString("          "); err != nil {
 			panic(err)
 		}
 	}
@@ -45,28 +45,17 @@ func NewPage(id int) {
 
 func main() {
 
-	NewFileDb(999)
-	NewFileDb(1000)
+	NewPage(999)
 
-	os.Exit(0)
-
-	dbFile := "../example.db"
-
-	file, err := Opendbs(dbFile)
-	if err != nil {
-		panic(err)
-	}
+	file, _ := Opendbs("../example.db")
 	defer file.Close()
 
-	data := "01234567890123456789"
-	AppendData(file, data)
+	AppendData(file, "01234567890123456789 ")
 
 	getedData := GetVal(file, 0, 14)
 
 	fmt.Println(getedData)
 }
-
-// TODO check if named returns improves performence ?!
 
 // Opendb opens | create new file
 func Opendbs(path string) (*os.File, error) {
