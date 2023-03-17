@@ -10,21 +10,48 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-// convertAt convert location string to at and size int64
-func convertAt(location string) (at, size int64) {
-	// id here convert to at
-	loc := strings.Trim(location, " ")
-	sloc := strings.Split(loc, "-")
+// PageLength is count of items for each page
+const PageLength = 1000
+
+// TODO
+
+// writeIndex
+// readIndex
+
+func main() {
+
+	NewPage(999)
+
+	file, _ := Opendbs("../example.db")
+	defer file.Close()
+
+	AppendData(file, "01234567890123456789 ")
+
+	getedData := GetVal(file, 0, 14)
+
+	fmt.Println("geted data:", getedData)
+}
+
+// convertAt convert  string location to at and size int64
+func convertIndex(location string) (at, size int64) {
+
+	sloc := strings.Split(location, " ")
 	id, _ := strconv.Atoi(sloc[0])
 	siz, _ := strconv.Atoi(sloc[1])
 	return int64(id), int64(siz)
+}
+
+// getLocation take id and return pageName and indexLocation
+func getLocation(id string) (string, int) {
+	indx, _ := strconv.Atoi(id[len(id)-3:])
+	return id[:len(id)-3], indx
 }
 
 // NewPage create new file db page
 func NewPage(id int) {
 	// page is a file with som headrs to store data
 
-	id = id / 1000
+	id = id / PageLength
 	fmt.Println("file name is ", id)
 
 	sid := strconv.Itoa(id)
@@ -41,20 +68,6 @@ func NewPage(id int) {
 			panic(err)
 		}
 	}
-}
-
-func main() {
-
-	NewPage(999)
-
-	file, _ := Opendbs("../example.db")
-	defer file.Close()
-
-	AppendData(file, "01234567890123456789 ")
-
-	getedData := GetVal(file, 0, 14)
-
-	fmt.Println(getedData)
 }
 
 // Opendb opens | create new file
