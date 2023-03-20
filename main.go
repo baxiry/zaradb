@@ -11,47 +11,62 @@ import (
 )
 
 // PageLength is count of items for each page
-const PageLength = 1000
+const HeaderLength = 1000
 
-// TODO
+type Pages struct {
+	Pages map[string]*os.File
+}
 
 // writeIndex
 // readIndex
 
 func main() {
 
-	NewPage(999)
+	var db Pages
+	db.Open("../dbs")
+	defer db.Close()
 
-	file, _ := Opendbs("../example.db")
-	defer file.Close()
+	//AppendData(file, "01234567890123456789 ")
 
-	AppendData(file, "01234567890123456789 ")
-
-	getedData := GetVal(file, 0, 14)
+	getedData := GetValue("../dbs/0", 0, 14)
 
 	fmt.Println("geted data:", getedData)
 }
 
-// convertAt convert  string location to at and size int64
-func convertIndex(location string) (at, size int64) {
+// Opendb opnens all pages in root db
+func (db *Pages) Open(path string) {
+	files, err := os.ReadDir(path)
+	if err != nil {
+		fmt.Println("readDir: ", err)
+	}
 
-	sloc := strings.Split(location, " ")
-	id, _ := strconv.Atoi(sloc[0])
-	siz, _ := strconv.Atoi(sloc[1])
-	return int64(id), int64(siz)
+	for _, file := range files {
+		if !file.IsDir() {
+			continue
+		}
+
+		page, err := os.OpenFile(file.Name(), os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
+		if err != nil {
+			fmt.Println("os open file: ", err)
+		}
+		db.Pages[file.Name()] = page
+
+		fmt.Println("file", file.Name())
+	}
 }
 
-// getLocation take id and return pageName and indexLocation
-func getLocation(id string) (string, int) {
-	indx, _ := strconv.Atoi(id[len(id)-3:])
-	return id[:len(id)-3], indx
+// Close All pages
+func (db Pages) Close() {
+	for _, p := range db.Pages {
+		p.Close()
+	}
 }
 
 // NewPage create new file db page
 func NewPage(id int) {
-	// page is a file with som headrs to store data
 
-	id = id / PageLength
+	// page is a file with som headrs to store data
+	id = id / HeaderLength
 	fmt.Println("file name is ", id)
 
 	sid := strconv.Itoa(id)
@@ -64,28 +79,39 @@ func NewPage(id int) {
 
 	// fill header file
 	for i := 0; i < 1000; i++ {
-		if _, err := file.WriteString("          "); err != nil {
-			panic(err)
+		if _, err = file.WriteString("          "); err != nil {
+			fmt.Println("ok", err)
 		}
 	}
 }
 
-// Opendb opens | create new file
-func Opendbs(path string) (*os.File, error) {
-	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
-	return file, err
+// getLocation take str 'id' and returns str 'pageName' & index Location
+func getLocation(id string) (string, int) {
+	indxL, _ := strconv.Atoi(id[len(id)-3:]) // ret pageName
+	at := id[:len(id)-3]                     // ret IndexLocation
+	return at, indxL
+}
+
+// convertIndex convert string index location to at and size int64
+func convIndex(IndexLocation string) (at, size int64) {
+
+	sloc := strings.Split(IndexLocation, " ")
+	id, _ := strconv.Atoi(sloc[0])
+	siz, _ := strconv.Atoi(sloc[1])
+	return int64(id), int64(siz)
 }
 
 // GetVal returns data as string.
 // it take file pointr, at int64 & len of data that will read
-func GetVal(file *os.File, at int64, buff int) string {
+func GetValue(nfile string, at int64, buff int) string {
 	// TODO check if reusing global buffer fast !
 	buffer := make([]byte, buff)
 
 	// read at
-	n, err := file.ReadAt(buffer, at)
+	var p Pages
+	n, err := p.Pages[nfile].ReadAt(buffer, at)
 	if err != nil && err != io.EOF {
-		fmt.Println(err)
+		fmt.Println("readAt ", err)
 		return ""
 	}
 	// out the buffer content

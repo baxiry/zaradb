@@ -19,7 +19,7 @@ func Test_getLocation(t *testing.T) {
 
 func Test_convertAt(t *testing.T) {
 	location := "111 222   "
-	at, size := convertIndex(location)
+	at, size := convIndex(location)
 	if at != 111 {
 		t.Fatal("at must ber 111 not", at)
 	}
