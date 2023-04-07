@@ -10,33 +10,54 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-// PageLength is count of items for each page
-const HeaderLength = 1000
+const LenIndex = 20
 
-type Pages struct {
-	Pages map[string]*os.File
+// getLocation return fileName & indexLocation where data stored
+func getLocation(id int) (fileName string, indexLocation int64) {
+	fileName = strconv.Itoa(id / 1000)
+	indexLocation = int64(id % 1000)
+	return fileName, indexLocation * LenIndex
 }
 
-func NewPages() *Pages {
-	return &Pages{
-		Pages: make(map[string]*os.File, 0),
-	}
+// convertIndex convert string index location to at and size int64
+func convIndex(IndexLocation string) (at, size int64) {
+	sloc := strings.Split(IndexLocation, " ")
+	id, _ := strconv.Atoi(sloc[0])
+	siz, _ := strconv.Atoi(sloc[1])
+	return int64(id), int64(siz)
 }
 
+// generateIndex
 // writeIndex
 // readIndex
 
 func main() {
-	path := "/Users/fedora/repo/dbs"
+
+	fname, at := getLocation(2000)
+	fmt.Printf("page is : %s at : %d\n", fname, at)
+
+	dbPath := "/Users/fedora/repo/dbs/"
 	db := NewPages()
-	db.Open(path)
+	db.Open(dbPath)
 	defer db.Close()
 
-	AppendData(db.Pages[path+"/0"], "000000000000 ")
+	AppendData(db.Pages[dbPath+"0"], "000000000000 ")
 
-	getedData := GetValue(db.Pages[path+"/0"], 30, 20)
+	getedData := GetValue(db.Pages[dbPath+"0"], 30, 20)
 
 	fmt.Println("data:", getedData)
+}
+
+// Pages are map of file names that store data
+type Pages struct {
+	Pages map[string]*os.File
+}
+
+// NewPages creates List of files db
+func NewPages() *Pages {
+	return &Pages{
+		Pages: make(map[string]*os.File, 1),
+	}
 }
 
 // Opendb opnens all pages in root db
@@ -45,25 +66,29 @@ func (db *Pages) Open(path string) {
 	if err != nil {
 		fmt.Println("readDir: ", err)
 	}
+	if len(files) == 0 {
+		os.Create(path + "0")
+	}
 
 	for _, file := range files {
 		if file.IsDir() {
 			continue
 		}
 
-		page, err := os.OpenFile(path+"/"+file.Name(), os.O_APPEND|os.O_RDWR, 0644)
+		page, err := os.OpenFile(path+file.Name(), os.O_APPEND|os.O_RDWR, 0644)
 		if err != nil {
 			fmt.Println("os open file: ", err)
 		}
-		db.Pages[path+"/"+file.Name()] = page
-		fmt.Println("file name is ", path+"/"+file.Name())
+		db.Pages[path+file.Name()] = page
+		fmt.Println("file name is ", path+file.Name())
 	}
 }
 
 // Close All pages
 func (db *Pages) Close() {
-	for _, p := range db.Pages {
-		p.Close()
+	for _, Page := range db.Pages {
+		Page.Close()
+		fmt.Printf("%s closed\n", Page.Name())
 	}
 }
 
@@ -83,36 +108,21 @@ func GetValue(file *os.File, at int64, buff int) string {
 	return string(buffer[:n])
 }
 
-// NewPage create new file db page
+// NewPage creates new file db page
 func NewPage(id int) {
 
-	// page is a file with som headrs to store data
-	id = id / HeaderLength
-	fmt.Println("file name is ", id)
+	filename, _ := getLocation(id)
 
-	sid := strconv.Itoa(id)
-
-	file, err := os.Create(sid)
+	file, err := os.Create(filename)
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
 
-	// fill header file
 	for i := 0; i < 1000; i++ {
-		if _, err = file.WriteString("          "); err != nil {
-			panic(err)
-		}
+		// make spaces for indexes
+		file.WriteString("               ") // lenght spaces 15
 	}
-}
-
-// convertIndex convert string index location to at and size int64
-func convIndex(IndexLocation string) (at, size int64) {
-
-	sloc := strings.Split(IndexLocation, " ")
-	id, _ := strconv.Atoi(sloc[0])
-	siz, _ := strconv.Atoi(sloc[1])
-	return int64(id), int64(siz)
 }
 
 // AppendData appends data to file

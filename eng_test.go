@@ -6,9 +6,9 @@ import (
 )
 
 func Test_getLocation(t *testing.T) {
-	sid := "111222"
-	page, at := getLocation(sid)
-	if at != 222 {
+	id := 111222
+	page, at := getLocation(id)
+	if at != 222*LenIndex {
 		t.Fatal("at must ber 111 not", at)
 	}
 	if page != "111" {
