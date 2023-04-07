@@ -1,4 +1,4 @@
-package main
+package db
 
 import (
 	"fmt"
@@ -7,12 +7,7 @@ import (
 )
 
 // init function
-
-const rootPath = "/Users/fedora/.mydb/"
-
-func init() {
-	fmt.Println(rootPath)
-}
+const RootPath = "/Users/fedora/.mydb/"
 
 // simplest query language
 func queryLang() {
@@ -85,7 +80,7 @@ func IsExist(path string) bool {
 
 // ListDir show all directories in path
 func ListDir(path string) {
-	dbs, err := os.ReadDir(rootPath + path)
+	dbs, err := os.ReadDir(RootPath + path)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -106,7 +101,7 @@ func ListDir(path string) {
 
 // PathExist check if path exists
 func PathExist(subPath string) bool {
-	_, err := os.Stat(rootPath + subPath)
+	_, err := os.Stat(RootPath + subPath)
 	if os.IsNotExist(err) {
 		return false
 	}
@@ -128,7 +123,7 @@ func CreateDB(dbName string) (string, error) {
 	// _, err = os.Stat("go.mod")
 	//	if os.IsNotExist(err) {return err}
 
-	err := os.MkdirAll(rootPath+dbName+"/.Trash/", 0755)
+	err := os.MkdirAll(RootPath+dbName+"/.Trash/", 0755)
 	if err != nil {
 		return dbName, err
 	}

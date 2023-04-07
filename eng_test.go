@@ -1,4 +1,4 @@
-package main
+package db
 
 import (
 	"fmt"
@@ -7,9 +7,9 @@ import (
 
 func Test_getLocation(t *testing.T) {
 	id := 111222
-	page, at := getLocation(id)
+	page, at := GetLocation(id)
 	if at != 222*LenIndex {
-		t.Fatal("at must ber 111 not", at)
+		t.Fatal("at must be 111 not", at)
 	}
 	if page != "111" {
 		t.Fatal("page must be 222 not", at)
@@ -17,9 +17,9 @@ func Test_getLocation(t *testing.T) {
 	fmt.Println("getLocation Done")
 }
 
-func Test_convertAt(t *testing.T) {
+func Test_convIndex(t *testing.T) {
 	location := "111 222   "
-	at, size := convIndex(location)
+	at, size := ConvIndex(location)
 	if at != 111 {
 		t.Fatal("at must ber 111 not", at)
 	}

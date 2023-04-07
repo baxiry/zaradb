@@ -1,4 +1,4 @@
-package main
+package db
 
 import (
 	"fmt"
@@ -13,14 +13,14 @@ import (
 const LenIndex = 20
 
 // getLocation return fileName & indexLocation where data stored
-func getLocation(id int) (fileName string, indexLocation int64) {
+func GetLocation(id int) (fileName string, indexLocation int64) {
 	fileName = strconv.Itoa(id / 1000)
 	indexLocation = int64(id % 1000)
 	return fileName, indexLocation * LenIndex
 }
 
 // convertIndex convert string index location to at and size int64
-func convIndex(IndexLocation string) (at, size int64) {
+func ConvIndex(IndexLocation string) (at, size int64) {
 	sloc := strings.Split(IndexLocation, " ")
 	id, _ := strconv.Atoi(sloc[0])
 	siz, _ := strconv.Atoi(sloc[1])
@@ -30,23 +30,6 @@ func convIndex(IndexLocation string) (at, size int64) {
 // generateIndex
 // writeIndex
 // readIndex
-
-func main() {
-
-	fname, at := getLocation(2000)
-	fmt.Printf("page is : %s at : %d\n", fname, at)
-
-	dbPath := "/Users/fedora/repo/dbs/"
-	db := NewPages()
-	db.Open(dbPath)
-	defer db.Close()
-
-	AppendData(db.Pages[dbPath+"0"], "000000000000 ")
-
-	getedData := GetValue(db.Pages[dbPath+"0"], 30, 20)
-
-	fmt.Println("data:", getedData)
-}
 
 // Pages are map of file names that store data
 type Pages struct {
@@ -92,6 +75,29 @@ func (db *Pages) Close() {
 	}
 }
 
+// NewPage creates new file db page
+func (pages *Pages) NewPage(id int) {
+
+	filename, _ := GetLocation(id)
+
+	file, err := os.Create(filename)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	for i := 0; i < 1000; i++ {
+		// make spaces for indexes
+		file.WriteString("               ") // lenght spaces 15
+	}
+
+	sid := strconv.Itoa(id)
+
+	pages.Pages[RootPath+sid] = file
+	fmt.Printf("new page is created with %s name\n", RootPath+sid)
+
+}
+
 // GetVal returns data as string.
 // it take file pointr, at int64 & len of data that will read
 func GetValue(file *os.File, at int64, buff int) string {
@@ -106,23 +112,6 @@ func GetValue(file *os.File, at int64, buff int) string {
 	}
 	// out the buffer content
 	return string(buffer[:n])
-}
-
-// NewPage creates new file db page
-func NewPage(id int) {
-
-	filename, _ := getLocation(id)
-
-	file, err := os.Create(filename)
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-
-	for i := 0; i < 1000; i++ {
-		// make spaces for indexes
-		file.WriteString("               ") // lenght spaces 15
-	}
 }
 
 // AppendData appends data to file
