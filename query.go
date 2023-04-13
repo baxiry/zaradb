@@ -1,13 +1,10 @@
-package db
+package main
 
 import (
 	"fmt"
 	"os"
 	"strings"
 )
-
-// init function
-const RootPath = "/Users/fedora/.mydb/"
 
 // simplest query language
 func queryLang() {
