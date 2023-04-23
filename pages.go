@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-const RootPath = "../dbs/"
+const RootPath = "/Users/fedora/repo/dbs/"
 
 // Pages are map of file names that store data
 type Pages struct {
@@ -23,14 +23,18 @@ func NewPages() *Pages {
 
 // Opendb opnens all pages in root db
 func (db *Pages) Open(path string) {
+	fmt.Println("path is : ", path)
+
 	// check primary.index file if exest
 	_, err := os.Stat(path + IndexsFile)
 	if errors.Is(err, os.ErrNotExist) {
-		fmt.Println("indexes file not exist")
-		// path/to/whatever does *not* exist
+		_, err := os.OpenFile(path+IndexsFile, os.O_APPEND|os.O_RDWR, 0644)
+		if err != nil {
+			fmt.Println("Error when create indes file", err)
+			return
+		}
 
 	}
-	os.Exit(0)
 
 	files, err := os.ReadDir(path)
 	if err != nil {
@@ -38,6 +42,7 @@ func (db *Pages) Open(path string) {
 	}
 	if len(files) == 0 {
 		os.Create(path + "0")
+		return
 	}
 
 	for _, file := range files {
@@ -52,13 +57,14 @@ func (db *Pages) Open(path string) {
 		db.Pages[path+file.Name()] = page
 		fmt.Println("file name is ", path+file.Name())
 	}
+
 }
 
 // Close All pages
 func (db *Pages) Close() {
-	for _, Page := range db.Pages {
-		Page.Close()
-		fmt.Printf("%s closed\n", Page.Name())
+	for _, page := range db.Pages {
+		page.Close()
+		fmt.Printf("%s closed\n", page.Name())
 	}
 }
 
@@ -72,11 +78,6 @@ func (pages *Pages) NewPage(id int) {
 		panic(err)
 	}
 	defer file.Close()
-
-	for i := 0; i < 1000; i++ {
-		// make spaces for indexes
-		file.WriteString("               ") // lenght spaces 15
-	}
 
 	sid := strconv.Itoa(id)
 

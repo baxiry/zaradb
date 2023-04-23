@@ -5,5 +5,9 @@ import (
 )
 
 func main() {
-	fmt.Println("hello db")
+	pages := NewPages()
+	pages.Open(RootPath)
+	defer pages.Close()
+
+	fmt.Println("pages : ", pages.Pages)
 }

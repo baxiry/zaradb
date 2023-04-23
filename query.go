@@ -6,12 +6,6 @@ import (
 	"strings"
 )
 
-// simplest query language
-func queryLang() {
-	query := arguments()
-	fmt.Println("query is : ", query)
-}
-
 // Insert
 func Insert(path, data string) (err error) {
 	return
@@ -65,14 +59,10 @@ func arguments() (args []string) {
 	return strings.Split(args[1], ".")
 }
 
-// helpers function
-
-// check if path is exist
-func IsExist(path string) bool {
-	if _, err := os.Stat(path); err == nil {
-		return true
-	}
-	return false
+// PathExist check if path exists
+func PathExist(subPath string) bool {
+	_, err := os.Stat(RootPath + subPath)
+	return os.IsNotExist(err)
 }
 
 // ListDir show all directories in path
@@ -94,15 +84,6 @@ func ListDir(path string) {
 		return
 	}
 	println(path, "is impty")
-}
-
-// PathExist check if path exists
-func PathExist(subPath string) bool {
-	_, err := os.Stat(RootPath + subPath)
-	if os.IsNotExist(err) {
-		return false
-	}
-	return true
 }
 
 // Rename renames db.

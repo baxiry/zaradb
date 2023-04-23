@@ -11,7 +11,7 @@ import (
 )
 
 const LenIndex = 20
-const IndexsFile = RootPath + "primary.index"
+const IndexsFile = "primary.index"
 
 func StoreIndex(path string) {}
 
@@ -36,11 +36,11 @@ func ConvIndex(IndexLocation string) (at, size int64) {
 	return int64(id), int64(siz)
 }
 
-// GetVal returns data as string.
+// Get Gets data data as string.
 // it take file pointr, at int64 & len of data that will read
-func GetValue(file *os.File, at int64, buff int) string {
-	// TODO check if reusing global buffer fast !
-	buffer := make([]byte, buff)
+func Get(file *os.File, at int64, size int) string {
+
+	buffer := make([]byte, size)
 
 	// read at
 	n, err := file.ReadAt(buffer, at)
@@ -54,12 +54,12 @@ func GetValue(file *os.File, at int64, buff int) string {
 
 // AppendData appends data to file
 // return file size & err
-func AppendData(file *os.File, data string) (int, error) {
+func Append(file *os.File, data string) (int, error) {
 	lenByte, err := file.WriteString(data)
 	return lenByte, err
 }
 
-// getField get field from json string
+// getField gets field from json string
 func getField(field, json string) string {
 	return gjson.Get(json, field).String()
 }
