@@ -9,19 +9,19 @@ import (
 
 const RootPath = "/Users/fedora/repo/dbs/"
 
-// Pages are map of file names that store data
+// map of name files
 type Pages struct {
 	Pages map[string]*os.File
 }
 
-// NewPages creates List of files db
+// creates List of files db
 func NewPages() *Pages {
 	return &Pages{
 		Pages: make(map[string]*os.File, 1),
 	}
 }
 
-// Opendb opnens all pages in root db
+// opnens all pages in root db
 func (db *Pages) Open(path string) {
 	fmt.Println("path is : ", path)
 
@@ -60,7 +60,7 @@ func (db *Pages) Open(path string) {
 
 }
 
-// Close All pages
+// closes All pages
 func (db *Pages) Close() {
 	for _, page := range db.Pages {
 		page.Close()
@@ -68,7 +68,7 @@ func (db *Pages) Close() {
 	}
 }
 
-// NewPage creates new file db page
+// creates new file db page
 func (pages *Pages) NewPage(id int) {
 
 	filename, _ := GetLocation(id)
