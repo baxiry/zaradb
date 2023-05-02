@@ -22,13 +22,13 @@ func LastIndex(path string) int {
 }
 
 // getLocation return fileName & indexLocation where data stored
-func GetLocation(id int) (fileName string, indexLocation int64) {
+func GetAt(id int) (fileName string, at int64) {
 	fileName = strconv.Itoa(id / 1000)
-	indexLocation = int64(id % 1000)
-	return fileName, indexLocation * LenIndex
+	at = int64(id % 1000)
+	return fileName, at * LenIndex
 }
 
-// convertIndex convert string index location to at and size int64
+// converts index location to at and size as int64
 func ConvIndex(IndexLocation string) (at, size int64) {
 	sloc := strings.Split(IndexLocation, " ")
 	id, _ := strconv.Atoi(sloc[0])
@@ -36,8 +36,7 @@ func ConvIndex(IndexLocation string) (at, size int64) {
 	return int64(id), int64(siz)
 }
 
-// Get Gets data data as string.
-// it take file pointr, at int64 & len of data that will read
+// gets data from *file, takes at (location) & buffer size
 func Get(file *os.File, at int64, size int) string {
 
 	buffer := make([]byte, size)
@@ -52,14 +51,13 @@ func Get(file *os.File, at int64, size int) string {
 	return string(buffer[:n])
 }
 
-// AppendData appends data to file
-// return file size & err
+// appends data to file, return file size or error
 func Append(file *os.File, data string) (int, error) {
 	lenByte, err := file.WriteString(data)
 	return lenByte, err
 }
 
-// getField gets field from json string
+// gets field from json
 func getField(field, json string) string {
 	return gjson.Get(json, field).String()
 }

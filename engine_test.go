@@ -5,9 +5,9 @@ import (
 	"testing"
 )
 
-func Test_getLocation(t *testing.T) {
+func Test_getAt(t *testing.T) {
 	id := 111222
-	page, at := GetLocation(id)
+	page, at := GetAt(id)
 	if at != 222*LenIndex {
 		t.Fatal("at must be 111 not", at)
 	}

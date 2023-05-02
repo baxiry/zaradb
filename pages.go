@@ -71,7 +71,7 @@ func (db *Pages) Close() {
 // creates new file db page
 func (pages *Pages) NewPage(id int) {
 
-	filename, _ := GetLocation(id)
+	filename, _ := GetAt(id)
 
 	file, err := os.Create(filename)
 	if err != nil {
