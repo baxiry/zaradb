@@ -68,7 +68,7 @@ func (db *Pages) Close() {
 	}
 }
 
-// creates new file db page
+// creates new page file
 func (pages *Pages) NewPage(id int) {
 
 	filename, _ := GetAt(id)
@@ -77,7 +77,7 @@ func (pages *Pages) NewPage(id int) {
 	if err != nil {
 		panic(err)
 	}
-	defer file.Close()
+	// defer file.Close() //
 
 	sid := strconv.Itoa(id)
 

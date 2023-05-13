@@ -14,7 +14,7 @@ func Test_getAt(t *testing.T) {
 	if page != "111" {
 		t.Fatal("page must be 222 not", at)
 	}
-	fmt.Println("getLocation Done")
+	fmt.Println("getAt Done")
 }
 
 func Test_convIndex(t *testing.T) {
