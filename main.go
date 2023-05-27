@@ -6,6 +6,7 @@ import (
 
 func main() {
 	pages := NewPages()
+	//	fmt.Println(len(pages.Pages))
 	pages.Open(RootPath)
 	defer pages.Close()
 

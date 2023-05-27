@@ -23,12 +23,12 @@ func NewPages() *Pages {
 
 // opnens all pages in root db
 func (db *Pages) Open(path string) {
-	fmt.Println("path is : ", path)
+	indexFile := path + IndexsFile
 
 	// check primary.index file if exest
-	_, err := os.Stat(path + IndexsFile)
+	_, err := os.Stat(indexFile)
 	if errors.Is(err, os.ErrNotExist) {
-		_, err := os.OpenFile(path+IndexsFile, os.O_APPEND|os.O_RDWR, 0644)
+		_, err := os.OpenFile(indexFile, os.O_APPEND|os.O_RDWR, 0644)
 		if err != nil {
 			fmt.Println("Error when create indes file", err)
 			return
@@ -40,7 +40,7 @@ func (db *Pages) Open(path string) {
 	if err != nil {
 		fmt.Println("readDir: ", err)
 	}
-	if len(files) == 0 {
+	if len(files) < 2 {
 		os.Create(path + "0")
 		return
 	}
@@ -57,7 +57,6 @@ func (db *Pages) Open(path string) {
 		db.Pages[path+file.Name()] = page
 		fmt.Println("file name is ", path+file.Name())
 	}
-
 }
 
 // closes All pages
@@ -79,9 +78,9 @@ func (pages *Pages) NewPage(id int) {
 	}
 	// defer file.Close() //
 
-	sid := strconv.Itoa(id)
+	strId := strconv.Itoa(id)
 
-	pages.Pages[RootPath+sid] = file
-	fmt.Printf("new page is created with %s name\n", RootPath+sid)
+	pages.Pages[RootPath+strId] = file
+	fmt.Printf("new page is created with %s name\n", RootPath+strId)
 
 }
