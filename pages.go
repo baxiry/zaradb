@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-const RootPath = "/Users/fedora/repo/dbs/"
+var RootPath string = userDir() + "/repo/dbs/"
 
 // map of name files
 type Pages struct {
