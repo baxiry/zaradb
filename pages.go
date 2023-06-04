@@ -14,7 +14,7 @@ type Pages struct {
 	Pages map[string]*os.File
 }
 
-// creates List of files db
+// constracts List of files db
 func NewPages() *Pages {
 	return &Pages{
 		Pages: make(map[string]*os.File, 1),
