@@ -10,22 +10,17 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-const LenIndex = 20
+const IndexLen = 20
+
 const IndexsFile = "primary.index"
 
 func StoreIndex(path string) {}
 
-// LastIndex return last index in table
-func LastIndex(path string) int {
-	last := 0 // read last indext from tail file
-	return last + 1
-}
-
-// getLocation return fileName & indexLocation where data stored
+// returns fileName & indexLocation where data stored
 func GetAt(id int) (fileName string, at int64) {
 	fileName = strconv.Itoa(id / 1000)
 	at = int64(id % 1000)
-	return fileName, at * LenIndex
+	return fileName, at * IndexLen
 }
 
 // converts index location to at and size as int64
@@ -51,7 +46,7 @@ func Get(file *os.File, at int64, size int) string {
 	return string(buffer[:n])
 }
 
-// appends data to file, return file size or error
+// append data to Pagefile & returns file size or error
 func Append(file *os.File, data string) (int, error) {
 	lenByte, err := file.WriteString(data)
 	return lenByte, err
@@ -60,4 +55,10 @@ func Append(file *os.File, data string) (int, error) {
 // gets field from json
 func getField(field, json string) string {
 	return gjson.Get(json, field).String()
+}
+
+// LastIndex return last index in table
+func LastIndex(path string) int {
+	last := 0 // read last indext from tail file
+	return last + 1
 }

@@ -7,6 +7,7 @@ import (
 	"strconv"
 )
 
+// Root database folder
 var RootPath string = userDir() + "/repo/dbs/"
 
 // map of name files
@@ -14,18 +15,18 @@ type Pages struct {
 	Pages map[string]*os.File
 }
 
-// constracts List of files db
+// NewPages constracts List of files db
 func NewPages() *Pages {
 	return &Pages{
 		Pages: make(map[string]*os.File, 1),
 	}
 }
 
-// opnens all pages in root db
+// opnens all pages in Root database folder
 func (db *Pages) Open(path string) {
 	indexFile := path + IndexsFile
 
-	// check primary.index file if exest
+	// check if primary.index is exist
 	_, err := os.Stat(indexFile)
 	if errors.Is(err, os.ErrNotExist) {
 		_, err := os.OpenFile(indexFile, os.O_APPEND|os.O_RDWR, 0644)
@@ -59,15 +60,7 @@ func (db *Pages) Open(path string) {
 	}
 }
 
-// closes All pages
-func (db *Pages) Close() {
-	for _, page := range db.Pages {
-		page.Close()
-		fmt.Printf("%s closed\n", page.Name())
-	}
-}
-
-// creates new page file
+// creates new page file and add it to Pages Map
 func (pages *Pages) NewPage(id int) {
 
 	filename, _ := GetAt(id)
@@ -76,11 +69,19 @@ func (pages *Pages) NewPage(id int) {
 	if err != nil {
 		panic(err)
 	}
-	// defer file.Close() //
+	// do not close this file
 
 	strId := strconv.Itoa(id)
 
 	pages.Pages[RootPath+strId] = file
 	fmt.Printf("new page is created with %s name\n", RootPath+strId)
 
+}
+
+// closes All pages
+func (db *Pages) Close() {
+	for _, page := range db.Pages {
+		page.Close()
+		fmt.Printf("%s closed\n", page.Name())
+	}
 }
