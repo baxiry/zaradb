@@ -16,11 +16,17 @@ const IndexsFile = "primary.index"
 
 func StoreIndex(path string) {}
 
-// returns PageName & indexLocation where data stored
-func GetWere(id int) (fileName string, at int64) {
-	fileName = strconv.Itoa(id / 1000)
+// returns pageName & indexLocation where data stored
+func GetIndex(id int) (pageName string, at int64) {
+	pageName = strconv.Itoa(id / 1000)
 	at = int64(id % 1000)
-	return fileName, at * IndexLen
+	return pageName, at * IndexLen
+}
+
+// return index data & pageName from primary.index
+func GetWhere(id int) (pageName string, at int64) {
+	// should read primary.index here
+	return pageName, at * IndexLen
 }
 
 // converts index location to at and size as int64
