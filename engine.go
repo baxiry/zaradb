@@ -14,16 +14,24 @@ const IndexLen = 20
 
 const IndexsFile = "primary.index"
 
-func StoreIndex(path string) {}
+func SetIndex(ind string, path string) {
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644)
+	if err != nil {
+		fmt.Println("when open index file", err)
+	}
+	defer file.Close()
 
-// returns pageName & indexLocation where data stored
+	file.WriteString(ind)
+} // (file *os.File) {}
+
+// get pageName & indexLocation where data is stored
 func GetIndex(id int) (pageName string, at int64) {
 	pageName = strconv.Itoa(id / 1000)
 	at = int64(id % 1000)
 	return pageName, at * IndexLen
 }
 
-// return index data & pageName from primary.index
+// get index data & pageName from primary.index
 func GetWhere(id int) (pageName string, at int64) {
 	// should read primary.index here
 	return pageName, at * IndexLen

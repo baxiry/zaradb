@@ -22,6 +22,24 @@ func NewPages() *Pages {
 	}
 }
 
+// creates new page file and add it to Pages Map
+func (pages *Pages) NewPage(id int) {
+
+	filename, _ := GetWhere(id)
+
+	file, err := os.Create(filename)
+	if err != nil {
+		panic(err)
+	}
+	// do not close this file
+
+	strId := strconv.Itoa(id)
+
+	pages.Pages[RootPath+strId] = file
+	fmt.Printf("new page is created with %s name\n", RootPath+strId)
+
+}
+
 // opnens all pages in Root database folder
 func (db *Pages) Open(path string) {
 	indexFile := path + IndexsFile
@@ -56,26 +74,8 @@ func (db *Pages) Open(path string) {
 			fmt.Println("os open file: ", err)
 		}
 		db.Pages[path+file.Name()] = page
-		fmt.Println("file name is ", path+file.Name())
+		fmt.Println("file name is ", path+file.Name(), "is Open")
 	}
-}
-
-// creates new page file and add it to Pages Map
-func (pages *Pages) NewPage(id int) {
-
-	filename, _ := GetAt(id)
-
-	file, err := os.Create(filename)
-	if err != nil {
-		panic(err)
-	}
-	// do not close this file
-
-	strId := strconv.Itoa(id)
-
-	pages.Pages[RootPath+strId] = file
-	fmt.Printf("new page is created with %s name\n", RootPath+strId)
-
 }
 
 // closes All pages
