@@ -14,14 +14,16 @@ const IndexLen = 20
 
 const IndexsFile = "primary.index"
 
-func SetIndex(ind string, path string) {
-	file, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644)
-	if err != nil {
-		fmt.Println("when open index file", err)
-	}
-	defer file.Close()
+// append new index in primary.index file
+func NewIndex(ind int, file *os.File) {
 
-	file.WriteString(ind)
+	file.WriteString(fmt.Sprint(ind))
+} // (file *os.File) {}
+
+// update index val in primary.index file
+func UpdateIndex(ind int, file *os.File) {
+
+	file.WriteString(fmt.Sprint(ind))
 } // (file *os.File) {}
 
 // get pageName & indexLocation where data is stored

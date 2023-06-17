@@ -16,9 +16,11 @@ func main() {
 
 	fmt.Println("pages : ", pages.Pages)
 
+	path := RootPath + IndexsFile
+
 	for i := 5; i < 10; i++ {
 
-		SetIndex("123456789 \n", "primary.index")
+		NewIndex(2333, pages.Pages[path])
 	}
 
 }
