@@ -5,19 +5,19 @@ import (
 	"testing"
 )
 
-func Test_getAt(t *testing.T) {
+func Test_GetIndex(t *testing.T) {
 	id := 111222
-	page, at := GetAt(id)
-	if at != 222*LenIndex {
+	page, at := GetIndex(id)
+	if at != 222*IndexLen {
 		t.Fatal("at must be 111 not", at)
 	}
 	if page != "111" {
 		t.Fatal("page must be 222 not", at)
 	}
-	fmt.Println("getAt Done")
+	fmt.Println("GetIndex Done")
 }
 
-func Test_convIndex(t *testing.T) {
+func Test_ConvIndex(t *testing.T) {
 	location := "111 222   "
 	at, size := ConvIndex(location)
 	if at != 111 {
@@ -26,5 +26,5 @@ func Test_convIndex(t *testing.T) {
 	if size != 222 {
 		t.Fatal("size must ber 222 not", size)
 	}
-	fmt.Println("convertIndex Done")
+	fmt.Println("ConvIndex Done")
 }
