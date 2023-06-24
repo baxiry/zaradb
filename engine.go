@@ -18,7 +18,7 @@ const IndexsFile = "primary.index"
 func NewIndex(ind int, file *os.File) {
 
 	file.WriteString(fmt.Sprint(ind))
-} // (file *os.File) {}
+}
 
 // update index val in primary.index file
 func UpdateIndex(ind int, file *os.File) {

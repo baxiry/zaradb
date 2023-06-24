@@ -110,5 +110,5 @@ func CreateDB(dbName string) (string, error) {
 
 // DeleteDB deletes db. (free hard drive).
 func DeleteDB(dbName string) string {
-	return dbName + " db deleted!"
+	return dbName + " is deleted!"
 }
