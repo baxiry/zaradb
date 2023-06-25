@@ -16,19 +16,24 @@ const IndexsFile = "primary.index"
 
 // append new index in primary.index file
 func NewIndex(ind int, file *os.File) {
+	strInt := fmt.Sprint(ind)
+	nSpaces := IndexLen - len(strInt)
+	for i := 0; i < nSpaces; i++ {
+		strInt += " "
+	}
+
+	file.WriteString(strInt)
+}
+
+// update index val in primary.index file
+func UpdateIndex(ind int64, file *os.File) {
 
 	file.WriteString(fmt.Sprint(ind))
 }
 
-// update index val in primary.index file
-func UpdateIndex(ind int, file *os.File) {
-
-	file.WriteString(fmt.Sprint(ind))
-} // (file *os.File) {}
-
 // get pageName & indexLocation where data is stored
 func GetIndex(id int) (pageName string, at int64) {
-	pageName = strconv.Itoa(id / 1000)
+	pageName = strconv.Itoa(int(id) / 1000)
 	at = int64(id % 1000)
 	return pageName, at * IndexLen
 }

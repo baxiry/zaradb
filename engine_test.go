@@ -2,8 +2,30 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"testing"
 )
+
+func Test_UpdateIndex(t *testing.T) {
+}
+
+func Test_NewIndex(t *testing.T) {
+	file, _ := os.OpenFile("primary.indexs", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644)
+	defer file.Close()
+
+	for i := 1; i < 1002; i++ {
+		NewIndex(i, file)
+	}
+
+	pageName, indx := GetIndex(14)
+	fmt.Println(pageName, indx)
+
+	pageName, indx = GetIndex(140)
+	fmt.Println(pageName, indx)
+
+	fmt.Println("NewIndex func Done")
+
+}
 
 func Test_GetIndex(t *testing.T) {
 	id := 111222
