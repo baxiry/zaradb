@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// this func just for quick test this app
 func main() {
 
 	pages := NewPages()
