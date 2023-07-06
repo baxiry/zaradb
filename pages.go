@@ -25,7 +25,7 @@ func NewPages() *Pages {
 // creates new page file and add it to Pages Map
 func (pages *Pages) NewPage(id int) {
 
-	filename, _ := GetWhere(id)
+	filename, _, _ := GetIndex(id)
 
 	file, err := os.Create(filename)
 	if err != nil {

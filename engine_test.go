@@ -12,18 +12,18 @@ func Test_NewIndex(t *testing.T) {
 	file, _ := os.OpenFile("primary.indexs", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644)
 	defer func() {
 		file.Close()
-		os.Remove("primary.indexs")
+		//os.Remove("primary.indexs")
 	}()
 
 	for i := 0; i < 1111; i++ {
-		NewIndex(i, file)
+		NewIndex(i, 1024, file)
 	}
 
 	// this func for get exact endix location in file "At"
 	res := func(i int64) int64 { return (i % 1000) * 20 }
 
 	// input 1
-	pageName, indx := GetIndex(1)
+	pageName, indx, _ := GetIndex(1)
 	if pageName != "0" {
 		t.Error("pageName must be 1")
 	}
@@ -32,7 +32,7 @@ func Test_NewIndex(t *testing.T) {
 	}
 
 	//"input 140 return 2800
-	pageName, indx = GetIndex(140)
+	pageName, indx, _ = GetIndex(140)
 	if pageName != "0" {
 		t.Error("pageName must be 1")
 	}
@@ -41,7 +41,7 @@ func Test_NewIndex(t *testing.T) {
 	}
 
 	//"input 1111: 2220
-	pageName, indx = GetIndex(1111)
+	pageName, indx, _ = GetIndex(1111)
 	if pageName != "1" {
 		t.Error("pageName must be 1")
 	}
@@ -55,7 +55,7 @@ func Test_NewIndex(t *testing.T) {
 
 func Test_GetIndex(t *testing.T) {
 	id := 111222
-	page, at := GetIndex(id)
+	page, at, _ := GetIndex(id)
 	if at != 222*IndexLen {
 		t.Fatal("at must be 111 not", at)
 	}

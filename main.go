@@ -21,7 +21,7 @@ func main() {
 
 	for i := 5; i < 10; i++ {
 
-		NewIndex(2333, pages.Pages[path])
+		NewIndex(2333, 1024, pages.Pages[path])
 	}
 
 }

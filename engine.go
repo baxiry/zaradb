@@ -15,14 +15,24 @@ const IndexLen = 20
 const IndexsFile = "primary.index"
 
 // append new index in primary.index file
-func NewIndex(ind int, file *os.File) {
-	strInt := fmt.Sprint(ind)
-	nSpaces := IndexLen - len(strInt)
-	for i := 0; i < nSpaces; i++ {
+func NewIndex(ind, dsize int, file *os.File) { // dsize is data size
+	strInt := fmt.Sprint(ind) + " " + fmt.Sprint(dsize)
+	numSpaces := IndexLen - len(strInt)
+
+	for i := 0; i < numSpaces; i++ {
 		strInt += " "
 	}
 
 	file.WriteString(strInt)
+}
+
+// get pageName  indexLocation  & data size from primary.indexes file
+func GetIndex(id int) (pageName string, at, size int64) {
+
+	pageName = strconv.Itoa(int(id) / 1000)
+	at = int64(id % 1000)
+
+	return pageName, at * IndexLen, 10
 }
 
 // update index val in primary.index file
@@ -31,16 +41,11 @@ func UpdateIndex(ind int64, file *os.File) {
 	file.WriteString(fmt.Sprint(ind))
 }
 
-// get pageName & indexLocation where data is stored
-func GetIndex(id int) (pageName string, at int64) {
+// get index data & pageName from primary.index
+func GetDataIndex(id int) (pageName string, at int64) {
+
 	pageName = strconv.Itoa(int(id) / 1000)
 	at = int64(id % 1000)
-	return pageName, at * IndexLen
-}
-
-// get index data & pageName from primary.index
-func GetWhere(id int) (pageName string, at int64) {
-	// should read primary.index here
 	return pageName, at * IndexLen
 }
 
