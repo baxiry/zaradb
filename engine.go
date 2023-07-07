@@ -68,14 +68,9 @@ func Get(file *os.File, at int64, size int) string {
 }
 
 // append data to Pagefile & returns file size or error
-func Append(file *os.File, data string) (int, error) {
+func AppendData(data string, file *os.File) (int, error) {
 	lenByte, err := file.WriteString(data)
 	return lenByte, err
-}
-
-// gets field from json
-func getField(field, json string) string {
-	return gjson.Get(json, field).String()
 }
 
 // LastIndex return last index in table
