@@ -24,8 +24,10 @@ func NewPages() *Pages {
 
 // creates new page file and add it to Pages Map
 func (pages *Pages) NewPage(id int) {
+	// TODO
+	file, _ := os.Open("primary.indexs")
 
-	filename, _, _ := GetIndex(id)
+	filename, _, _ := GetIndex(id, file)
 
 	file, err := os.Create(filename)
 	if err != nil {

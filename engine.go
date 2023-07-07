@@ -27,12 +27,23 @@ func NewIndex(ind, dsize int, file *os.File) { // dsize is data size
 }
 
 // get pageName  indexLocation  & data size from primary.indexes file
-func GetIndex(id int) (pageName string, at, size int64) {
+func GetIndex(id int, indxFile *os.File) (pageName string, at, size int64) {
 
 	pageName = strconv.Itoa(int(id) / 1000)
 	at = int64(id % 1000)
 
-	return pageName, at * IndexLen, 10
+	bData := make([]byte, 20)
+	_, err := indxFile.ReadAt(bData, at)
+	if err != nil {
+		println(err)
+		return
+	}
+
+	sData := strings.Split(string(bData), " ")[1]
+
+	isize, _ := strconv.Atoi(fmt.Sprint(sData))
+
+	return pageName, at * IndexLen, int64(isize)
 }
 
 // update index val in primary.index file
