@@ -52,22 +52,6 @@ func UpdateIndex(ind int64, file *os.File) {
 	file.WriteString(fmt.Sprint(ind))
 }
 
-// get index data & pageName from primary.index
-func GetDataIndex(id int) (pageName string, at int64) {
-
-	pageName = strconv.Itoa(int(id) / 1000)
-	at = int64(id % 1000)
-	return pageName, at * IndexLen
-}
-
-// converts index location to at and size as int64
-func ConvIndex(IndexLocation string) (at, size int64) {
-	sloc := strings.Split(IndexLocation, " ")
-	id, _ := strconv.Atoi(sloc[0])
-	siz, _ := strconv.Atoi(sloc[1])
-	return int64(id), int64(siz)
-}
-
 // gets data from *file, takes at (location) & buffer size
 func Get(file *os.File, at int64, size int) string {
 
