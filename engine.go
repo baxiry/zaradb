@@ -81,5 +81,5 @@ func getField(field, json string) string {
 // LastIndex return last index in table
 func LastIndex(path string) int {
 	last := 0 // read last indext from tail file
-	return last + 1
+	return last
 }
