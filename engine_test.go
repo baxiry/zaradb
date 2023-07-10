@@ -71,6 +71,7 @@ func Test_NewIndex(t *testing.T) {
 
 	}
 }
+<<<<<<< HEAD
 
 // ok
 func Test_ConvIndex(t *testing.T) {
@@ -83,3 +84,5 @@ func Test_ConvIndex(t *testing.T) {
 		t.Fatal("size must ber 222 not", size)
 	}
 }
+=======
+>>>>>>> 7fc42ec8b2a8b146a4bee407dc9134241481a192
