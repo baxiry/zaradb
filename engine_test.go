@@ -16,62 +16,63 @@ func Test_NewIndex(t *testing.T) {
 		//os.Remove("primary.indexs")
 	}()
 
+	// testing NewIndex func
 	for i := 0; i < 1111; i++ {
-		NewIndex(i, 1024, file)
+		NewIndex(i, i, file)
 	}
 
 	// this func for get exact endix location in file "At"
 	res := func(i int64) int64 { return (i % 1000) * 20 }
 
+	// testing GetIndex func
 	// input 1
 	pageName, indx, size := GetIndex(1, file)
+	fmt.Println("Size is ", size)
 	if pageName != "0" {
-		t.Error("pageName must be 1")
+		t.Error("pageName must be 0")
 	}
+
 	if indx != res(1) { // (1 % 1000) * 20 = 20
 		t.Error("index must be 20")
 	}
 
-	if size != 1024 {
-		t.Error("size shoul be 1024")
+	if size != 1 {
+		t.Errorf("size is %d, shoul be %d ", size, 1)
 	}
-	fmt.Println("Size is ", size)
 
 	//"input 140 return 2800
-	pageName, indx, _ = GetIndex(140, file)
+	pageName, indx, size = GetIndex(140, file)
+	fmt.Println("size of 140 id is : ", size)
+
 	if pageName != "0" {
 		t.Error("pageName must be 1")
 	}
+
 	if indx != res(140) { // 2800
 		t.Error("index must be 2800")
 	}
 
+	if size != 140 { // 2800
+		t.Errorf("size is %d, must be %d", size, 140)
+	}
+
 	//"input 1111: 2220
-	pageName, indx, _ = GetIndex(1111, file)
+	pageName, indx, size = GetIndex(1111, file)
 	if pageName != "1" {
 		t.Error("pageName must be 1")
 	}
 
 	if indx != res(1111) {
-		t.Error("index must be 2220")
+		t.Errorf("index s %d, must be %d\n", indx, 2220)
 	}
-	println("NewIndex \t Done")
 
+	if size != 1111 {
+		t.Error("size must be ", 1111)
+
+	}
 }
 
-/*
-	func Test_GetIndex(t *testing.T) {
-		id := 111222
-		page, at, _ := GetIndex(id, file)
-		if at != 222*IndexLen {
-			t.Fatal("at must be 111 not", at)
-		}
-		if page != "111" {
-			t.Fatal("page must be 222 not", at)
-		}
-		println("GetIndex \t Done")
-	}
-*/
+// ok
 func Test_ConvIndex(t *testing.T) {
 	location := "111 222   "
 	at, size := ConvIndex(location)
@@ -81,6 +82,4 @@ func Test_ConvIndex(t *testing.T) {
 	if size != 222 {
 		t.Fatal("size must ber 222 not", size)
 	}
-
-	println("ConvIndex \t Done")
 }

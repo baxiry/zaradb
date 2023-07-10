@@ -40,6 +40,8 @@ func GetIndex(id int, indxFile *os.File) (pageName string, at, size int64) {
 	}
 
 	sData := strings.Split(string(bData), " ")[1]
+	fmt.Println("sData", sData)
+	// TODO problem hee
 
 	isize, _ := strconv.Atoi(fmt.Sprint(sData))
 
