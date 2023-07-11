@@ -12,6 +12,23 @@ const IndexLen = 20
 
 const IndexsFile = "primary.index"
 
+// update index val in primary.index file
+func UpdateIndex(id int, indexData, size int64, indexFile *os.File) {
+
+	at := int64(id) * 20
+
+	strIndex := fmt.Sprint(indexData) + " " + fmt.Sprint(size)
+	for i := len(strIndex); i < 20; i++ {
+		strIndex += " "
+	}
+
+	_, err := indexFile.WriteAt([]byte(strIndex), at)
+	if err != nil {
+		panic(err)
+	}
+
+}
+
 // append new index in primary.index file
 func NewIndex(ind, dsize int, file *os.File) { // dsize is data size
 	strInt := fmt.Sprint(ind) + " " + fmt.Sprint(dsize)
@@ -43,12 +60,6 @@ func GetIndex(id int, indxFile *os.File) (pageName string, at, size int64) {
 	isize, _ := strconv.Atoi(fmt.Sprint(sData))
 
 	return pageName, at * IndexLen, int64(isize)
-}
-
-// update index val in primary.index file
-func UpdateIndex(ind int64, file *os.File) {
-
-	file.WriteString(fmt.Sprint(ind))
 }
 
 // gets data from *file, takes at (location) & buffer size
