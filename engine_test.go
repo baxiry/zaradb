@@ -17,7 +17,7 @@ func Test_NewIndex(t *testing.T) {
 	}()
 
 	// testing NewIndex func
-	for i := 0; i < 1111; i++ {
+	for i := 0; i <= 1111; i++ {
 		NewIndex(i, i, file)
 	}
 
@@ -68,21 +68,5 @@ func Test_NewIndex(t *testing.T) {
 
 	if size != 1111 {
 		t.Error("size must be ", 1111)
-
 	}
 }
-<<<<<<< HEAD
-
-// ok
-func Test_ConvIndex(t *testing.T) {
-	location := "111 222   "
-	at, size := ConvIndex(location)
-	if at != 111 {
-		t.Fatal("at must ber 111 not", at)
-	}
-	if size != 222 {
-		t.Fatal("size must ber 222 not", size)
-	}
-}
-=======
->>>>>>> 7fc42ec8b2a8b146a4bee407dc9134241481a192

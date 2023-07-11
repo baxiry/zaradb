@@ -6,8 +6,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
-	"github.com/tidwall/gjson"
 )
 
 const IndexLen = 20
@@ -26,14 +24,13 @@ func NewIndex(ind, dsize int, file *os.File) { // dsize is data size
 	file.WriteString(strInt)
 }
 
-// get pageName  indexLocation  & data size from primary.indexes file
+// get pageName  Data Location  & data size from primary.indexes file
 func GetIndex(id int, indxFile *os.File) (pageName string, at, size int64) {
 
 	pageName = strconv.Itoa(int(id) / 1000)
 	at = int64(id % 1000)
-
 	bData := make([]byte, 20)
-	_, err := indxFile.ReadAt(bData, at)
+	_, err := indxFile.ReadAt(bData, int64(id*20))
 	if err != nil {
 		println(err)
 		return
