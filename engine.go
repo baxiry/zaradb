@@ -59,6 +59,12 @@ func NewIndex(ind, dsize int, file *os.File) { // dsize is data size
 	file.WriteString(strInt)
 }
 
+// deletes index from primary.index file
+func DeleteIndex(id int, indxfile *os.File) { //
+	at := int64(id * 20)
+	indxfile.WriteAt([]byte("                    "), at)
+}
+
 // gets data from *file, takes at (location) & buffer size
 func Get(file *os.File, at int64, size int) string {
 

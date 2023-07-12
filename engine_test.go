@@ -64,4 +64,7 @@ func Test_All_Index_Func(t *testing.T) {
 		t.Error("size must be ", 1121)
 	}
 
+	// testing DeleteIndex func
+	DeleteIndex(15, file)
+
 }
