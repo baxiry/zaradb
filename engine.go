@@ -8,6 +8,37 @@ import (
 	"strings"
 )
 
+// data enginge
+
+// gets data from *file, takes at (location) & buffer size
+func Get(file *os.File, at int64, size int) string {
+
+	buffer := make([]byte, size)
+
+	// read at
+	n, err := file.ReadAt(buffer, at)
+	if err != nil && err != io.EOF {
+		fmt.Println("readAt ", err)
+		return ""
+	}
+	// out the buffer content
+	return string(buffer[:n])
+}
+
+// append data to Pagefile & returns file size or error
+func Append(data string, file *os.File) (int, error) {
+	lenByte, err := file.WriteString(data)
+	return lenByte, err
+}
+
+// LastIndex return last index in table
+func LastIndex(path string) int {
+	last := 0 // read last indext from tail file
+	return last
+}
+
+// index ingene
+
 const IndexLen = 20
 
 const IndexsFile = "primary.index"
@@ -63,31 +94,4 @@ func NewIndex(ind, dsize int, file *os.File) { // dsize is data size
 func DeleteIndex(id int, indxfile *os.File) { //
 	at := int64(id * 20)
 	indxfile.WriteAt([]byte("                    "), at)
-}
-
-// gets data from *file, takes at (location) & buffer size
-func Get(file *os.File, at int64, size int) string {
-
-	buffer := make([]byte, size)
-
-	// read at
-	n, err := file.ReadAt(buffer, at)
-	if err != nil && err != io.EOF {
-		fmt.Println("readAt ", err)
-		return ""
-	}
-	// out the buffer content
-	return string(buffer[:n])
-}
-
-// append data to Pagefile & returns file size or error
-func AppendData(data string, file *os.File) (int, error) {
-	lenByte, err := file.WriteString(data)
-	return lenByte, err
-}
-
-// LastIndex return last index in table
-func LastIndex(path string) int {
-	last := 0 // read last indext from tail file
-	return last
 }
