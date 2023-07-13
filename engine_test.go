@@ -56,7 +56,6 @@ func Test_All_Index_Func(t *testing.T) {
 		t.Error("pageName must be 1")
 	}
 
-	println("indx is ", indx) // 2220
 	if indx != 1111+5 {
 		t.Errorf("index s %d, must be %d\n", indx, 1111+5)
 	}
@@ -65,6 +64,19 @@ func Test_All_Index_Func(t *testing.T) {
 	}
 
 	// testing DeleteIndex func
-	DeleteIndex(15, file)
+	DeleteIndex(1091, file)
+
+	pageName, indx, size = GetIndex(1091, file)
+	println("pageName", pageName, "indx", indx, "size", size)
+	if pageName != "1" {
+		t.Error("pageName must be 1")
+	}
+
+	if indx != 0 {
+		t.Errorf("index s %d, must be %d\n", indx, 0)
+	}
+	if size != 0 {
+		t.Error("size must be ", size)
+	}
 
 }
