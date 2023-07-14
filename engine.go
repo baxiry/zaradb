@@ -21,6 +21,8 @@ func Get(file *os.File, at int64, size int) string {
 		fmt.Println("readAt ", err)
 		return ""
 	}
+	println("data is : ", string(buffer[:n]))
+
 	// out the buffer content
 	return string(buffer[:n])
 }

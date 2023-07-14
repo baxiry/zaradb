@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"testing"
 )
@@ -8,7 +9,35 @@ import (
 func Test_UpdateIndex(t *testing.T) {
 }
 
-func Test_All_Index_Func(t *testing.T) {
+func Test_Append(t *testing.T) {
+	file, _ := os.OpenFile("data.page", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0644)
+	defer func() {
+		file.Close()
+		//os.Remove("primary.indexs")
+	}()
+
+	data := "hello world ok ?"
+	lenByte := int64(len(data))
+	lb, err := Append(data, file)
+	if err != nil {
+		fmt.Println("error is : ", err)
+	}
+
+	// test Get func
+	myData := Get(file, 0, lb)
+	fmt.Printf("Data is %s: \nlen byte is %d\nlb is %d\n ", myData, lenByte, lb)
+
+}
+
+func Test_Get(t *testing.T) {
+	file, _ := os.OpenFile("data.page", os.O_RDWR|os.O_CREATE, 0644)
+	defer func() {
+		file.Close()
+		//os.Remove("primary.indexs")
+	}()
+}
+
+func Test_All_Index_Funcs(t *testing.T) {
 	file, _ := os.OpenFile("primary.indexs", os.O_RDWR|os.O_CREATE, 0644)
 	defer func() {
 		file.Close()
@@ -67,7 +96,6 @@ func Test_All_Index_Func(t *testing.T) {
 	DeleteIndex(1091, file)
 
 	pageName, indx, size = GetIndex(1091, file)
-	println("pageName", pageName, "indx", indx, "size", size)
 	if pageName != "1" {
 		t.Error("pageName must be 1")
 	}
