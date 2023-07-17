@@ -21,7 +21,6 @@ func Get(file *os.File, at int64, size int) string {
 		fmt.Println("readAt ", err)
 		return ""
 	}
-	println("data is : ", string(buffer[:n]))
 
 	// out the buffer content
 	return string(buffer[:n])
@@ -34,9 +33,12 @@ func Append(data string, file *os.File) (int, error) {
 }
 
 // LastIndex return last index in table
-func LastIndex(path string) int {
-	last := 0 // read last indext from tail file
-	return last
+func LastIndex(path string) int64 {
+	info, err := os.Stat(path)
+	if err != nil {
+		return -1
+	}
+	return info.Size()
 }
 
 // index ingene
@@ -81,8 +83,8 @@ func UpdateIndex(id int, indexData, size int64, indexFile *os.File) {
 }
 
 // append new index in primary.index file
-func NewIndex(ind, dsize int, file *os.File) { // dsize is data size
-	strInt := fmt.Sprint(ind) + " " + fmt.Sprint(dsize)
+func NewIndex(index, dataSize int, file *os.File) {
+	strInt := fmt.Sprint(index) + " " + fmt.Sprint(dataSize)
 	numSpaces := IndexLen - len(strInt)
 
 	for i := 0; i < numSpaces; i++ {

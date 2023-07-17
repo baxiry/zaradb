@@ -6,32 +6,42 @@ import (
 	"testing"
 )
 
-func Test_UpdateIndex(t *testing.T) {
-}
+var DataFile, _ = os.OpenFile("data.page", os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
 
-var DataFile, _ = os.OpenFile("data.page", os.O_RDWR|os.O_CREATE, 0644)
-
-var IndexFile, _ = os.OpenFile("primary.indexs", os.O_RDWR|os.O_CREATE, 0644)
+var IndexFile, _ = os.OpenFile("primary.indexs", os.O_RDWR|os.O_CREATE, 0644) // why not "os.O_APPEND" ?
 
 // testing all data storeing functions
 func Test_Append(t *testing.T) {
 	var at int64
 	for i := 0; i < 13; i++ {
 
-		data := "hello world ok "
-		data += fmt.Sprint(i)
+		data := "hello world ok " + fmt.Sprint(i)
 
-		lenByte := int64(len(data))
-		lb, err := Append(data, DataFile)
+		lenByte, err := Append(data, DataFile)
 
 		if err != nil {
 			fmt.Println("error is : ", err)
 		}
 
-		myData := Get(DataFile, at, lb)
-		fmt.Printf("Data is %s: \nlen byte is %d\nlb is %d\n ", myData, lenByte, lb)
-		at += int64(lb)
+		myData := Get(DataFile, at, lenByte)
+		fmt.Printf("Data is %s: \nlen byte is %d\n\n", myData, lenByte)
+		at += int64(lenByte)
 	}
+}
+
+func Test_LastIndex(t *testing.T) {
+	lastIndex := LastIndex("data.page")
+	if lastIndex == 0 {
+		t.Errorf("lastindex is %d must be greater then 0\n", lastIndex)
+	}
+	println("lastindex is ", lastIndex)
+
+	lastPageIndex := LastIndex("primary.indexs")
+	if lastPageIndex == 0 {
+		t.Errorf("lastindex is %d must be greater then 0\n", lastIndex)
+	}
+	println("last Data index is ", lastPageIndex)
+
 }
 
 // testing all index functions
@@ -104,10 +114,10 @@ func Test_All_Index_Funcs(t *testing.T) {
 
 func Test_finish(t *testing.T) {
 	DataFile.Close()
-	os.Remove("primary.indexs")
+	// os.Remove("primary.indexs")
 
 	IndexFile.Close()
-	os.Remove("primary.indexs")
-	println("Done")
+	// os.Remove("primary.indexs")
+	// println("Done")
 
 }
