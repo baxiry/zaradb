@@ -6,9 +6,18 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // data enginge
+
+// what should I do here ?
+func Run() {
+	for {
+		fmt.Println("engine is runing ...")
+		time.Sleep(time.Minute)
+	}
+}
 
 // gets data from *file, takes at (location) & buffer size
 func Get(file *os.File, at int64, size int) string {
