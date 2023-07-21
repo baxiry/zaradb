@@ -7,80 +7,36 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/labstack/echo"
+	"github.com/go-chi/chi"
 	"github.com/lesismal/nbio/nbhttp"
-	"github.com/lesismal/nbio/nbhttp/websocket"
 )
 
-const HelpMessage = "dont forget arguments!"
-const ErrTypeArg = "agruments must be json!"
-
-func onWebsocket(c echo.Context) error {
-	w := c.Response()
-	r := c.Request()
-	upgrader := websocket.NewUpgrader()
-	upgrader.OnMessage(func(c *websocket.Conn, messageType websocket.MessageType, data []byte) {
-		// echo
-		c.WriteMessage(messageType, data)
-	})
-
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		return err
-	}
-	conn.OnClose(func(c *websocket.Conn, err error) {
-		log.Println("OnClose:", c.RemoteAddr().String(), err)
-	})
-	log.Println("OnOpen:", conn.RemoteAddr().String())
-	return nil
-}
-
 func main() {
+	router := chi.NewRouter()
 
-	// network ws/http
-	e := echo.New()
-
-	e.GET("/ws", onWebsocket)
+	router.Get("/ws", onWebsocket)
 
 	svr := nbhttp.NewServer(nbhttp.Config{
 		Network: "tcp",
 		Addrs:   []string{"localhost:8080"},
-	}, e, nil)
+	})
+
+	svr.Handler = router
 
 	err := svr.Start()
 	if err != nil {
 		log.Fatalf("nbio.Start failed: %v\n", err)
 	}
 
-	log.Println("serving [labstack/echo] on [nbio]")
+	log.Println("database is run ...")
 
-	// database
+	// shutdown
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 	<-interrupt
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*10)
 	defer cancel()
 	svr.Shutdown(ctx)
-
 }
-
-/*
-	pages := NewPages()
-	fmt.Println("nomber of pages", len(pages.Pages))
-
-	pages.Open(RootPath)
-	defer pages.Close()
-
-	fmt.Println("nomber of pages", len(pages.Pages))
-
-	fmt.Println("pages : ", pages.Pages)
-
-	path := RootPath + IndexsFile
-
-	for i := 5; i < 10; i++ {
-
-		NewIndex(2333, 1024, pages.Pages[path])
-	}
-*/
