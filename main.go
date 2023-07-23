@@ -30,8 +30,9 @@ func main() {
 
 	log.Println("database is run ...")
 
+	// clear useless info
+	clearScreen()
 	
-	cmd.Run()
 	// shutdown
 
 	interrupt := make(chan os.Signal, 1)
