@@ -30,6 +30,8 @@ func main() {
 
 	log.Println("database is run ...")
 
+	
+	cmd.Run()
 	// shutdown
 
 	interrupt := make(chan os.Signal, 1)
