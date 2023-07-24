@@ -1,3 +1,2 @@
-# mydb
-mydb is simple CouchDB-like database for learning purposes
-ok
+# dbliet
+dblite is simple document database for learning purposes
