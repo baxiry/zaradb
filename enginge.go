@@ -33,19 +33,19 @@ func Append(data string, file *os.File) (int, error) {
 }
 
 // LastIndex return last index in table
-func LastIndex(path string) int64 {
+func lastIndex(path string) int64 {
 	info, err := os.Stat(path)
 	if err != nil {
 		return -1
 	}
-	return info.Size()
+	return info.Size() / 20
 }
 
 // index ingene
 
 const IndexLen = 20
 
-// get pageName  Data Location  & data size from primary.indexes file
+// get pageName Data Location  & data size from primary.indexes file
 func GetIndex(id int, IndxFile *os.File) (pageName string, at, size int64) {
 
 	pageName = strconv.Itoa(int(id) / 1000)

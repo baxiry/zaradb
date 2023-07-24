@@ -1,7 +1,6 @@
 package dblite
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -31,6 +30,7 @@ func (pages *Pages) NewPage(id int) {
 			fmt.Println("when open primary.index", err)
 		}
 	*/
+
 	filename, _, _ := GetIndex(id, IndexsFile)
 
 	file, err := os.Create(filename)
@@ -42,24 +42,12 @@ func (pages *Pages) NewPage(id int) {
 	strId := strconv.Itoa(id)
 
 	pages.Pages[RootPath+strId] = file
-	fmt.Printf("new page is created with %s name\n", RootPath+strId)
+	// fmt.Printf("new page is created with %s name\n", RootPath+strId)
 
 }
 
 // opnens all pages in Root database folder
 func (db *Pages) Open(path string) {
-	iFile := path + "primary.index"
-
-	// check if primary.index is exist
-	_, err := os.Stat(iFile)
-	if errors.Is(err, os.ErrNotExist) {
-		_, err := os.Create(iFile)
-		if err != nil {
-			fmt.Println("Error when create indes file", err)
-			return
-		}
-
-	}
 
 	files, err := os.ReadDir(path)
 	if err != nil {

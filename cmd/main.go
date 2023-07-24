@@ -2,7 +2,7 @@ package main
 
 import (
 	"dblite"
-	"log"
+	"net/http"
 
 	"github.com/go-chi/chi"
 )
@@ -21,16 +21,5 @@ func main() {
 
 	router.Get("/ws", dblite.Demon)
 
-	dblite.Server.Handler = router
-
-	err := dblite.Server.Start()
-	if err != nil {
-		log.Fatalf("nbio.Start failed: %v\n", err)
-	}
-
-	dblite.ClearScreen()
-
-	log.Println("database is run ...")
-
-	dblite.Shutdown()
+	http.ListenAndServe(":1111", router)
 }

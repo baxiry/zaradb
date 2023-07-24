@@ -1,14 +1,41 @@
 package dblite
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
-	"github.com/lesismal/nbio/nbhttp/websocket"
+	"github.com/gorilla/websocket"
 )
 
+var upgrader = websocket.Upgrader{} // use default options
 // Demon listens incoming queries form ws & send result
-func Demon(resp http.ResponseWriter, req *http.Request) {
+func Demon(w http.ResponseWriter, r *http.Request) {
+	c, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}
+	defer c.Close()
+	for {
+		mt, message, err := c.ReadMessage()
+		if err != nil {
+			panic(err)
+		}
+		log.Printf("recv: %s", message)
+
+		result := HandleQueries(string(message))
+
+		// send result to client
+
+		err = c.WriteMessage(mt, []byte(result))
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+/*
+
 	upgrader := websocket.NewUpgrader()
 	upgrader.OnMessage(func(conn *websocket.Conn, messageType websocket.MessageType, data []byte) {
 		result := HandleQueries(string(data))
@@ -31,4 +58,4 @@ func Demon(resp http.ResponseWriter, req *http.Request) {
 	conn.OnClose(func(c *websocket.Conn, err error) {
 		fmt.Println("OnClose:", c.RemoteAddr().String(), err)
 	})
-}
+*/

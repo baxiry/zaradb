@@ -6,9 +6,9 @@ import (
 	"testing"
 )
 
-var DataFile, _ = os.OpenFile("data.page", os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
+var DataFile, _ = os.OpenFile("mok/data.page", os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
 
-var IndexFile, _ = os.OpenFile("primary.indexs", os.O_RDWR|os.O_CREATE, 0644) // why not "os.O_APPEND" ?
+var IndexFile, _ = os.OpenFile("mok/primary.indexs", os.O_RDWR|os.O_CREATE, 0644) // why not "os.O_APPEND" ?
 
 // testing all data storeing functions
 func Test_Append(t *testing.T) {
@@ -24,24 +24,9 @@ func Test_Append(t *testing.T) {
 		}
 
 		myData := Get(DataFile, at, lenByte)
-		fmt.Printf("Data is %s: \nlen byte is %d\n\n", myData, lenByte)
+		fmt.Printf("Data is %s: \nlen byte is %d, at is %d\n\n", myData, lenByte, at)
 		at += int64(lenByte)
 	}
-}
-
-func Test_LastIndex(t *testing.T) {
-	lastIndex := LastIndex("data.page")
-	if lastIndex == 0 {
-		t.Errorf("lastindex is %d must be greater then 0\n", lastIndex)
-	}
-	println("lastindex is ", lastIndex)
-
-	lastPageIndex := LastIndex("primary.indexs")
-	if lastPageIndex == 0 {
-		t.Errorf("lastindex is %d must be greater then 0\n", lastIndex)
-	}
-	println("last Data index is ", lastPageIndex)
-
 }
 
 // testing all index functions
@@ -112,12 +97,35 @@ func Test_All_Index_Funcs(t *testing.T) {
 
 }
 
+func Test_LastIndex(t *testing.T) {
+	lIndex := lastIndex("data.page")
+	if lIndex == 0 {
+		t.Errorf("lastindex is %d must be greater then 0\n", lIndex)
+	}
+	println("lastindex is ", lIndex)
+
+	lastPageIndex := lastIndex("primary.indexs")
+	if lastPageIndex == 0 {
+		t.Errorf("lastindex is %d must be greater then 0\n", lIndex)
+	}
+	println("last Data index is ", lastPageIndex)
+
+}
+
+func Test_lastIndex(t *testing.T) {
+	index := lastIndex("primary.indexs")
+	fmt.Println("index is ", index)
+	if index != 1112 {
+		t.Errorf("index is %d, must be greater then 1112\n", index)
+	}
+}
+
 func Test_finish(t *testing.T) {
 	DataFile.Close()
-	// os.Remove("primary.indexs")
+	// os.Remove("mok/primary.indexs")
 
 	IndexFile.Close()
-	// os.Remove("primary.indexs")
+	// os.Remove("mok/primary.indexs")
 	// println("Done")
 
 }
