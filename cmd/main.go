@@ -28,6 +28,8 @@ func main() {
 		log.Fatalf("nbio.Start failed: %v\n", err)
 	}
 
+	dblite.ClearScreen()
+
 	log.Println("database is run ...")
 
 	dblite.Shutdown()
