@@ -8,6 +8,7 @@ import (
 
 // Root database folder
 var RootPath string = userDir() + "/repo/dbs/"
+var MockPath string = userDir() + "/repo/mydb/mok"
 
 // map of name files
 type Pages struct {
