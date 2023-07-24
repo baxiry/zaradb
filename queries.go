@@ -1,18 +1,43 @@
-package main
+package dblite
 
 import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/tidwall/gjson"
 )
+
+func HandleQueries(query string) string {
+	action := gjson.Get(query, "action")
+
+	switch action.String() {
+	case "insert":
+		data := gjson.Get(query, "data")
+		return Insert("0", data.String()).Error()
+
+	case "select":
+		return "action is Select"
+	case "update":
+		return "action is Update"
+	case "delete":
+		return "action is Delete"
+	default:
+		return "unknowena ction"
+	}
+
+	//return result.String()
+}
 
 // Insert
 func Insert(path, data string) (err error) {
+
 	return
 }
 
 // Select reads data form docs
 func Select(path string) (data string) {
+
 	return data
 }
 

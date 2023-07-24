@@ -1,4 +1,4 @@
-package main
+package dblite
 
 import (
 	"fmt"
@@ -6,18 +6,9 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 )
 
 // data enginge
-
-// what should I do here ?
-func Run() {
-	for {
-		fmt.Println("engine is runing ...")
-		time.Sleep(time.Minute)
-	}
-}
 
 // gets data from *file, takes at (location) & buffer size
 func Get(file *os.File, at int64, size int) string {
@@ -54,14 +45,12 @@ func LastIndex(path string) int64 {
 
 const IndexLen = 20
 
-const IndexsFile = "primary.index"
-
 // get pageName  Data Location  & data size from primary.indexes file
-func GetIndex(id int, indxFile *os.File) (pageName string, at, size int64) {
+func GetIndex(id int, IndxFile *os.File) (pageName string, at, size int64) {
 
 	pageName = strconv.Itoa(int(id) / 1000)
 	bData := make([]byte, 20)
-	_, err := indxFile.ReadAt(bData, int64(id*20))
+	_, err := IndxFile.ReadAt(bData, int64(id*20))
 	if err != nil {
 		panic(err)
 	}

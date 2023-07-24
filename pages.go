@@ -1,4 +1,4 @@
-package main
+package dblite
 
 import (
 	"errors"
@@ -18,16 +18,20 @@ type Pages struct {
 // NewPages constracts List of files db
 func NewPages() *Pages {
 	return &Pages{
-		Pages: make(map[string]*os.File, 1),
+		Pages: make(map[string]*os.File, 2),
 	}
 }
 
 // creates new page file and add it to Pages Map
 func (pages *Pages) NewPage(id int) {
 	// TODO
-	file, _ := os.Open("primary.indexs")
-
-	filename, _, _ := GetIndex(id, file)
+	/*
+		file, err := os.Open("primary.indexs")
+		if err != nil {
+			fmt.Println("when open primary.index", err)
+		}
+	*/
+	filename, _, _ := GetIndex(id, IndexsFile)
 
 	file, err := os.Create(filename)
 	if err != nil {
@@ -44,12 +48,12 @@ func (pages *Pages) NewPage(id int) {
 
 // opnens all pages in Root database folder
 func (db *Pages) Open(path string) {
-	indexFile := path + IndexsFile
+	iFile := path + "primary.index"
 
 	// check if primary.index is exist
-	_, err := os.Stat(indexFile)
+	_, err := os.Stat(iFile)
 	if errors.Is(err, os.ErrNotExist) {
-		_, err := os.OpenFile(indexFile, os.O_APPEND|os.O_RDWR, 0644)
+		_, err := os.Create(iFile)
 		if err != nil {
 			fmt.Println("Error when create indes file", err)
 			return
