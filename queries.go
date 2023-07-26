@@ -13,13 +13,9 @@ func HandleQueries(query string) string {
 
 	switch action.String() {
 	case "insert":
-		data := gjson.Get(query, "data")
 
-		Insert(RootPath, data.String())
-
-		fmt.Printf("%s data inserted\n", data.String())
-
-		return data.String()
+		Insert(RootPath, query)
+		return "Succes"
 
 	case "select":
 		return "action is Select"
