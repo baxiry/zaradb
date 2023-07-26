@@ -6,7 +6,70 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/tidwall/sjson"
 )
+
+// append new index in primary.index file
+func NewIndex(index int64, dataSize int, indexFile *os.File) {
+	strInt := fmt.Sprint(index) + " " + fmt.Sprint(dataSize)
+	numSpaces := IndexLen - len(strInt)
+
+	for i := 0; i < numSpaces; i++ {
+		strInt += " "
+	}
+
+	indexFile.WriteString(strInt)
+}
+
+// Insert
+func Insert(path, data string) (err error) {
+
+	PrimaryIndex++
+
+	value, _ := sjson.Set(data, "_id", PrimaryIndex)
+	println(value)
+
+	path += fmt.Sprint(PrimaryIndex / 1000)
+	fmt.Println("Path is ", path)
+	_, err = Append(data, pages.Pages[path])
+
+	// index
+	NewIndex(PrimaryIndex, len(data), pages.Pages[indexFilePath])
+
+	return err
+}
+
+// Select reads data form docs
+func Select(path string) (data string) {
+
+	return data
+}
+
+// Update update document data
+func Update(serial, data string) (err error) {
+	return
+}
+
+// Delete removes document
+func Delete(path string) (err error) {
+	return
+}
+
+// append data to Pagefile & returns file size or error
+func Append(data string, file *os.File) (int, error) {
+	lenByte, err := file.WriteString(data)
+	return lenByte, err
+}
+
+// LastIndex return last index in table
+func lastIndex(path string) int64 {
+	info, err := os.Stat(path)
+	if err != nil {
+		return -1
+	}
+	return info.Size() / 20
+}
 
 // data enginge
 
@@ -24,21 +87,6 @@ func Get(file *os.File, at int64, size int) string {
 
 	// out the buffer content
 	return string(buffer[:n])
-}
-
-// append data to Pagefile & returns file size or error
-func Append(data string, file *os.File) (int, error) {
-	lenByte, err := file.WriteString(data)
-	return lenByte, err
-}
-
-// LastIndex return last index in table
-func lastIndex(path string) int64 {
-	info, err := os.Stat(path)
-	if err != nil {
-		return -1
-	}
-	return info.Size() / 20
 }
 
 // index ingene
@@ -78,18 +126,6 @@ func UpdateIndex(id int, indexData, size int64, indexFile *os.File) {
 		panic(err)
 	}
 
-}
-
-// append new index in primary.index file
-func NewIndex(index, dataSize int, file *os.File) {
-	strInt := fmt.Sprint(index) + " " + fmt.Sprint(dataSize)
-	numSpaces := IndexLen - len(strInt)
-
-	for i := 0; i < numSpaces; i++ {
-		strInt += " "
-	}
-
-	file.WriteString(strInt)
 }
 
 // deletes index from primary.index file

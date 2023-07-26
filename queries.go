@@ -14,8 +14,11 @@ func HandleQueries(query string) string {
 	switch action.String() {
 	case "insert":
 		data := gjson.Get(query, "data")
-		// TODO Insert("0", data.String(), pages.Pages[])
-		fmt.Println("data is ", data.String())
+
+		Insert(RootPath, data.String())
+
+		fmt.Printf("%s data inserted\n", data.String())
+
 		return data.String()
 
 	case "select":
@@ -33,29 +36,6 @@ func HandleQueries(query string) string {
 	}
 
 	//return result.String()
-}
-
-// Insert
-func Insert(path, data string) (err error) {
-	_, err = Append(data, pages.Pages[path])
-
-	return err
-}
-
-// Select reads data form docs
-func Select(path string) (data string) {
-
-	return data
-}
-
-// Update update document data
-func Update(serial, data string) (err error) {
-	return
-}
-
-// Delete removes document
-func Delete(path string) (err error) {
-	return
 }
 
 // extractQuery from stdin argument

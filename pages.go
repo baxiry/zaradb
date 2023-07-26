@@ -8,14 +8,14 @@ import (
 
 // Root database folder
 var RootPath string = userDir() + "/repo/dbs/"
-var MockPath string = userDir() + "/repo/mydb/mok"
+var MockPath string = userDir() + "/repo/mydb/mok/"
 
 // map of name files
 type Pages struct {
 	Pages map[string]*os.File
 }
 
-// NewPages constracts List of files db
+// NewPages constracts List of files pages
 func NewPages() *Pages {
 	return &Pages{
 		Pages: make(map[string]*os.File, 2),
@@ -25,14 +25,8 @@ func NewPages() *Pages {
 // creates new page file and add it to Pages Map
 func (pages *Pages) NewPage(id int) {
 	// TODO
-	/*
-		file, err := os.Open("primary.indexs")
-		if err != nil {
-			fmt.Println("when open primary.index", err)
-		}
-	*/
 
-	filename, _, _ := GetIndex(id, IndexsFile)
+	filename, _, _ := GetIndex(id, pages.Pages[indexFilePath])
 
 	file, err := os.Create(filename)
 	if err != nil {
@@ -48,7 +42,7 @@ func (pages *Pages) NewPage(id int) {
 }
 
 // opnens all pages in Root database folder
-func (db *Pages) Open(path string) {
+func (pages *Pages) Open(path string) {
 
 	files, err := os.ReadDir(path)
 	if err != nil {
@@ -68,14 +62,14 @@ func (db *Pages) Open(path string) {
 		if err != nil {
 			fmt.Println("os open file: ", err)
 		}
-		db.Pages[path+file.Name()] = page
+		pages.Pages[path+file.Name()] = page
 		fmt.Println("file name is ", path+file.Name(), "is Open")
 	}
 }
 
 // closes All pages
-func (db *Pages) Close() {
-	for _, page := range db.Pages {
+func (pages *Pages) Close() {
+	for _, page := range pages.Pages {
 		page.Close()
 		fmt.Printf("%s closed\n", page.Name())
 	}

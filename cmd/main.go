@@ -7,19 +7,19 @@ import (
 	"github.com/go-chi/chi"
 )
 
-var pages dblite.Pages
+var engine = dblite.NewEngine()
 
 func main() {
-	// run store enginge
 
-	pages = *dblite.NewPages()
+	engine.Run()
 
-	defer pages.Close()
+	// TODO close programe greatfully
+	defer engine.Stop()
 
 	// start network
 	router := chi.NewRouter()
 
-	router.Get("/ws", dblite.Demon)
+	router.Get("/ws", dblite.DemonNet)
 
 	http.ListenAndServe(":1111", router)
 }

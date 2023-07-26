@@ -1,45 +1,37 @@
 package dblite
 
 import (
-	"errors"
 	"fmt"
-	"os"
 )
 
-const IndexsFilePath = "primary.index"
+var PrimaryIndex = lastIndex(indexFilePath)
 
-var iFilePath = RootPath + IndexsFilePath
+var indexFilePath = RootPath + "primary.index"
 
-var pages = NewPages()
-
+/*
 var IndexsFile *os.File
 
 func initIndexsFile() {
 
-	// check if primary.index is exist
-	_, err := os.Stat(iFilePath)
-	if errors.Is(err, os.ErrNotExist) {
-		_, err := os.OpenFile(iFilePath, os.O_CREATE|os.O_RDWR, 0644)
-		if err != nil {
-			fmt.Println("Error when create indes file", err)
-			return
+		// check if primary.index is exist
+		_, err := os.Stat(indexFilePath)
+		if errors.Is(err, os.ErrNotExist) {
+			IndexsFile, err = os.Open(indexFilePath)
+			if err != nil {
+				panic(err)
+			}
 		}
-
+		fmt.Println("IndexsFile wher path ", IndexsFile)
 	}
-
-}
-
+*/
 func initIndex() {
-	lastIndex(iFilePath)
-	fmt.Println("index file is ", iFilePath)
-}
-
-func initPages() {
-	pages.Open(RootPath)
+	lindx := lastIndex(indexFilePath)
+	fmt.Println("last index is ", lindx)
 }
 
 func init() {
 	// check & init index map & firs page store
-	initPages()
 	initIndex()
+
+	// initIndexsFile()
 }

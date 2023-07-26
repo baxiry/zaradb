@@ -1,9 +1,11 @@
 package dblite
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 	"os/user"
 	"runtime"
 )
@@ -30,4 +32,15 @@ func ClearScreen() {
 	cmd.Run()
 	cmd.Run()
 	//Runs twice because sometimes pterodactyl servers needs a 2nd clear
+}
+
+func SysNotify() {
+
+	var c = make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+
+	// Block until a signal is received.
+	s := <-c
+	fmt.Println("Got signal:", s)
+
 }
