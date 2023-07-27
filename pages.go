@@ -8,7 +8,7 @@ import (
 
 // Root database folder
 var RootPath string = userDir() + "/repo/dbs/"
-var MockPath string = userDir() + "/repo/mydb/mok/"
+var MockPath string = userDir() + "/repo/dblite/mok/"
 
 // map of name files
 type Pages struct {
@@ -63,8 +63,11 @@ func (pages *Pages) Open(path string) {
 			fmt.Println("os open file: ", err)
 		}
 		pages.Pages[path+file.Name()] = page
-		fmt.Println("file name is ", path+file.Name(), "is Open")
 	}
+	fmt.Println("pages is ready")
+	fmt.Println()
+	NewCachedIndexs()
+	fmt.Println("icache is ready")
 }
 
 // closes All pages
