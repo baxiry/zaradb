@@ -8,7 +8,11 @@ import (
 
 // Root database folder
 var RootPath string = userDir() + "/repo/dbs/"
+
+// Mock path
 var MockPath string = userDir() + "/repo/dblite/mok/"
+
+var indexsCache *CachedIndexs
 
 // map of name files
 type Pages struct {
@@ -47,10 +51,18 @@ func (pages *Pages) Open(path string) {
 	files, err := os.ReadDir(path)
 	if err != nil {
 		fmt.Println("readDir: ", err)
+		return
+	}
+
+	if len(files) < 1 {
+		//os.Create(path + "0")
+		os.OpenFile(path+"primary.index", os.O_CREATE|os.O_RDWR, 0644)
+		// return
 	}
 	if len(files) < 2 {
-		os.Create(path + "0")
-		return
+		//os.Create(path + "0")
+		os.OpenFile(path+"0", os.O_CREATE|os.O_RDWR, 0644)
+		// return
 	}
 
 	for _, file := range files {
@@ -58,16 +70,17 @@ func (pages *Pages) Open(path string) {
 			continue
 		}
 
-		page, err := os.OpenFile(path+file.Name(), os.O_APPEND|os.O_RDWR, 0644)
+		page, err := os.OpenFile(path+file.Name(), os.O_CREATE|os.O_RDWR, 0644)
 		if err != nil {
 			fmt.Println("os open file: ", err)
 		}
 		pages.Pages[path+file.Name()] = page
 	}
 	fmt.Println("pages is ready")
-	fmt.Println()
-	NewCachedIndexs()
+
+	indexsCache = NewCachedIndexs()
 	fmt.Println("icache is ready")
+
 }
 
 // closes All pages

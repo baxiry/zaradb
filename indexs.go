@@ -21,10 +21,36 @@ func (cachedIndexs *CachedIndexs) GetIndex(id int) (pageName string, index [2]in
 	return strconv.Itoa(int(id) / 1000), cachedIndexs.indexs[id]
 }
 
-// append data to Pagefile & returns file size or error
-func Append(data string, file *os.File) (int, error) {
-	fileSize, err := file.WriteString(data)
-	return fileSize, err
+// initialize cache of indexs
+func NewCachedIndexs() *CachedIndexs {
+	cachedIndexs := &CachedIndexs{}
+	indexs := make([][2]int64, 0)
+
+	// TODO reuse
+	ixBuffer := make([]byte, IndexChnucLen)
+
+	for {
+
+		n, err := pages.Pages[indexFilePath].Read(ixBuffer)
+		if err != nil && err != io.EOF {
+			log.Fatal(err)
+		}
+		if err == io.EOF {
+			break
+		}
+
+		slicIndexe := strings.Split(string(ixBuffer[:n]), " ")
+
+		at, _ := strconv.ParseInt(slicIndexe[0], 10, 64)
+		size, _ := strconv.ParseInt(slicIndexe[1], 10, 64)
+
+		indexs = append(indexs, [2]int64{at, size})
+	}
+	cachedIndexs.indexs = indexs
+
+	println("initialize Cached indexs ")
+
+	return cachedIndexs
 }
 
 // LastIndex return last index in table
@@ -37,10 +63,11 @@ func lastIndex(path string) int64 {
 }
 
 // append new index in primary.index file
-func NewIndex(index int64, dataSize int, indexFile *os.File) {
-	strInt := fmt.Sprint(index) + " " + fmt.Sprint(dataSize)
-	numSpaces := IndexChnucLen - len(strInt)
+func NewIndex(at int, dataSize int, indexFile *os.File) {
 
+	strInt := fmt.Sprint(at) + " " + fmt.Sprint(dataSize)
+
+	numSpaces := IndexChnucLen - len(strInt)
 	for i := 0; i < numSpaces; i++ {
 		strInt += " "
 	}
@@ -71,35 +98,6 @@ func UpdateIndex(id int, indexData, size int64, indexFile *os.File) {
 func DeleteIndex(id int, indxfile *os.File) { //
 	at := int64(id * 20)
 	indxfile.WriteAt([]byte("                    "), at)
-}
-
-func NewCachedIndexs() *CachedIndexs {
-	cachedIndexs := &CachedIndexs{}
-	indexs := make([][2]int64, 0)
-	ixBuffer := make([]byte, IndexChnucLen)
-
-	for {
-
-		n, err := pages.Pages[indexFilePath].Read(ixBuffer)
-		if err != nil && err != io.EOF {
-			log.Fatal(err)
-		}
-		if err == io.EOF {
-			break
-		}
-
-		slicIndexe := strings.Split(string(ixBuffer[:n]), " ")
-
-		at, _ := strconv.ParseInt(slicIndexe[0], 10, 64)
-		size, _ := strconv.ParseInt(slicIndexe[1], 10, 64)
-
-		indexs = append(indexs, [2]int64{at, size})
-	}
-	cachedIndexs.indexs = indexs
-
-	println("Len of Cached indexs : ", len(cachedIndexs.indexs))
-
-	return cachedIndexs
 }
 
 // get pageName Data Location  & data size from primary.indexes file

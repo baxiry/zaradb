@@ -13,11 +13,12 @@ func HandleQueries(query string) string {
 
 	switch action.String() {
 	case "insert":
-		return Insert(RootPath, query).Error()
+
+		return Insert(RootPath, query)
 
 	case "select":
 
-		return "select" // Select(query)
+		return SelectId(query)
 
 	case "update":
 		return "action is Update"
