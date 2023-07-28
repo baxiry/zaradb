@@ -75,6 +75,8 @@ func NewIndex(at int, dataSize int, indexFile *os.File) {
 	indexFile.WriteString(strInt)
 
 	// TODO add new index to chachedIndexs
+
+	indexsCache.indexs = append(indexsCache.indexs, [2]int64{int64(at), int64(dataSize)})
 }
 
 // update index val in primary.index file
