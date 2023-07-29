@@ -25,6 +25,7 @@ func HandleQueries(query string) string {
 		return Update(RootPath, query)
 
 	case "delete":
+		DeleteById(RootPath, query)
 		return "action is Delete"
 
 	default:

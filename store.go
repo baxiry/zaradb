@@ -15,6 +15,23 @@ import (
 // At is where enginge insert data in page
 var At int
 
+func DeleteById(query, path string) (result string) {
+
+	res := gjson.Get(query, "_id")
+
+	path += fmt.Sprint(PrimaryIndex / 1000)
+
+	fmt.Println("path id DeleteById: ", path)
+
+	UpdateIndex(int(res.Int()), 0, 0, pages.Pages[path])
+
+	//fmt.Println(IndexsCache.indexs)
+	IndexsCache.indexs[res.Int()] = [2]int64{0, 0}
+	//fmt.Println(IndexsCache.indexs)
+
+	return "Delete Success!"
+}
+
 // Select reads data form docs
 func SelectById(query string) (result string) {
 	id := gjson.Get(query, "where_id")
@@ -109,7 +126,10 @@ func UpdateIndex(id int, indexData, size int64, indexFile *os.File) {
 
 	_, err := indexFile.WriteAt([]byte(strIndex), at)
 	if err != nil {
-		panic(err)
+		fmt.Println("id is ", id)
+		fmt.Println("at is ", at)
+
+		fmt.Println("err when UpdateIndex, store.go line 127", err)
 	}
 
 	// TODO update index in indexsCache
