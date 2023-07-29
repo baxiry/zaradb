@@ -1,2 +1,2 @@
-# dblite
-dblite is simple document database for learning purposes
+# ZaraDB 
+zaraDB is simple document database for learning purposes
