@@ -13,23 +13,17 @@ import (
 
 // Select reads data form docs
 func SelectId(query string) (result string) {
-	id := gjson.Get(query, "whereId")
+	id := gjson.Get(query, "where_id")
 
-	for i, v := range indexsCache.indexs {
-		fmt.Println("i is : ", i, "v is : ", v)
+	if int(id.Int()) >= len(indexsCache.indexs) {
+		return fmt.Sprintf("Not Found _id %v\n", id)
 	}
 
-	println("id in SelectId is : ", id.Int())
-
 	at := indexsCache.indexs[id.Int()][0]
-
-	println("at in SelectId is : ", at)
-
 	size := indexsCache.indexs[id.Int()][1]
 
-	println("size in SelectId is : ", size)
-
-	result = Get(pages.Pages[RootPath+id.String()], at, int(size))
+	// TODO fix page path
+	result = Get(pages.Pages[RootPath+"0"], at, int(size))
 
 	return result
 }
@@ -51,7 +45,7 @@ func Get(file *os.File, at int64, size int) string {
 	n, err := file.ReadAt(buffer, at)
 	if err != nil && err != io.EOF {
 		fmt.Println("readAt ", err)
-		return ""
+		return "ERROR form ReadAt func"
 	}
 
 	// out the buffer content
@@ -61,29 +55,31 @@ func Get(file *os.File, at int64, size int) string {
 var At int
 
 // Insert
-func Insert(path, data string) (res string) {
+func Insert(path, query string) (res string) {
 
-	value, _ := sjson.Set(data, "_id", PrimaryIndex)
-	println(value)
+	data := gjson.Get(query, "data")
+
+	value, err := sjson.Set(data.String(), "_id", PrimaryIndex)
+	if err != nil {
+		fmt.Println("sjson.Set : ", err)
+	}
 
 	path += fmt.Sprint(PrimaryIndex / 1000)
 	fmt.Println("Path is ", path)
 
-	at, err := Append(data, pages.Pages[path])
+	at, err := Append(value, pages.Pages[path])
 	if err != nil {
 		fmt.Println("Error when append is : ", err)
 		return "Fielure Insert"
 	}
 
-	fmt.Println("at in insert func is :", at)
-
 	// index
-	NewIndex(At, len(data), pages.Pages[indexFilePath])
+	NewIndex(At, len(value), pages.Pages[indexFilePath])
 
 	At += at
 	PrimaryIndex++
 
-	return fmt.Sprintf("Success Insert. _id is %d", PrimaryIndex-1)
+	return fmt.Sprintf("Success Insert. _id : %d\n", PrimaryIndex-1)
 }
 
 // append data to Pagefile & returns file size or error
