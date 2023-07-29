@@ -18,10 +18,11 @@ func HandleQueries(query string) string {
 
 	case "select":
 
-		return SelectId(query)
+		return SelectById(query)
 
 	case "update":
-		return "action is Update"
+
+		return Update(RootPath, query)
 
 	case "delete":
 		return "action is Delete"

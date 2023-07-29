@@ -3,7 +3,6 @@ package dblite
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -23,32 +22,35 @@ func (cachedIndexs *CachedIndexs) GetIndex(id int) (pageName string, index [2]in
 
 // initialize cache of indexs
 func NewCachedIndexs() *CachedIndexs {
-	cachedIndexs := &CachedIndexs{}
-	indexs := make([][2]int64, 0)
 
-	// TODO reuse
-	ixBuffer := make([]byte, IndexChnucLen)
+	cachedIndexs := &CachedIndexs{
+		indexs: make([][2]int64, 0),
+	}
+
+	indxBuffer := make([]byte, IndexChnucLen)
 
 	for {
 
-		n, err := pages.Pages[indexFilePath].Read(ixBuffer)
+		n, err := pages.Pages[indexFilePath].Read(indxBuffer)
 		if err != nil && err != io.EOF {
-			log.Fatal(err)
+
+			fmt.Println("ERROR! wher os.Read primary.Index file", err)
+			fmt.Println("index file is ", pages.Pages[indexFilePath])
+			os.Exit(1)
 		}
 		if err == io.EOF {
 			break
 		}
 
-		slicIndexe := strings.Split(string(ixBuffer[:n]), " ")
+		slicIndexe := strings.Split(string(indxBuffer[:n]), " ")
+
+		fmt.Println("length of slicIndexe: ", len(slicIndexe))
 
 		at, _ := strconv.ParseInt(slicIndexe[0], 10, 64)
 		size, _ := strconv.ParseInt(slicIndexe[1], 10, 64)
 
-		indexs = append(indexs, [2]int64{at, size})
+		cachedIndexs.indexs = append(cachedIndexs.indexs, [2]int64{at, size})
 	}
-	cachedIndexs.indexs = indexs
-
-	println("initialize Cached indexs ")
 
 	return cachedIndexs
 }
@@ -57,7 +59,8 @@ func NewCachedIndexs() *CachedIndexs {
 func lastIndex(path string) int64 {
 	info, err := os.Stat(path)
 	if err != nil {
-		return -1
+		// TODO
+		return 0 // panic("ERROR! no primary.index file ")
 	}
 	return info.Size() / 20
 }
@@ -76,30 +79,15 @@ func NewIndex(at int, dataSize int, indexFile *os.File) {
 
 	// TODO add new index to chachedIndexs
 
-	indexsCache.indexs = append(indexsCache.indexs, [2]int64{int64(at), int64(dataSize)})
-}
-
-// update index val in primary.index file
-func UpdateIndex(id int, indexData, size int64, indexFile *os.File) {
-
-	at := int64(id) * 20
-
-	strIndex := fmt.Sprint(indexData) + " " + fmt.Sprint(size)
-	for i := len(strIndex); i < 20; i++ {
-		strIndex += " "
-	}
-
-	_, err := indexFile.WriteAt([]byte(strIndex), at)
-	if err != nil {
-		panic(err)
-	}
-
+	IndexsCache.indexs = append(IndexsCache.indexs, [2]int64{int64(at), int64(dataSize)})
 }
 
 // deletes index from primary.index file
 func DeleteIndex(id int, indxfile *os.File) { //
 	at := int64(id * 20)
 	indxfile.WriteAt([]byte("                    "), at)
+
+	// TODO delete index from indexCache
 }
 
 // get pageName Data Location  & data size from primary.indexes file

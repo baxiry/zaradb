@@ -12,8 +12,6 @@ var RootPath string = userDir() + "/repo/dbs/"
 // Mock path
 var MockPath string = userDir() + "/repo/dblite/mok/"
 
-var indexsCache *CachedIndexs
-
 // map of name files
 type Pages struct {
 	Pages map[string]*os.File
@@ -64,12 +62,9 @@ func (pages *Pages) Open(path string) {
 			fmt.Println("os open file: ", err)
 		}
 		pages.Pages[path+file.Name()] = page
+
+		fmt.Printf("%s is ready\n", file.Name())
 	}
-	fmt.Println("pages is ready")
-
-	indexsCache = NewCachedIndexs()
-	fmt.Println("iCache is ready")
-
 }
 
 // closes All pages
