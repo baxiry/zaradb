@@ -54,17 +54,6 @@ func (pages *Pages) Open(path string) {
 		return
 	}
 
-	if len(files) < 1 {
-		//os.Create(path + "0")
-		os.OpenFile(path+"primary.index", os.O_CREATE|os.O_RDWR, 0644)
-		// return
-	}
-	if len(files) < 2 {
-		//os.Create(path + "0")
-		os.OpenFile(path+"0", os.O_CREATE|os.O_RDWR, 0644)
-		// return
-	}
-
 	for _, file := range files {
 		if file.IsDir() {
 			continue
@@ -79,7 +68,7 @@ func (pages *Pages) Open(path string) {
 	fmt.Println("pages is ready")
 
 	indexsCache = NewCachedIndexs()
-	fmt.Println("icache is ready")
+	fmt.Println("iCache is ready")
 
 }
 

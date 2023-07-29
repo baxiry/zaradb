@@ -32,4 +32,21 @@ func init() {
 	initIndex()
 
 	initIndexsFile()
+
+	initPages()
+}
+
+func initPages() {
+	//os.Create(path + "0")
+	os.OpenFile(RootPath+"0", os.O_CREATE|os.O_RDWR, 0644)
+
+	// check if primary.index is exist
+	_, err := os.Stat(RootPath + "0")
+	if errors.Is(err, os.ErrNotExist) {
+		file, err := os.OpenFile(RootPath+"0", os.O_CREATE|os.O_RDWR, 0644)
+		if err != nil {
+			panic(err)
+		}
+		file.Close()
+	}
 }
