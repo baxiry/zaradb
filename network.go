@@ -1,6 +1,7 @@
 package dblite
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -9,10 +10,18 @@ import (
 
 // TODO connect with muliple clients
 
-var upgrader = websocket.Upgrader{} // default options
+type Notify struct {
+	message     string
+	messageType int
+}
+
+var Channel = make(chan Notify, 1)
 
 // DemonNet listens incoming queries form ws & send result
-func DemonNet(w http.ResponseWriter, r *http.Request) {
+func Resever(w http.ResponseWriter, r *http.Request) {
+
+	var upgrader = websocket.Upgrader{} // default options
+
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Print("upgrade:", err)
@@ -20,21 +29,49 @@ func DemonNet(w http.ResponseWriter, r *http.Request) {
 	}
 	defer c.Close()
 
+	var note Notify
+	var message []byte
+
 	for {
-		mt, message, err := c.ReadMessage()
+		note.messageType, message, err = c.ReadMessage()
 		if err != nil {
-			panic(err)
+			fmt.Println("ERROR! :Panic ReadMessage ", err)
+			break
 		}
-		log.Printf("recv: %s", message)
+		//note.typeMessage = messageType
+
+		//log.Printf("Recve: %s", message)
 
 		// Hande all of Queries
-		result := HandleQueries(string(message))
+		note.message = HandleQueries(string(message))
 
+		Channel <- note
+
+	}
+}
+
+// DemonNet listens incoming queries form ws & send result
+func Sender(w http.ResponseWriter, r *http.Request) {
+
+	var upgrader = websocket.Upgrader{} // default options
+
+	c, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}
+	defer c.Close()
+
+	var note Notify
+
+	for {
+		note = <-Channel
 		// send result to client
-
-		err = c.WriteMessage(mt, []byte(result))
+		err = c.WriteMessage(note.messageType, []byte(note.message))
 		if err != nil {
-			panic(err)
+			fmt.Println("ERROR! :Panic WriteMessage ", err)
+			break
 		}
+
 	}
 }
