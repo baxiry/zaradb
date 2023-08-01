@@ -149,7 +149,10 @@ func Insert(path, query string) (res string) {
 	}
 	PrimaryIndex++
 
+	_, _ = newPage(PrimaryIndex)
+
 	path += fmt.Sprint(PrimaryIndex / 1000)
+	fmt.Println("path in insert is ", path)
 
 	size, err := Append(value, pages.Pages[path])
 	if err != nil {
@@ -162,6 +165,23 @@ func Insert(path, query string) (res string) {
 	At += size
 
 	return fmt.Sprintf("Success Insert. _id : %d\n", PrimaryIndex-1)
+}
+
+// Creates new page data
+func newPage(id int64) (page *os.File, err error) {
+	fmt.Println("id in newPage func is ", id)
+	if id/1000 != 0 {
+		pageName := RootPath + fmt.Sprint(id/1000)
+		fmt.Println("path in new page is ", pageName)
+
+		page, err = os.OpenFile(pageName, os.O_CREATE|os.O_RDWR, 0644)
+		if err != nil {
+			fmt.Println("os open file: ", err)
+		}
+		pages.Pages[pageName] = page
+	}
+
+	return page, err
 }
 
 // Select reads data form docs
@@ -201,3 +221,5 @@ func Append(data string, file *os.File) (size int, err error) {
 func Delete(path string) (err error) {
 	return
 }
+
+// wht is fast ? remander or divider ? 3000/10 or 3000 % 10. for speed during extract dataPage form id

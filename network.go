@@ -75,3 +75,37 @@ func Sender(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
+
+// ws listens incoming queries form ws & send result
+func Ws(w http.ResponseWriter, r *http.Request) {
+
+	var upgrader = websocket.Upgrader{} // default options
+
+	c, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}
+	defer c.Close()
+
+	for {
+		messageType, message, err := c.ReadMessage()
+		if err != nil {
+			fmt.Println("ERROR! :Panic ReadMessage ", err)
+			break
+		}
+
+		log.Printf("Recve: %s", message)
+
+		// Hande all of Queries
+		result := HandleQueries(string(message))
+
+		// send result to client
+		err = c.WriteMessage(messageType, []byte(result))
+		if err != nil {
+			fmt.Println("ERROR! :Panic WriteMessage ", err)
+			break
+		}
+
+	}
+}
