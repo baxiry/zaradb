@@ -15,7 +15,7 @@ type Notify struct {
 	messageType int
 }
 
-var Channel = make(chan Notify, 1)
+var Channel = make(chan Notify, 100)
 
 // DemonNet listens incoming queries form ws & send result
 func Resever(w http.ResponseWriter, r *http.Request) {
