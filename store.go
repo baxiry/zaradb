@@ -152,7 +152,6 @@ func Insert(path, query string) (res string) {
 	_, _ = newPage(PrimaryIndex)
 
 	path += fmt.Sprint(PrimaryIndex / 1000)
-	fmt.Println("path in insert is ", path)
 
 	size, err := Append(value, pages.Pages[path])
 	if err != nil {
@@ -169,10 +168,10 @@ func Insert(path, query string) (res string) {
 
 // Creates new page data
 func newPage(id int64) (page *os.File, err error) {
-	fmt.Println("id in newPage func is ", id)
+	//fmt.Println("id in newPage func is ", id)
 	if id/1000 != 0 {
 		pageName := RootPath + fmt.Sprint(id/1000)
-		fmt.Println("path in new page is ", pageName)
+		//fmt.Println("path in new page is ", pageName)
 
 		page, err = os.OpenFile(pageName, os.O_CREATE|os.O_RDWR, 0644)
 		if err != nil {
