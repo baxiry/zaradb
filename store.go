@@ -45,7 +45,7 @@ func Insert(query string) (res string) {
 	}
 
 	// index
-	iLog.Print("At is ", At)
+	//	iLog.Print("At is ", At)
 	NewIndex(db.Pages[db.Name+collection+pi], At, len(value))
 	At += size
 
@@ -82,13 +82,13 @@ func SelectById(query string) (result string) {
 	size := IndexsCache.indexs[id][1]
 
 	in := gjson.Get(query, "in").String() + slash
-	fmt.Println("table is : ", in)
+	//fmt.Println("table is : ", in)
 	// TODO check from if exist!
 
 	path := db.Name + in + fmt.Sprintf("%d", id/1000)
 
-	iLog.Printf("path %s\nAt %d\nSize %d\n in SelectById \n", path, at, size)
-	iLog.Println("pagesp[path]: ", db.Pages[path])
+	//	iLog.Printf("path %s\nAt %d\nSize %d\n in SelectById \n", path, at, size)
+	//	iLog.Println("pagesp[path]: ", db.Pages[path])
 
 	result = Get(db.Pages[path], at, int(size))
 
@@ -97,12 +97,10 @@ func SelectById(query string) (result string) {
 
 // Update update document data
 func Update(query string) (result string) {
-
 	data := SelectById(query)
-	iLog.Printf("data to Updage :  %v\n", data)
-
+	//	iLog.Printf("data to Updage :  %v\n", data)
 	newData := gjson.Get(query, "data").String()
-	fmt.Println("New data : ", newData)
+	//fmt.Println("New data : ", newData)
 
 	// `{"object":{"first":1,"second":2,"third":3}}`
 	jsonParsed, err := gabs.ParseJSON([]byte(newData))
@@ -117,16 +115,16 @@ func Update(query string) (result string) {
 
 		data = result
 
-		fmt.Printf("DATA: %v\n", data)
+		//fmt.Printf("DATA: %v\n", data)
 	}
 
 	id := gjson.Get(data, "_id").Int()
 
 	collection := gjson.Get(query, "in").String() + slash
 
-	path := db.Name + collection + fmt.Sprint(PrimaryIndex/1000)
+	path := db.Name + collection + fmt.Sprint(id/1000)
 
-	fmt.Println("update in ", path)
+	//	fmt.Println("update in ", path)
 
 	_, err = Append(db.Pages[path], data)
 	if err != nil {
@@ -137,11 +135,11 @@ func Update(query string) (result string) {
 	size := int64(len(data))
 
 	UpdateIndex(db.Pages[db.Name+collection+pi], int(id), int64(At), size)
-	fmt.Println("index file path is : ", db.Name+collection+"pi")
+	//	fmt.Println("index file path is : ", db.Name+collection+"pi")
 
 	At += int(size)
 
-	fmt.Printf("updated data : %v\n", data)
+	//	fmt.Printf("updated data : %v\n", data)
 	return "Success update"
 }
 
@@ -163,9 +161,9 @@ func UpdateIndex(indexFile *os.File, id int, dataAt, dataSize int64) {
 	}
 
 	// TODO update index in indexsCache
-	fmt.Println("IndexCace befor\n", IndexsCache.indexs)
+	//	fmt.Println("IndexCace befor\n", IndexsCache.indexs)
 	IndexsCache.indexs[id] = [2]int64{dataAt, dataSize}
-	fmt.Println("IndexCache after: \n", IndexsCache.indexs)
+	// fmt.Println("IndexCache after: \n", IndexsCache.indexs)
 }
 
 // appends data to Pagefile & returns file size or error
@@ -182,7 +180,7 @@ func newPage(id int64, into string) (page *os.File, err error) {
 	//fmt.Println("id in newPage func is ", id)
 	if id/1000 != 0 {
 		pageName := db.Name + into + fmt.Sprint(id/1000)
-		fmt.Println("path in new page is ", pageName)
+		//		fmt.Println("path in new page is ", pageName)
 
 		page, err = os.OpenFile(pageName, os.O_CREATE|os.O_RDWR, 0644)
 		if err != nil {
@@ -211,6 +209,8 @@ func Get(file *os.File, at int64, size int) string {
 	n, err := file.ReadAt(buffer, at)
 	if err != nil && err != io.EOF {
 		eLog.Println(err)
+		eLog.Println("At", at)
+		eLog.Println("Size", size)
 		return "ERROR form Get::ReadAt func"
 	}
 
