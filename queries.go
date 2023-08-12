@@ -13,8 +13,7 @@ func HandleQueries(query string) string {
 
 	switch action.String() {
 	case "insert":
-
-		return Insert(RootPath, query)
+		return Insert(query)
 
 	case "select":
 
@@ -22,10 +21,10 @@ func HandleQueries(query string) string {
 
 	case "update":
 
-		return Update(RootPath, query)
+		return Update(query) // db.Name = RootPath
 
 	case "delete":
-		DeleteById(RootPath, query)
+		DeleteById(query)
 		return "action is Delete"
 
 	default:

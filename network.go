@@ -24,7 +24,7 @@ func Resever(w http.ResponseWriter, r *http.Request) {
 
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Print("upgrade:", err)
+		eLog.Print("when upgrade ", err)
 		return
 	}
 	defer c.Close()
@@ -35,7 +35,7 @@ func Resever(w http.ResponseWriter, r *http.Request) {
 	for {
 		note.messageType, message, err = c.ReadMessage()
 		if err != nil {
-			fmt.Println("ERROR! :Panic ReadMessage ", err)
+			iLog.Println("ReadMessage ", err)
 			break
 		}
 		//note.typeMessage = messageType

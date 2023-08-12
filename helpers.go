@@ -7,15 +7,16 @@ import (
 	"os/exec"
 	"os/signal"
 	"os/user"
+	"path/filepath"
 	"runtime"
 )
 
-func userDir() string {
+func rootPath() string {
 	usr, err := user.Current()
 	if err != nil {
 		log.Fatal(err)
 	}
-	return usr.HomeDir
+	return filepath.Join(usr.HomeDir, ".dbs")
 }
 
 func ClearScreen() {

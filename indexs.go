@@ -1,6 +1,7 @@
 package dblite
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -11,9 +12,39 @@ import (
 // buffer size of len
 const IndexChnucLen = 20
 
+var PrimaryIndex int64
+
 // [[0,3],[3,8]]
 type CachedIndexs struct {
 	indexs [][2]int64
+}
+
+var IndexsCache *CachedIndexs
+
+func initIndexsFile() {
+	// check if primary.index is exist
+	indexFilePath := db.Name + db.Collections + pi
+	_, err := os.Stat(indexFilePath)
+	if errors.Is(err, os.ErrNotExist) {
+		IndexsFile, err := os.OpenFile(indexFilePath, os.O_CREATE|os.O_RDWR, 0644)
+		if err != nil {
+			eLog.Println("when create indexFile.", err)
+			return
+		}
+		//db.Pages[indexFilePath] = IndexsFile
+		IndexsFile.Close()
+	}
+
+	iLog.Println("indexFilePath is ", indexFilePath)
+
+}
+
+func initIndex() {
+	indexFilePath := db.Name + db.Collections + pi
+	PrimaryIndex = lastIndex(indexFilePath)
+	IndexsCache = NewCachedIndexs()
+
+	println("initialize Cached indexs, length is  ", len(IndexsCache.indexs))
 }
 
 func (cachedIndexs *CachedIndexs) GetIndex(id int) (pageName string, index [2]int64) {
@@ -22,6 +53,7 @@ func (cachedIndexs *CachedIndexs) GetIndex(id int) (pageName string, index [2]in
 
 // initialize cache of indexs
 func NewCachedIndexs() *CachedIndexs {
+	path := db.Name + db.Collections + "pi"
 
 	cachedIndexs := &CachedIndexs{
 		indexs: make([][2]int64, 0),
@@ -30,12 +62,13 @@ func NewCachedIndexs() *CachedIndexs {
 	indxBuffer := make([]byte, IndexChnucLen)
 
 	for {
+		iLog.Println("indexFilePath: ", path)
+		iLog.Println("len of pages : ", len(db.Pages))
 
-		n, err := pages.Pages[indexFilePath].Read(indxBuffer)
+		n, err := db.Pages[path].Read(indxBuffer)
 		if err != nil && err != io.EOF {
-
-			fmt.Println("ERROR! wher os.Read primary.Index file", err)
-			fmt.Println("index file is ", pages.Pages[indexFilePath])
+			eLog.Printf("ERROR! wher os.Read %s file %v", path, err)
+			iLog.Println("index file is ", db.Pages[path])
 			os.Exit(1)
 		}
 		if err == io.EOF {
@@ -44,29 +77,49 @@ func NewCachedIndexs() *CachedIndexs {
 
 		slicIndexe := strings.Split(string(indxBuffer[:n]), " ")
 
-		fmt.Println("length of slicIndexe: ", len(slicIndexe))
-
 		at, _ := strconv.ParseInt(slicIndexe[0], 10, 64)
 		size, _ := strconv.ParseInt(slicIndexe[1], 10, 64)
 
 		cachedIndexs.indexs = append(cachedIndexs.indexs, [2]int64{at, size})
 	}
+	iLog.Println("primary indexs length : ", len(cachedIndexs.indexs))
+
+	At = cachedIndexs.lastAt()
 
 	return cachedIndexs
 }
 
+// get last data location
+func (cachedIndexs *CachedIndexs) lastAt() int {
+	/*
+		info, _ := os.Stat(db.Name + db.Collections + "0")
+		fmt.Println("At is : ", info.Size())
+
+	*/
+	if len(cachedIndexs.indexs) > 0 {
+		at := int(cachedIndexs.indexs[len(cachedIndexs.indexs)-1][0] + cachedIndexs.indexs[len(cachedIndexs.indexs)-1][1])
+		println("At is ", at)
+		return at
+	}
+	return 0
+}
+
 // LastIndex return last index in table
 func lastIndex(path string) int64 {
+	iLog.Println("path in last index func is ", path)
 	info, err := os.Stat(path)
 	if err != nil {
 		// TODO
+		eLog.Println("pi is not exists ")
 		return 0 // panic("ERROR! no primary.index file ")
 	}
+
+	iLog.Println("last index is", info.Size()/20)
 	return info.Size() / 20
 }
 
-// append new index in primary.index file
-func NewIndex(at int, dataSize int, indexFile *os.File) {
+// append new index in pi file
+func NewIndex(indexFile *os.File, at int, dataSize int) {
 
 	strInt := fmt.Sprint(at) + " " + fmt.Sprint(dataSize)
 
@@ -77,21 +130,18 @@ func NewIndex(at int, dataSize int, indexFile *os.File) {
 
 	indexFile.WriteString(strInt)
 
-	// TODO add new index to chachedIndexs
-
 	IndexsCache.indexs = append(IndexsCache.indexs, [2]int64{int64(at), int64(dataSize)})
 }
 
 // deletes index from primary.index file
-func DeleteIndex(id int, indxfile *os.File) { //
+func DeleteIndex(indxfile *os.File, id int) { //
 	at := int64(id * 20)
 	indxfile.WriteAt([]byte("                    "), at)
-
 	// TODO delete index from indexCache
 }
 
 // get pageName Data Location  & data size from primary.indexes file
-func GetIndex(id int, indexFile *os.File) (pageName string, at, size int64) {
+func GetIndex(indexFile *os.File, id int) (pageName string, at, size int64) {
 
 	pageName = strconv.Itoa(int(id) / 1000)
 	bData := make([]byte, 20)
@@ -106,3 +156,5 @@ func GetIndex(id int, indexFile *os.File) (pageName string, at, size int64) {
 	isize, _ := strconv.Atoi(fmt.Sprint(slc[1]))
 	return pageName, int64(iat), int64(isize)
 }
+
+//end
