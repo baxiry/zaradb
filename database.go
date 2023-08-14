@@ -7,8 +7,6 @@ import (
 	"strconv"
 )
 
-// Root database folder
-var RootPath string = rootPath() + slash
 var pi = "pi" // primary index
 
 type Database struct {
@@ -20,7 +18,7 @@ type Database struct {
 // NewCollection constracts List of files collection
 func NewDatabase(name string) *Database {
 	database := &Database{
-		Name:        RootPath + name + slash,
+		Name:        rootPath() + slash + name + slash,
 		Collections: "test" + slash,
 		Pages:       make(map[string]*os.File, 2),
 	}
