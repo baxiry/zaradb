@@ -68,33 +68,6 @@ func arguments() (args []string) {
 	return strings.Split(args[1], ".")
 }
 
-// PathExist check if path exists
-func PathExist(subPath string) bool {
-	_, err := os.Stat(RootPath + subPath)
-	return os.IsNotExist(err)
-}
-
-// ListDir show all directories in path
-func ListDir(path string) {
-	dbs, err := os.ReadDir(RootPath + path)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	dirs := 0
-	for _, dir := range dbs {
-		if dir.IsDir() && string(dir.Name()[0]) != "." {
-			dirs++
-			print(dir.Name(), " ")
-		}
-	}
-	if dirs > 0 {
-		println()
-		return
-	}
-	println(path, "is impty")
-}
-
 // Rename renames db.
 func RenameDB(oldPath, newPath string) error {
 	return os.Rename(oldPath, newPath)
@@ -110,7 +83,7 @@ func CreateDB(dbName string) (string, error) {
 	// _, err = os.Stat("go.mod")
 	//	if os.IsNotExist(err) {return err}
 
-	err := os.MkdirAll(RootPath+dbName+"/.Trash/", 0755)
+	err := os.MkdirAll(db.Name+"/.Trash/", 0755)
 	if err != nil {
 		return dbName, err
 	}

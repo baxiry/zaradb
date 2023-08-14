@@ -45,3 +45,30 @@ func SysNotify() {
 	fmt.Println("Got signal:", s)
 
 }
+
+// PathExist check if path exists
+func PathExist(subPath string) bool {
+	_, err := os.Stat(rootPath() + subPath)
+	return os.IsNotExist(err)
+}
+
+// ListDir show all directories in path
+func ListDir(path string) {
+	dbs, err := os.ReadDir(rootPath() + path)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	dirs := 0
+	for _, dir := range dbs {
+		if dir.IsDir() && string(dir.Name()[0]) != "." {
+			dirs++
+			print(dir.Name(), " ")
+		}
+	}
+	if dirs > 0 {
+		println()
+		return
+	}
+	println(path, "is impty")
+}
