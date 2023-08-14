@@ -26,7 +26,6 @@ func Insert(query string) (res string) {
 	if err != nil {
 		fmt.Println("sjson.Set : ", err)
 	}
-	PrimaryIndex++
 
 	collection := gjson.Get(query, "in").String() + slash
 	if len(collection) == 0 {
@@ -49,6 +48,7 @@ func Insert(query string) (res string) {
 	NewIndex(db.Pages[db.Name+collection+pi], At, len(value))
 	At += size
 
+	PrimaryIndex++
 	return fmt.Sprintf("Success Insert. _id : %d\n", PrimaryIndex-1)
 }
 
@@ -87,9 +87,6 @@ func SelectById(query string) (result string) {
 
 	path := db.Name + in + fmt.Sprintf("%d", id/1000)
 
-	//	iLog.Printf("path %s\nAt %d\nSize %d\n in SelectById \n", path, at, size)
-	//	iLog.Println("pagesp[path]: ", db.Pages[path])
-
 	result = Get(db.Pages[path], at, int(size))
 
 	return result
@@ -110,21 +107,18 @@ func Update(query string) (result string) {
 
 	// extract fields that need to update
 	for field, val := range jsonParsed.ChildrenMap() {
-
 		result, _ = sjson.Set(data, field, val)
-
 		data = result
-
-		//fmt.Printf("DATA: %v\n", data)
 	}
 
 	id := gjson.Get(data, "_id").Int()
-
 	collection := gjson.Get(query, "in").String() + slash
 
 	path := db.Name + collection + fmt.Sprint(id/1000)
 
-	//	fmt.Println("update in ", path)
+	if id/1000 == 0 {
+		iLog.Printf("id is %d AND path is %s\n", id, path)
+	}
 
 	_, err = Append(db.Pages[path], data)
 	if err != nil {
@@ -180,7 +174,7 @@ func newPage(id int64, into string) (page *os.File, err error) {
 	//fmt.Println("id in newPage func is ", id)
 	if id/1000 != 0 {
 		pageName := db.Name + into + fmt.Sprint(id/1000)
-		//		fmt.Println("path in new page is ", pageName)
+		iLog.Println("path in new page is ", pageName)
 
 		page, err = os.OpenFile(pageName, os.O_CREATE|os.O_RDWR, 0644)
 		if err != nil {
