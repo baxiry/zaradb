@@ -143,7 +143,7 @@ func DeleteIndex(indxfile *os.File, id int) { //
 // get pageName Data Location  & data size from primary.indexes file
 func GetIndex(indexFile *os.File, id int) (pageName string, at, size int64) {
 
-	pageName = strconv.Itoa(int(id) / 1000)
+	pageName = strconv.Itoa(id / int(MaxObjects))
 	bData := make([]byte, 20)
 	_, err := indexFile.ReadAt(bData, int64(id*20))
 	if err != nil {
@@ -155,6 +155,29 @@ func GetIndex(indexFile *os.File, id int) (pageName string, at, size int64) {
 
 	isize, _ := strconv.Atoi(fmt.Sprint(slc[1]))
 	return pageName, int64(iat), int64(isize)
+}
+
+// update index val in primary.index file
+func UpdateIndex(indexFile *os.File, id int, dataAt, dataSize int64) {
+
+	at := int64(id * 20)
+
+	strIndex := fmt.Sprint(dataAt) + " " + fmt.Sprint(dataSize)
+	for i := len(strIndex); i < 20; i++ {
+		strIndex += " "
+	}
+
+	_, err := indexFile.WriteAt([]byte(strIndex), at)
+	if err != nil {
+		fmt.Println("id & at is ", id, at)
+		fmt.Println("err when UpdateIndex, store.go line 127", err)
+
+	}
+
+	// TODO update index in indexsCache
+	//	fmt.Println("IndexCace befor\n", IndexsCache.indexs)
+	IndexsCache.indexs[id] = [2]int64{dataAt, dataSize}
+	// fmt.Println("IndexCache after: \n", IndexsCache.indexs)
 }
 
 //end

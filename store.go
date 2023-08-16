@@ -15,10 +15,60 @@ import (
 // At is where enginge insert data in page
 var At int
 
+var MaxObjects int64 = 10_000
+
 const slash = "/" // will be depend os
+
+// Update update document data
+func Update(query string) (result string) {
+	collection := gjson.Get(query, "in").String() + slash
+	if len(collection) == 1 {
+		return "ERROR! select no collection "
+	}
+
+	data := SelectById(query)
+	newData := gjson.Get(query, "data").String()
+
+	// `{"object":{"first":1,"second":2,"third":3}}`
+	jsonParsed, err := gabs.ParseJSON([]byte(newData))
+	if err != nil {
+		return fmt.Sprintf("ERROR: parse data json %s", err)
+	}
+
+	// extract fields that need to update
+	for field, val := range jsonParsed.ChildrenMap() {
+		result, _ = sjson.Set(data, field, val)
+		data = result
+	}
+
+	id := gjson.Get(data, "_id").Int()
+
+	path := db.Name + collection + fmt.Sprint(id/MaxObjects)
+
+	_, err = Append(db.Pages[path], data)
+	if err != nil {
+		return fmt.Errorf("ERROR! from Append %v\n", err).Error()
+	}
+
+	// Update index
+	size := int64(len(data))
+
+	UpdateIndex(db.Pages[db.Name+collection+pi], int(id), int64(At), size)
+	//	fmt.Println("index file path is : ", db.Name+collection+"pi")
+
+	At += int(size)
+
+	//	fmt.Printf("updated data : %v\n", data)
+	return "Success update"
+}
 
 // Insert
 func Insert(query string) (res string) {
+
+	collection := gjson.Get(query, "in").String() + slash
+	if len(collection) == 1 {
+		return fmt.Sprint("failure insert. insert into no collection")
+	}
 
 	data := gjson.Get(query, "data").String()
 
@@ -27,14 +77,18 @@ func Insert(query string) (res string) {
 		fmt.Println("sjson.Set : ", err)
 	}
 
-	collection := gjson.Get(query, "in").String() + slash
-	if len(collection) == 0 {
-		return fmt.Sprint("failure insert. insert into no collection")
+	if PrimaryIndex/MaxObjects != 0 {
+		pageName := db.Name + collection + fmt.Sprint(PrimaryIndex/MaxObjects)
+		//iLog.Println("path in new page is ", pageName)
+
+		page, err := os.OpenFile(pageName, os.O_CREATE|os.O_RDWR, 0644)
+		if err != nil {
+			fmt.Println("os open file: ", err)
+		}
+		db.Pages[pageName] = page
 	}
 
-	_, _ = newPage(PrimaryIndex, collection)
-
-	path := db.Name + collection + fmt.Sprint(PrimaryIndex/1000)
+	path := db.Name + collection + fmt.Sprint(PrimaryIndex/MaxObjects)
 
 	size, err := Append(db.Pages[path], value)
 	if err != nil {
@@ -43,21 +97,20 @@ func Insert(query string) (res string) {
 		return "Fielure Insert"
 	}
 
-	// index
-	//	iLog.Print("At is ", At)
+	// set new index
 	NewIndex(db.Pages[db.Name+collection+pi], At, len(value))
 	At += size
-
 	PrimaryIndex++
-	return fmt.Sprintf("Success Insert. _id : %d\n", PrimaryIndex-1)
+	return fmt.Sprintf("Success Insert, _id: %d", PrimaryIndex-1)
 }
 
+// delete
 func DeleteById(query string) (result string) {
 
 	id := gjson.Get(query, "_id").Int()
 	in := gjson.Get(query, "in").String() + slash
 
-	path := db.Name + in + fmt.Sprint(PrimaryIndex/1000)
+	path := db.Name + in + fmt.Sprint(PrimaryIndex/MaxObjects)
 
 	fmt.Println("path id DeleteById: ", path)
 
@@ -85,79 +138,11 @@ func SelectById(query string) (result string) {
 	//fmt.Println("table is : ", in)
 	// TODO check from if exist!
 
-	path := db.Name + in + fmt.Sprintf("%d", id/1000)
+	path := db.Name + in + fmt.Sprintf("%d", id/MaxObjects)
 
 	result = Get(db.Pages[path], at, int(size))
 
 	return result
-}
-
-// Update update document data
-func Update(query string) (result string) {
-	data := SelectById(query)
-	//	iLog.Printf("data to Updage :  %v\n", data)
-	newData := gjson.Get(query, "data").String()
-	//fmt.Println("New data : ", newData)
-
-	// `{"object":{"first":1,"second":2,"third":3}}`
-	jsonParsed, err := gabs.ParseJSON([]byte(newData))
-	if err != nil {
-		return fmt.Sprintf("ERROR: parse data json %s", err)
-	}
-
-	// extract fields that need to update
-	for field, val := range jsonParsed.ChildrenMap() {
-		result, _ = sjson.Set(data, field, val)
-		data = result
-	}
-
-	id := gjson.Get(data, "_id").Int()
-	collection := gjson.Get(query, "in").String() + slash
-
-	path := db.Name + collection + fmt.Sprint(id/1000)
-
-	if id/1000 == 0 {
-		iLog.Printf("id is %d AND path is %s\n", id, path)
-	}
-
-	_, err = Append(db.Pages[path], data)
-	if err != nil {
-		return fmt.Errorf("ERROR! from Append %v\n", err).Error()
-	}
-
-	// Update index
-	size := int64(len(data))
-
-	UpdateIndex(db.Pages[db.Name+collection+pi], int(id), int64(At), size)
-	//	fmt.Println("index file path is : ", db.Name+collection+"pi")
-
-	At += int(size)
-
-	//	fmt.Printf("updated data : %v\n", data)
-	return "Success update"
-}
-
-// update index val in primary.index file
-func UpdateIndex(indexFile *os.File, id int, dataAt, dataSize int64) {
-
-	at := int64(id * 20)
-
-	strIndex := fmt.Sprint(dataAt) + " " + fmt.Sprint(dataSize)
-	for i := len(strIndex); i < 20; i++ {
-		strIndex += " "
-	}
-
-	_, err := indexFile.WriteAt([]byte(strIndex), at)
-	if err != nil {
-		fmt.Println("id & at is ", id, at)
-		fmt.Println("err when UpdateIndex, store.go line 127", err)
-
-	}
-
-	// TODO update index in indexsCache
-	//	fmt.Println("IndexCace befor\n", IndexsCache.indexs)
-	IndexsCache.indexs[id] = [2]int64{dataAt, dataSize}
-	// fmt.Println("IndexCache after: \n", IndexsCache.indexs)
 }
 
 // appends data to Pagefile & returns file size or error
@@ -167,23 +152,6 @@ func Append(file *os.File, data string) (size int, err error) {
 		eLog.Println("Error WriteString ", err)
 	}
 	return size, err
-}
-
-// Creates new page data
-func newPage(id int64, into string) (page *os.File, err error) {
-	//fmt.Println("id in newPage func is ", id)
-	if id/1000 != 0 {
-		pageName := db.Name + into + fmt.Sprint(id/1000)
-		iLog.Println("path in new page is ", pageName)
-
-		page, err = os.OpenFile(pageName, os.O_CREATE|os.O_RDWR, 0644)
-		if err != nil {
-			fmt.Println("os open file: ", err)
-		}
-		db.Pages[pageName] = page
-	}
-
-	return page, err
 }
 
 // Select reads data form docs
