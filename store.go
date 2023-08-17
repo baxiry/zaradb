@@ -101,7 +101,11 @@ func Insert(query string) (res string) {
 	NewIndex(db.Pages[db.Name+collection+pi], At, len(value))
 	At += size
 	PrimaryIndex++
-	return fmt.Sprintf("Success Insert, _id: %d", PrimaryIndex-1)
+	return fmt.Sprint("Success Insert, _id: ", PrimaryIndex-1)
+}
+
+func selectFields(query string) string {
+	return ""
 }
 
 // delete

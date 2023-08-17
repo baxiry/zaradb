@@ -128,7 +128,8 @@ func NewIndex(indexFile *os.File, at int, dataSize int) {
 		strInt += " "
 	}
 
-	indexFile.WriteString(strInt)
+	//indexFile.WriteString(strInt)
+	indexFile.WriteAt([]byte(strInt), (PrimaryIndex)*20)
 
 	IndexsCache.indexs = append(IndexsCache.indexs, [2]int64{int64(at), int64(dataSize)})
 }
