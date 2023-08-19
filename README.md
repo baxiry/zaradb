@@ -1,2 +1,2 @@
 # ZaraDB 
-zaraDB is simple document database for learning purposes
+zaradb is simple document database for learning purposes
