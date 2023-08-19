@@ -72,13 +72,13 @@ func Insert(query string) (res string) {
 
 	data := gjson.Get(query, "data").String()
 
-	value, err := sjson.Set(data, "_id", PrimaryIndex)
+	value, err := sjson.Set(data, "_id", db.PrimaryIndex)
 	if err != nil {
 		fmt.Println("sjson.Set : ", err)
 	}
 
-	if PrimaryIndex/MaxObjects != 0 {
-		pageName := db.Name + collection + fmt.Sprint(PrimaryIndex/MaxObjects)
+	if db.PrimaryIndex/MaxObjects != 0 {
+		pageName := db.Name + collection + fmt.Sprint(db.PrimaryIndex/MaxObjects)
 		//iLog.Println("path in new page is ", pageName)
 
 		page, err := os.OpenFile(pageName, os.O_CREATE|os.O_RDWR, 0644)
@@ -88,7 +88,7 @@ func Insert(query string) (res string) {
 		db.Pages[pageName] = page
 	}
 
-	path := db.Name + collection + fmt.Sprint(PrimaryIndex/MaxObjects)
+	path := db.Name + collection + fmt.Sprint(db.PrimaryIndex/MaxObjects)
 
 	size, err := Append(db.Pages[path], value)
 	if err != nil {
@@ -100,8 +100,8 @@ func Insert(query string) (res string) {
 	// set new index
 	NewIndex(db.Pages[db.Name+collection+pi], At, len(value))
 	At += size
-	PrimaryIndex++
-	return fmt.Sprint("Success Insert, _id: ", PrimaryIndex-1)
+	db.PrimaryIndex++
+	return fmt.Sprint("Success Insert, _id: ", db.PrimaryIndex-1)
 }
 
 func selectFields(query string) string {
@@ -115,7 +115,7 @@ func DeleteById(query string) (result string) {
 	id := gjson.Get(query, "_id").Int()
 	in := gjson.Get(query, "in").String() + slash
 
-	path := db.Name + in + fmt.Sprint(PrimaryIndex/MaxObjects)
+	path := db.Name + in + fmt.Sprint(db.PrimaryIndex/MaxObjects)
 
 	fmt.Println("path id DeleteById: ", path)
 

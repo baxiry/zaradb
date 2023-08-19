@@ -12,7 +12,11 @@ import (
 // buffer size of len
 const IndexChnucLen = 20
 
-var PrimaryIndex int64
+type Index struct {
+	primaryIndex int64
+	at           int64
+	size         int
+}
 
 // [[0,3],[3,8]]
 type CachedIndexs struct {
@@ -41,7 +45,7 @@ func initIndexsFile() {
 
 func initIndex() {
 	indexFilePath := db.Name + db.Collection + pi
-	PrimaryIndex = lastIndex(indexFilePath)
+	db.PrimaryIndex = lastIndex(indexFilePath)
 	IndexsCache = NewCachedIndexs()
 
 	println("initialize Cached indexs, length is  ", len(IndexsCache.indexs))
@@ -62,8 +66,8 @@ func NewCachedIndexs() *CachedIndexs {
 	indxBuffer := make([]byte, IndexChnucLen)
 
 	for {
-		iLog.Println("indexFilePath: ", path)
-		iLog.Println("len of pages : ", len(db.Pages))
+		//iLog.Println("indexFilePath: ", path)
+		// iLog.Println("len of pages : ", len(db.Pages))
 
 		n, err := db.Pages[path].Read(indxBuffer)
 		if err != nil && err != io.EOF {
@@ -129,7 +133,7 @@ func NewIndex(indexFile *os.File, at int, dataSize int) {
 	}
 
 	//indexFile.WriteString(strInt)
-	indexFile.WriteAt([]byte(strInt), (PrimaryIndex)*20)
+	indexFile.WriteAt([]byte(strInt), (db.PrimaryIndex)*20)
 
 	IndexsCache.indexs = append(IndexsCache.indexs, [2]int64{int64(at), int64(dataSize)})
 }

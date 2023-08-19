@@ -3,23 +3,22 @@ package dblite
 import (
 	"io/fs"
 	"os"
-	"path/filepath"
-	"strconv"
 )
 
 var pi = "pi" // primary index
 
 type Database struct {
-	Name        string
-	Collection  string
-	collections map[string]Collection
-	Pages       map[string]*os.File
+	PrimaryIndex int64
+	Indexs       map[string]Index
+	Name         string
+	Collection   string
+	//	collections  map[string]Collection
+	Pages map[string]*os.File
 }
 
 type Collection struct {
 	primaryIndex int64
 	at           int
-	size         int
 }
 
 // NewCollection constracts List of files collection
@@ -28,27 +27,9 @@ func NewDatabase(name string) *Database {
 		Name:       rootPath() + name + slash,
 		Collection: "test" + slash,
 		Pages:      make(map[string]*os.File, 2),
+		Indexs:     make(map[string]Index, 1),
 	}
 	return database
-}
-
-// creates new page and add it to Collections
-func (db *Database) NewPage(id int) {
-	// TODO
-	indexFilePath := db.Name + db.Collection + pi
-
-	filename, _, _ := GetIndex(db.Pages[indexFilePath], id)
-	//	iLog.Println("GetIndex from :", indexFilePath)
-
-	file, err := os.Create(filename)
-	if err != nil {
-		panic(err)
-	}
-
-	path := filepath.Join(db.Name, db.Collection+strconv.Itoa(id))
-
-	db.Pages[path] = file
-	//iLog.Printf("new page is created with %s path\n", path)
 }
 
 // opnens all collection in Root database folder
@@ -119,3 +100,25 @@ func (db *Database) Close() {
 		iLog.Printf("%s closed\n", page.Name())
 	}
 }
+
+/*
+
+// creates new page and add it to Collections
+func (db *Database) NewPage(id int) {
+	// TODO
+	indexFilePath := db.Name + db.Collection + pi
+
+	filename, _, _ := GetIndex(db.Pages[indexFilePath], id)
+	//	iLog.Println("GetIndex from :", indexFilePath)
+
+	file, err := os.Create(filename)
+	if err != nil {
+		panic(err)
+	}
+
+	path := filepath.Join(db.Name, db.Collection+strconv.Itoa(id))
+
+	db.Pages[path] = file
+	//iLog.Printf("new page is created with %s path\n", path)
+}
+*/

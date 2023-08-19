@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -98,7 +99,8 @@ func Ws(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Recve: %s", message)
 
 		// Hande all of Queries
-		result := HandleQueries(string(message))
+		start := time.Now()
+		result := HandleQueries(string(message)) + "\n" + time.Since(start).String()
 
 		// send result to client
 		err = c.WriteMessage(messageType, []byte(result))
