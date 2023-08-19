@@ -12,13 +12,20 @@ var pi = "pi" // primary index
 type Database struct {
 	Name        string
 	Collections string
+	collections map[string]Collection
 	Pages       map[string]*os.File
+}
+
+type Collection struct {
+	primaryIndex int64
+	at           int
+	size         int
 }
 
 // NewCollection constracts List of files collection
 func NewDatabase(name string) *Database {
 	database := &Database{
-		Name:        rootPath() + slash + name + slash,
+		Name:        rootPath() + name + slash,
 		Collections: "test" + slash,
 		Pages:       make(map[string]*os.File, 2),
 	}

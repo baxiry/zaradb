@@ -16,11 +16,10 @@ func rootPath() string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return filepath.Join(usr.HomeDir, ".dbs")
+	return filepath.Join(usr.HomeDir, ".dbs") + slash
 }
 
 func ClearScreen() {
-
 	var cmd *exec.Cmd
 
 	if runtime.GOOS == "windows" {
@@ -31,7 +30,7 @@ func ClearScreen() {
 
 	cmd.Stdout = os.Stdout
 	cmd.Run()
-	cmd.Run()
+	//cmd.Run()
 	//Runs twice because sometimes pterodactyl servers needs a 2nd clear
 }
 

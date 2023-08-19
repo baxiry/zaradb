@@ -17,7 +17,7 @@ var At int
 
 var MaxObjects int64 = 10_000
 
-const slash = "/" // will be depend os
+const slash = string(os.PathSeparator) // not tested for windos
 
 // Update update document data
 func Update(query string) (result string) {
@@ -105,6 +105,7 @@ func Insert(query string) (res string) {
 }
 
 func selectFields(query string) string {
+
 	return ""
 }
 
