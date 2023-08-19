@@ -11,7 +11,7 @@ var pi = "pi" // primary index
 
 type Database struct {
 	Name        string
-	Collections string
+	Collection  string
 	collections map[string]Collection
 	Pages       map[string]*os.File
 }
@@ -25,9 +25,9 @@ type Collection struct {
 // NewCollection constracts List of files collection
 func NewDatabase(name string) *Database {
 	database := &Database{
-		Name:        rootPath() + name + slash,
-		Collections: "test" + slash,
-		Pages:       make(map[string]*os.File, 2),
+		Name:       rootPath() + name + slash,
+		Collection: "test" + slash,
+		Pages:      make(map[string]*os.File, 2),
 	}
 	return database
 }
@@ -35,7 +35,7 @@ func NewDatabase(name string) *Database {
 // creates new page and add it to Collections
 func (db *Database) NewPage(id int) {
 	// TODO
-	indexFilePath := db.Name + db.Collections + "pi"
+	indexFilePath := db.Name + db.Collection + pi
 
 	filename, _, _ := GetIndex(db.Pages[indexFilePath], id)
 	//	iLog.Println("GetIndex from :", indexFilePath)
@@ -45,7 +45,7 @@ func (db *Database) NewPage(id int) {
 		panic(err)
 	}
 
-	path := filepath.Join(db.Name, db.Collections+strconv.Itoa(id))
+	path := filepath.Join(db.Name, db.Collection+strconv.Itoa(id))
 
 	db.Pages[path] = file
 	//iLog.Printf("new page is created with %s path\n", path)
@@ -53,7 +53,7 @@ func (db *Database) NewPage(id int) {
 
 // opnens all collection in Root database folder
 func (db *Database) Open() {
-	path := db.Name + db.Collections
+	path := db.Name + db.Collection
 	//	iLog.Println("opening database ", path)
 
 	var err error
@@ -61,15 +61,15 @@ func (db *Database) Open() {
 
 	files, err = os.ReadDir(path)
 	if os.IsNotExist(err) {
-		err = os.MkdirAll(db.Name+db.Collections, 0744)
+		err = os.MkdirAll(db.Name+db.Collection, 0744)
 		if err != nil {
 			eLog.Println("while mkDir", err)
 		}
 	}
 
-	_, err = os.Stat(db.Name + db.Collections + pi)
+	_, err = os.Stat(db.Name + db.Collection + pi)
 	if os.IsNotExist(err) {
-		f, err := os.OpenFile(db.Name+db.Collections+pi, os.O_CREATE|os.O_RDWR, 0644)
+		f, err := os.OpenFile(db.Name+db.Collection+pi, os.O_CREATE|os.O_RDWR, 0644)
 		if err != nil {
 			eLog.Println("when creating pi ", err)
 			return
@@ -96,7 +96,7 @@ func (db *Database) Open() {
 			//break
 		}
 		// filepath.Join(path, file.Name())
-		db.Pages[db.Name+db.Collections+file.Name()] = page
+		db.Pages[db.Name+db.Collection+file.Name()] = page
 
 		//	iLog.Printf("%s is ready\n", file.Name())
 	}
@@ -106,7 +106,7 @@ func (db *Database) Open() {
 			iLog.Printf("os open file: %s,  %v\n", path+"0", err)
 		}
 		// filepath.Join(path, file.Name())
-		db.Pages[db.Name+db.Collections+"0"] = page
+		db.Pages[db.Name+db.Collection+"0"] = page
 
 	}
 	// iLog.Println("length of db.Pages is : ", len(db.Pages))

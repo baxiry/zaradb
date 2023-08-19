@@ -23,7 +23,7 @@ var IndexsCache *CachedIndexs
 
 func initIndexsFile() {
 	// check if primary.index is exist
-	indexFilePath := db.Name + db.Collections + pi
+	indexFilePath := db.Name + db.Collection + pi
 	_, err := os.Stat(indexFilePath)
 	if errors.Is(err, os.ErrNotExist) {
 		IndexsFile, err := os.OpenFile(indexFilePath, os.O_CREATE|os.O_RDWR, 0644)
@@ -40,7 +40,7 @@ func initIndexsFile() {
 }
 
 func initIndex() {
-	indexFilePath := db.Name + db.Collections + pi
+	indexFilePath := db.Name + db.Collection + pi
 	PrimaryIndex = lastIndex(indexFilePath)
 	IndexsCache = NewCachedIndexs()
 
@@ -53,7 +53,7 @@ func (cachedIndexs *CachedIndexs) GetIndex(id int) (pageName string, index [2]in
 
 // initialize cache of indexs
 func NewCachedIndexs() *CachedIndexs {
-	path := db.Name + db.Collections + "pi"
+	path := db.Name + db.Collection + pi
 
 	cachedIndexs := &CachedIndexs{
 		indexs: make([][2]int64, 0),
