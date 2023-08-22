@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -39,10 +38,7 @@ func Resever(w http.ResponseWriter, r *http.Request) {
 			iLog.Println("ReadMessage ", err)
 			break
 		}
-		//note.typeMessage = messageType
-
-		//log.Printf("Recve: %s", message)
-
+		// note.typeMessage = messageType
 		// Hande all of Queries
 		note.message = HandleQueries(string(message))
 
@@ -99,8 +95,7 @@ func Ws(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Recve: %s", message)
 
 		// Hande all of Queries
-		start := time.Now()
-		result := HandleQueries(string(message)) + "\n" + time.Since(start).String()
+		result := HandleQueries(string(message))
 
 		// send result to client
 		err = c.WriteMessage(messageType, []byte(result))

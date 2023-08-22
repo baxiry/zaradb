@@ -51,14 +51,12 @@ func Update(query string) (result string) {
 	}
 
 	// Update index
-	size := int64(len(data))
+	size := len(data)
 
-	UpdateIndex(db.Pages[db.Name+collection+pi], int(id), int64(At), size)
-	//	fmt.Println("index file path is : ", db.Name+collection+"pi")
+	UpdateIndex(db.Pages[db.Name+collection+pi], int(id), int64(At), int64(size))
 
-	At += int(size)
+	At += size
 
-	//	fmt.Printf("updated data : %v\n", data)
 	return "Success update"
 }
 
@@ -77,8 +75,10 @@ func Insert(query string) (res string) {
 		fmt.Println("sjson.Set : ", err)
 	}
 
-	if db.PrimaryIndex/MaxObjects != 0 {
-		pageName := db.Name + collection + fmt.Sprint(db.PrimaryIndex/MaxObjects)
+	full := db.PrimaryIndex / MaxObjects
+
+	if full != 0 {
+		pageName := db.Name + collection + fmt.Sprint(full)
 		//iLog.Println("path in new page is ", pageName)
 
 		page, err := os.OpenFile(pageName, os.O_CREATE|os.O_RDWR, 0644)

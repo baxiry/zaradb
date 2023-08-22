@@ -16,9 +16,10 @@ type Database struct {
 	Pages map[string]*os.File
 }
 
-type Collection struct {
+type Index struct {
 	primaryIndex int64
-	at           int
+	at           int64
+	size         int
 }
 
 // NewCollection constracts List of files collection

@@ -12,12 +12,6 @@ import (
 // buffer size of len
 const IndexChnucLen = 20
 
-type Index struct {
-	primaryIndex int64
-	at           int64
-	size         int
-}
-
 // [[0,3],[3,8]]
 type CachedIndexs struct {
 	indexs [][2]int64

@@ -7,14 +7,12 @@ var db = NewDatabase("test")
 func (Enginge) Run() {
 
 	// println("Engine Runing...")
-
 	db.Open()
 
 	// check & init index map & firs page store
 	initIndexsFile()
 
 	//db := NewDatabase()
-
 	initIndex()
 
 }
