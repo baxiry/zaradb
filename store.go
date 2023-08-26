@@ -5,7 +5,6 @@ import (
 	"io"
 	"os"
 
-	"github.com/Jeffail/gabs/v2"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 )
@@ -15,50 +14,9 @@ import (
 // At is where enginge insert data in page
 var At int
 
-var MaxObjects int64 = 10_000
+var MaxObjects int64 = 1_000
 
 const slash = string(os.PathSeparator) // not tested for windos
-
-// Update update document data
-func Update(query string) (result string) {
-	collection := gjson.Get(query, "in").String() + slash
-	if len(collection) == 1 {
-		return "ERROR! select no collection "
-	}
-
-	data := SelectById(query)
-	newData := gjson.Get(query, "data").String()
-
-	// `{"object":{"first":1,"second":2,"third":3}}`
-	jsonParsed, err := gabs.ParseJSON([]byte(newData))
-	if err != nil {
-		return fmt.Sprintf("ERROR: parse data json %s", err)
-	}
-
-	// extract fields that need to update
-	for field, val := range jsonParsed.ChildrenMap() {
-		result, _ = sjson.Set(data, field, val)
-		data = result
-	}
-
-	id := gjson.Get(data, "_id").Int()
-
-	path := db.Name + collection + fmt.Sprint(id/MaxObjects)
-
-	_, err = Append(db.Pages[path], data)
-	if err != nil {
-		return fmt.Errorf("ERROR! from Append %v\n", err).Error()
-	}
-
-	// Update index
-	size := len(data)
-
-	UpdateIndex(db.Pages[db.Name+collection+pi], int(id), int64(At), int64(size))
-
-	At += size
-
-	return "Success update"
-}
 
 // Insert
 func Insert(query string) (res string) {
@@ -75,20 +33,20 @@ func Insert(query string) (res string) {
 		fmt.Println("sjson.Set : ", err)
 	}
 
-	full := db.PrimaryIndex / MaxObjects
-
-	if full != 0 {
-		pageName := db.Name + collection + fmt.Sprint(full)
+	pName := db.PrimaryIndex / MaxObjects // page name as int
+	// TODO check here . my be a bug
+	if pName != 0 {
+		pagePath := db.Name + collection + fmt.Sprint(pName)
 		//iLog.Println("path in new page is ", pageName)
 
-		page, err := os.OpenFile(pageName, os.O_CREATE|os.O_RDWR, 0644)
+		page, err := os.OpenFile(pagePath, os.O_CREATE|os.O_RDWR, 0644)
 		if err != nil {
 			fmt.Println("os open file: ", err)
 		}
-		db.Pages[pageName] = page
+		db.Pages[pagePath] = page
 	}
 
-	path := db.Name + collection + fmt.Sprint(db.PrimaryIndex/MaxObjects)
+	path := db.Name + collection + fmt.Sprint(pName)
 
 	size, err := Append(db.Pages[path], value)
 	if err != nil {
@@ -98,15 +56,41 @@ func Insert(query string) (res string) {
 	}
 
 	// set new index
-	NewIndex(db.Pages[db.Name+collection+pi], At, len(value))
+	NewIndex(db.Pages[db.Name+collection+pi], At, size)
 	At += size
 	db.PrimaryIndex++
 	return fmt.Sprint("Success Insert, _id: ", db.PrimaryIndex-1)
 }
 
-func selectFields(query string) string {
+// Update update document data
+func Update(query string) (result string) {
+	collection := gjson.Get(query, "in").String() + slash
+	if len(collection) == 1 {
+		return "ERROR! select no collection "
+	}
 
-	return ""
+	data := SelectById(query)
+	newData := gjson.Get(query, "data").String()
+
+	data = gjson.Get("["+data+","+newData+"]", "@join").String()
+
+	id := gjson.Get(data, "_id").Int()
+
+	path := db.Name + collection + fmt.Sprint(id/MaxObjects)
+
+	_, err := Append(db.Pages[path], data)
+	if err != nil {
+		return fmt.Errorf("ERROR! from Append %v\n", err).Error()
+	}
+
+	// Update index
+	size := len(data)
+
+	UpdateIndex(db.Pages[db.Name+collection+pi], int(id), int64(At), int64(size))
+
+	At += size
+
+	return "Success update"
 }
 
 // delete
@@ -190,4 +174,53 @@ func Delete(path string) (err error) {
 	return
 }
 
+func selectFields(query string) string {
+	return ""
+}
+
 // wht is fast ? remander or divider ? 3000/10 or 3000 % 10. for speed during extract dataPage form id
+
+/*
+
+// Update update document data
+func Update(query string) (result string) {
+	collection := gjson.Get(query, "in").String() + slash
+	if len(collection) == 1 {
+		return "ERROR! select no collection "
+	}
+
+	data := SelectById(query)
+	newData := gjson.Get(query, "data").String()
+
+	// `{"object":{"first":1,"second":2,"third":3}}`
+	jsonParsed, err := gabs.ParseJSON([]byte(newData))
+	if err != nil {
+		return fmt.Sprintf("ERROR: parse data json %s", err)
+	}
+
+	// extract fields that need to update
+	for field, val := range jsonParsed.ChildrenMap() {
+		result, _ = sjson.Set(data, field, val)
+		data = result
+	}
+
+	id := gjson.Get(data, "_id").Int()
+
+	path := db.Name + collection + fmt.Sprint(id/MaxObjects)
+
+	_, err = Append(db.Pages[path], data)
+	if err != nil {
+		return fmt.Errorf("ERROR! from Append %v\n", err).Error()
+	}
+
+	// Update index
+	size := len(data)
+
+	UpdateIndex(db.Pages[db.Name+collection+pi], int(id), int64(At), int64(size))
+
+	At += size
+
+	return "Success update"
+}
+
+*/

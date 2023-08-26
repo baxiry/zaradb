@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -36,9 +37,12 @@ func Resever(w http.ResponseWriter, r *http.Request) {
 		note.messageType, message, err = c.ReadMessage()
 		if err != nil {
 			iLog.Println("ReadMessage ", err)
-			break
+			//break
 		}
-		// note.typeMessage = messageType
+		//note.typeMessage = messageType
+
+		//log.Printf("Recve: %s", message)
+
 		// Hande all of Queries
 		note.message = HandleQueries(string(message))
 
@@ -67,7 +71,7 @@ func Sender(w http.ResponseWriter, r *http.Request) {
 		err = c.WriteMessage(note.messageType, []byte(note.message))
 		if err != nil {
 			fmt.Println("ERROR! :Panic WriteMessage ", err)
-			break
+			//break
 		}
 
 	}
@@ -95,7 +99,8 @@ func Ws(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Recve: %s", message)
 
 		// Hande all of Queries
-		result := HandleQueries(string(message))
+		start := time.Now()
+		result := HandleQueries(string(message)) + "\n" + time.Since(start).String()
 
 		// send result to client
 		err = c.WriteMessage(messageType, []byte(result))
