@@ -117,7 +117,7 @@ func lastIndex(path string) int64 {
 }
 
 // append new index in pi file
-func NewIndex(indexFile *os.File, at int, dataSize int) {
+func AppendIndex(indexFile *os.File, at int, dataSize int) {
 
 	strInt := fmt.Sprint(at) + " " + fmt.Sprint(dataSize)
 
@@ -127,33 +127,13 @@ func NewIndex(indexFile *os.File, at int, dataSize int) {
 	}
 
 	//indexFile.WriteString(strInt)
-	indexFile.WriteAt([]byte(strInt), (db.PrimaryIndex)*20)
-
-	IndexsCache.indexs = append(IndexsCache.indexs, [2]int64{int64(at), int64(dataSize)})
-}
-
-// deletes index from primary.index file
-func DeleteIndex(indxfile *os.File, id int) { //
-	at := int64(id * 20)
-	indxfile.WriteAt([]byte("                    "), at)
-	// TODO delete index from indexCache
-}
-
-// get pageName Data Location  & data size from primary.indexes file
-func GetIndex(indexFile *os.File, id int) (pageName string, at, size int64) {
-
-	pageName = strconv.Itoa(id / int(MaxObjects))
-	bData := make([]byte, 20)
-	_, err := indexFile.ReadAt(bData, int64(id*20))
+	_, err := indexFile.WriteAt([]byte(strInt), db.PrimaryIndex*20)
 	if err != nil {
-		panic(err)
+		fmt.Println("err when UpdateIndex, store.go line 127", err)
 	}
 
-	slc := strings.Split(string(bData), " ")
-	iat, _ := strconv.Atoi(slc[0])
-
-	isize, _ := strconv.Atoi(fmt.Sprint(slc[1]))
-	return pageName, int64(iat), int64(isize)
+	IndexsCache.indexs = append(IndexsCache.indexs, [2]int64{int64(at), int64(dataSize)})
+	// TODO use assgined insteade append here e.g IndexsCache.indexs[id] = [2]int64{int64(at), int64(dataSize)}
 }
 
 // update index val in primary.index file
@@ -174,9 +154,31 @@ func UpdateIndex(indexFile *os.File, id int, dataAt, dataSize int64) {
 	}
 
 	// TODO update index in indexsCache
-	//	fmt.Println("IndexCace befor\n", IndexsCache.indexs)
 	IndexsCache.indexs[id] = [2]int64{dataAt, dataSize}
-	// fmt.Println("IndexCache after: \n", IndexsCache.indexs)
+}
+
+// get pageName Data Location  & data size from primary.indexes file
+func GetIndex(indexFile *os.File, id int) (pageName string, at, size int64) {
+
+	pageName = strconv.Itoa(id / int(MaxObjects))
+	bData := make([]byte, 20)
+	_, err := indexFile.ReadAt(bData, int64(id*20))
+	if err != nil {
+		panic(err)
+	}
+
+	slc := strings.Split(string(bData), " ")
+	iat, _ := strconv.Atoi(slc[0])
+
+	isize, _ := strconv.Atoi(fmt.Sprint(slc[1]))
+	return pageName, int64(iat), int64(isize)
+}
+
+// deletes index from primary.index file
+func DeleteIndex(indxfile *os.File, id int) { //
+	at := int64(id * 20)
+	indxfile.WriteAt([]byte("                    "), at)
+	// TODO delete index from indexCache
 }
 
 //end

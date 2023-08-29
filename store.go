@@ -56,7 +56,10 @@ func Insert(query string) (res string) {
 	}
 
 	// set new index
-	NewIndex(db.Pages[db.Name+collection+pi], At, size)
+	AppendIndex(db.Pages[db.Name+collection+pi], At, size)
+
+	//UpdateIndex(db.Pages[db.Name+collection+pi], int(id), int64(At), int64(size))
+
 	At += size
 	db.PrimaryIndex++
 	return fmt.Sprint("Success Insert, _id: ", db.PrimaryIndex-1)
@@ -87,6 +90,8 @@ func Update(query string) (result string) {
 	size := len(data)
 
 	UpdateIndex(db.Pages[db.Name+collection+pi], int(id), int64(At), int64(size))
+
+	//		AppendIndex(db.Pages[db.Name+collection+pi], At, size)
 
 	At += size
 
