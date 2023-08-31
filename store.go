@@ -13,17 +13,35 @@ import (
 
 // At is where enginge insert data in page
 var At int
-
 var MaxObjects int64 = 1_000
+
+// nuber page to make namePage from id
+var numberPage int64 = 0
 
 const slash = string(os.PathSeparator) // not tested for windos
 
+// var namePage := 0
 // Insert
 func Insert(query string) (res string) {
 
 	collection := gjson.Get(query, "in").String() + slash
 	if len(collection) == 1 {
 		return fmt.Sprint("failure insert. insert into no collection")
+	}
+
+	pName := db.PrimaryIndex / MaxObjects // page name as int
+	// TODO check here . my be a bug
+	if pName != numberPage {
+		numberPage++
+
+		pagePath := db.Name + collection + fmt.Sprint(pName)
+
+		page, err := os.OpenFile(pagePath, os.O_CREATE|os.O_RDWR, 0644)
+		if err != nil {
+			fmt.Println("os open file: ", err)
+		}
+
+		db.Pages[pagePath] = page
 	}
 
 	data := gjson.Get(query, "data").String()
@@ -33,26 +51,13 @@ func Insert(query string) (res string) {
 		fmt.Println("sjson.Set : ", err)
 	}
 
-	pName := db.PrimaryIndex / MaxObjects // page name as int
-	// TODO check here . my be a bug
-	if pName != 0 {
-		pagePath := db.Name + collection + fmt.Sprint(pName)
-		//iLog.Println("path in new page is ", pageName)
-
-		page, err := os.OpenFile(pagePath, os.O_CREATE|os.O_RDWR, 0644)
-		if err != nil {
-			fmt.Println("os open file: ", err)
-		}
-		db.Pages[pagePath] = page
-	}
-
 	path := db.Name + collection + fmt.Sprint(pName)
 
 	size, err := Append(db.Pages[path], value)
 	if err != nil {
+		// TODO check if collection exist
 		eLog.Printf("%v Path is %s ", err, path)
-		iLog.Println("file page is ", db.Pages[path])
-		return "Fielure Insert"
+		return "Fielure Insert,mybe collection not exist"
 	}
 
 	// set new index
@@ -121,7 +126,8 @@ func DeleteById(query string) (result string) {
 func SelectById(query string) (result string) {
 	id := gjson.Get(query, "where_id").Int()
 	if int(id) >= len(IndexsCache.indexs) {
-		iLog.Println("no found index")
+
+		iLog.Println("no found index", id)
 		return fmt.Sprintf("Not Found _id %v\n", id)
 	}
 
