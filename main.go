@@ -1,13 +1,13 @@
 package main
 
 import (
-	"dblite"
 	"net/http"
+	db "zaradb/dblite"
 
 	"github.com/go-chi/chi"
 )
 
-var engine = dblite.NewEngine()
+var engine = db.NewEngine()
 
 func main() {
 
@@ -19,11 +19,11 @@ func main() {
 	// start network
 	router := chi.NewRouter()
 
-	router.Get("/ws", dblite.Ws)
+	router.Get("/ws", db.Ws)
 
 	// endpoints for speed network
-	router.Get("/query", dblite.Resever)
-	router.Get("/result", dblite.Sender)
+	router.Get("/query", db.Resever)
+	router.Get("/result", db.Sender)
 
 	http.ListenAndServe(":1111", router)
 }

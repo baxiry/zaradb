@@ -1,4 +1,4 @@
-module dblite
+module zaradb 
 
 go 1.20
 

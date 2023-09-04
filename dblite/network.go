@@ -37,7 +37,7 @@ func Resever(w http.ResponseWriter, r *http.Request) {
 		note.messageType, message, err = c.ReadMessage()
 		if err != nil {
 			iLog.Println("ReadMessage ", err)
-			break
+			return
 		}
 
 		// Hande all of Queries
@@ -68,9 +68,8 @@ func Sender(w http.ResponseWriter, r *http.Request) {
 		err = c.WriteMessage(note.messageType, []byte(note.message))
 		if err != nil {
 			fmt.Println("ERROR! :Panic WriteMessage ", err)
-			break
+			return
 		}
-
 	}
 }
 
@@ -105,6 +104,6 @@ func Ws(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("ERROR! :Panic WriteMessage ", err)
 			break
 		}
-
 	}
+
 }
