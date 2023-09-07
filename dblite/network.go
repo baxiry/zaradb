@@ -14,6 +14,7 @@ import (
 type Notify struct {
 	message     string
 	messageType int
+	err         bool
 }
 
 var Channel = make(chan Notify, 100)
@@ -34,9 +35,14 @@ func Resever(w http.ResponseWriter, r *http.Request) {
 	var message []byte
 
 	for {
+		if note.err {
+			return
+		}
 		note.messageType, message, err = c.ReadMessage()
 		if err != nil {
 			iLog.Println("ReadMessage ", err)
+			note.err = true
+			Channel <- note
 			return
 		}
 
@@ -56,6 +62,7 @@ func Sender(w http.ResponseWriter, r *http.Request) {
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Print("upgrade:", err)
+
 		return
 	}
 	defer c.Close()
@@ -64,10 +71,15 @@ func Sender(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		note = <-Channel
+		if note.err {
+			return
+		}
 		// send result to client
 		err = c.WriteMessage(note.messageType, []byte(note.message))
 		if err != nil {
 			fmt.Println("ERROR! :Panic WriteMessage ", err)
+			note.err = true
+			Channel <- note
 			return
 		}
 	}

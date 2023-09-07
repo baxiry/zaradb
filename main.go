@@ -18,6 +18,7 @@ func main() {
 
 	// start network
 	router := chi.NewRouter()
+	//	router := http.NewServeMux()
 
 	router.Get("/ws", db.Ws)
 
