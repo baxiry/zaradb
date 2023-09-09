@@ -141,10 +141,8 @@ func UpdateIndex(indexFile *os.File, id int, dataAt, dataSize int64) {
 
 	at := int64(id * 20)
 
-	strIndex := fmt.Sprint(dataAt) + " " + fmt.Sprint(dataSize)
-	for i := len(strIndex); i < 20; i++ {
-		strIndex += " "
-	}
+	strIndex := fmt.Sprint(dataAt) + " " + fmt.Sprint(dataSize) + " "
+	//for i := len(strIndex); i < 20; i++ {	strIndex += " "}
 
 	_, err := indexFile.WriteAt([]byte(strIndex), at)
 	if err != nil {
