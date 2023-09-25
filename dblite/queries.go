@@ -1,9 +1,7 @@
 package dblite
 
 import (
-	"fmt"
 	"os"
-	"strings"
 
 	"github.com/tidwall/gjson"
 )
@@ -33,39 +31,6 @@ func HandleQueries(query string) string {
 	}
 
 	//return result.String()
-}
-
-// extractQuery from stdin argument
-func extractQuery(str string) (json string) {
-	var start, end int32
-
-	var i int32
-	for i = 0; i < int32(len(str)); i++ {
-		if str[i] == '{' {
-			start = i
-			break
-		}
-	}
-	for i = int32(len(str)) - 1; i >= 0; i-- {
-		if str[i] == '}' {
-			end = i
-			break
-		}
-	}
-	return str[start : end+1]
-}
-
-// cli functions
-
-const hints = `tap helpe to get help massage`
-
-func arguments() (args []string) {
-	args = os.Args
-	if len(args) < 2 || args[1] == "" {
-		fmt.Println("not enought arguments")
-		return
-	}
-	return strings.Split(args[1], ".")
 }
 
 // Rename renames db.
