@@ -8,10 +8,9 @@ import (
 var engine = db.NewEngine()
 
 func main() {
+	// TODO close programe greatfully
 
 	engine.Run()
-
-	// TODO close programe greatfully
 	defer engine.Stop()
 
 	// standard endpoint

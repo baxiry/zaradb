@@ -8,8 +8,6 @@ import (
 	"github.com/tidwall/sjson"
 )
 
-var MaxObjects int64 = 10_000
-
 // nuber page to make namePage from id
 var numberPage int64 = 0
 
@@ -18,12 +16,12 @@ const slash = string(os.PathSeparator) // not tested for windos
 // Insert
 func Insert(query string) (res string) {
 
-	collection := gjson.Get(query, "collection").String() + slash
+	collection := gjson.Get(query, "collection").String() // + slash
 	if len(collection) == 1 {
 		return fmt.Sprint("failure insert. insert into no collection")
 	}
 
-	pName := db.PrimaryIndex / MaxObjects // page name as int
+	pName := collect.primaryIndex / MaxObjects // page name as int
 
 	if pName != numberPage {
 		numberPage++
@@ -40,7 +38,7 @@ func Insert(query string) (res string) {
 
 	data := gjson.Get(query, "data").String()
 
-	value, err := sjson.Set(data, "_id", db.PrimaryIndex)
+	value, err := sjson.Set(data, "_id", collect.primaryIndex)
 	if err != nil {
 		fmt.Println("sjson.Set : ", err)
 	}
@@ -58,26 +56,26 @@ func Insert(query string) (res string) {
 	AppendIndex(db.Pages[db.Name+collection+pi], collect.at, size)
 
 	collect.at += int64(size)
-	db.PrimaryIndex++
-	return fmt.Sprint("Success Insert, _id: ", db.PrimaryIndex-1)
+	collect.primaryIndex++
+	return fmt.Sprint("Success Insert, _id: ", collect.primaryIndex-1)
 }
 
 // Select reads data form docs
 func SelectById(query string) (result string) {
 	id := gjson.Get(query, "where_id").Int()
 	if int(id) >= len(collect.cachedIndexs) {
-		iLog.Println("no found index", id)
+		iLog.Println(id, "index not found")
 		return fmt.Sprintf("Not Found _id %v\n", id)
 	}
 
 	at := collect.cachedIndexs[id][0]
 	size := collect.cachedIndexs[id][1]
 
-	in := gjson.Get(query, "collection").String() + slash
+	coll := gjson.Get(query, "collection").String() // + slash
 	//fmt.Println("table is : ", in)
 	// TODO check is from exist!
 
-	path := db.Name + in + fmt.Sprintf("%d", id/MaxObjects)
+	path := db.Name + coll + fmt.Sprintf("%d", id/MaxObjects)
 
 	return Get(db.Pages[path], at, int(size))
 }
@@ -86,9 +84,9 @@ func SelectById(query string) (result string) {
 func DeleteById(query string) (result string) {
 
 	id := gjson.Get(query, "_id").Int()
-	in := gjson.Get(query, "collection").String() + slash
+	in := gjson.Get(query, "collection").String() // + slash
 
-	path := db.Name + in + fmt.Sprint(db.PrimaryIndex/MaxObjects)
+	path := db.Name + in + fmt.Sprint(collect.primaryIndex/MaxObjects)
 
 	fmt.Println("path id DeleteById: ", path)
 
@@ -103,7 +101,7 @@ func DeleteById(query string) (result string) {
 
 // Update update document data
 func Update(query string) (result string) {
-	collection := gjson.Get(query, "collection").String() + slash
+	collection := gjson.Get(query, "collection").String() // + slash
 	if len(collection) == 1 {
 		return "ERROR! select no collection "
 	}
@@ -137,6 +135,6 @@ func Delete(path string) (err error) {
 	return
 }
 
-func selectFields(query string) string {
+func Select(query string) string {
 	return ""
 }

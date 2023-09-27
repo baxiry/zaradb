@@ -9,6 +9,7 @@ import (
 
 // appends data to Pagefile & returns file size or error
 func Append(file *os.File, data string) (size int, err error) {
+
 	size, err = file.WriteAt([]byte(data), collect.at)
 	if err != nil {
 		eLog.Println("Error WriteString ", err)

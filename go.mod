@@ -1,4 +1,4 @@
-module zaradb 
+module zaradb
 
 go 1.20
 

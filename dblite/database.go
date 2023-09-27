@@ -1,51 +1,55 @@
 package dblite
 
 import (
-	"io/fs"
 	"os"
 )
 
 var pi = "pi" // primary index file
 
 type Collection struct {
-	at   int64
-	size int
-
+	at           int64
+	primaryIndex int64
 	// [[0,3],[3,8]]
 	cachedIndexs [][2]int64
 }
 
+type Collections map[string]Collection
+
 type Database struct {
-	PrimaryIndex int64
 	//Indexs       map[string]Index
 	Name        string
 	Collection  string
-	collections map[string]Collection
+	collections Collections
 	Pages       map[string]*os.File
 }
 
 // NewCollection constracts List of files collection
 func NewDatabase(name string) *Database {
-	database := &Database{
-		Name:       rootPath() + name + slash,
-		Collection: "test" + slash,
-		Pages:      make(map[string]*os.File, 2),
-		//		Indexs:     make(map[string]Index, 1),
+	return &Database{
+		Name:        rootPath() + name + slash,
+		Collection:  "test", // + slash,
+		collections: Collections{},
+		Pages:       make(map[string]*os.File, 2),
 	}
-	return database
+}
+
+// NewCollection constracts List of files collection
+func NewCollection(name string) Collection {
+	return Collection{
+		at:           0,
+		primaryIndex: 0,
+		cachedIndexs: [][2]int64{},
+	}
+
 }
 
 // opnens all collection in Root database folder
 func (db *Database) Open() {
-	path := db.Name + db.Collection
-	//	iLog.Println("opening database ", path)
+	path := db.Name // + db.Collection + slash
 
-	var err error
-	var files []fs.DirEntry
-
-	files, err = os.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if os.IsNotExist(err) {
-		err = os.MkdirAll(db.Name+db.Collection, 0744)
+		err = os.MkdirAll(db.Name, 0744)
 		if err != nil {
 			eLog.Println("while mkDir", err)
 		}
@@ -67,33 +71,29 @@ func (db *Database) Open() {
 		return
 	}
 
-	//iLog.Printf("reading  %s\n", db.Name+db.Collections)
-
 	for _, file := range files {
 		if file.IsDir() {
 			continue
 		}
 
 		page, err := os.OpenFile(path+file.Name(), os.O_RDWR, 0644) //
+		iLog.Println("open db path file is : ", path)
 		if err != nil {
 			iLog.Printf("os open file: %s,  %v\n", path+file.Name(), err)
-			//break
 		}
-		// filepath.Join(path, file.Name())
-		db.Pages[db.Name+db.Collection+file.Name()] = page
 
-		//	iLog.Printf("%s is ready\n", file.Name())
+		db.Pages[db.Name+file.Name()] = page
 	}
+
 	if len(db.Pages) < 2 {
-		page, err := os.OpenFile(path+"0", os.O_CREATE|os.O_RDWR, 0644) //
+		println("path is ", path)
+		page, err := os.OpenFile(path+db.Collection+"0", os.O_CREATE|os.O_RDWR, 0644) //
 		if err != nil {
 			iLog.Printf("os open file: %s,  %v\n", path+"0", err)
 		}
-		// filepath.Join(path, file.Name())
-		db.Pages[db.Name+db.Collection+"0"] = page
 
+		db.Pages[path+db.Collection+"0"] = page
 	}
-	// iLog.Println("length of db.Pages is : ", len(db.Pages))
 }
 
 // closes All collection
@@ -103,25 +103,3 @@ func (db *Database) Close() {
 		iLog.Printf("%s closed\n", page.Name())
 	}
 }
-
-/*
-
-// creates new page and add it to Collections
-func (db *Database) NewPage(id int) {
-	// TODO
-	indexFilePath := db.Name + db.Collection + pi
-
-	filename, _, _ := GetIndex(db.Pages[indexFilePath], id)
-	//	iLog.Println("GetIndex from :", indexFilePath)
-
-	file, err := os.Create(filename)
-	if err != nil {
-		panic(err)
-	}
-
-	path := filepath.Join(db.Name, db.Collection+strconv.Itoa(id))
-
-	db.Pages[path] = file
-	//iLog.Printf("new page is created with %s path\n", path)
-}
-*/

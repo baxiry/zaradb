@@ -34,10 +34,8 @@ func initIndexsFile() {
 
 func initIndex() {
 	indexFilePath := db.Name + db.Collection + pi
-	db.PrimaryIndex = lastIndex(indexFilePath)
-	collect = NewCachedIndexs()
-
-	println("initialize Cached indexs, length is  ", len(collect.cachedIndexs))
+	collect = InitCollection()
+	collect.primaryIndex = lastIndex(indexFilePath)
 }
 
 func (c *Collection) GetIndex(id int) (pageName string, index [2]int64) {
@@ -45,24 +43,22 @@ func (c *Collection) GetIndex(id int) (pageName string, index [2]int64) {
 }
 
 // initialize cache of indexs
-func NewCachedIndexs() *Collection {
+func InitCollection() *Collection {
 	path := db.Name + db.Collection + pi
+	iLog.Println("indexFilePath: ", path)
+	iLog.Println("len of pages : ", len(db.Pages))
 
 	c := &Collection{
-
 		cachedIndexs: make([][2]int64, 0),
 	}
 
 	indxBuffer := make([]byte, IndexChnucLen)
 
 	for {
-		//iLog.Println("indexFilePath: ", path)
-		// iLog.Println("len of pages : ", len(db.Pages))
-
 		n, err := db.Pages[path].Read(indxBuffer)
 		if err != nil && err != io.EOF {
-			eLog.Printf("ERROR! wher os.Read %s file %v", path, err)
-			iLog.Println("index file is ", db.Pages[path])
+			eLog.Printf("ERROR! %s wher os.Read  file %v\n", err, path)
+			iLog.Println("file is : ", db.Pages[path])
 			os.Exit(1)
 		}
 		if err == io.EOF {
@@ -118,7 +114,7 @@ func AppendIndex(indexFile *os.File, at int64, dataSize int) {
 	}
 
 	//indexFile.WriteString(strInt)
-	_, err := indexFile.WriteAt([]byte(strInt), db.PrimaryIndex*20)
+	_, err := indexFile.WriteAt([]byte(strInt), collect.primaryIndex*20)
 	if err != nil {
 		fmt.Println("err when UpdateIndex, store.go line 127", err)
 	}

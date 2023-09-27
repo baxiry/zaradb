@@ -6,26 +6,36 @@ import (
 	"testing"
 )
 
-var DataFile, _ = os.OpenFile("mok/data.page", os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
+var DataFile *os.File
+var IndexFile *os.File
+var err error
 
-var IndexFile, _ = os.OpenFile("mok/primary.indexs", os.O_RDWR|os.O_CREATE, 0644) // why not "os.O_APPEND" ?
+// , _ = os.OpenFile("mok/primary.indexs", os.O_RDWR|os.O_CREATE, 0644) // why not "os.O_APPEND" ?
 
 // testing all data storeing functions
 func Test_Append(t *testing.T) {
+	DataFile, err = os.OpenFile("mok/data.page", os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+
+		t.Error("canot open mok data.page\n")
+	}
+	defer DataFile.Close()
+
+	collect.at = 0
 	var at int64
 	for i := 0; i < 13; i++ {
 
 		data := "hello world ok " + fmt.Sprint(i)
 
-		lenByte, err := Append(data, DataFile)
+		lenByte, err := Append(DataFile, data)
 
 		if err != nil {
-			fmt.Println("error is : ", err)
+			t.Error("error is : ", err)
 		}
 
-		myData := Get(DataFile, at, lenByte)
+		myData := Get(DataFile, collect.at, lenByte)
 		fmt.Printf("Data is %s: \nlen byte is %d, at is %d\n\n", myData, lenByte, at)
-		at += int64(lenByte)
+		collect.at += int64(lenByte)
 	}
 }
 
@@ -34,12 +44,12 @@ func Test_All_Index_Funcs(t *testing.T) {
 
 	// testing NewIndex func
 	for i := 0; i <= 1111; i++ {
-		NewIndex(i, i, IndexFile)
+		AppendIndex(IndexFile, int64(i), i)
 	}
 
 	// testing GetIndex func
 	//"input 140 return 2800
-	pageName, indx, size := GetIndex(140, IndexFile)
+	pageName, indx, size := GetIndex(IndexFile, 140)
 	if pageName != "0" {
 		t.Error("pageName must be 1")
 	}
@@ -51,7 +61,7 @@ func Test_All_Index_Funcs(t *testing.T) {
 	}
 
 	//"input 1111: 2220
-	pageName, indx, size = GetIndex(1111, IndexFile)
+	pageName, indx, size = GetIndex(IndexFile, 1111)
 	if pageName != "1" {
 		t.Error("pageName must be 1")
 	}
@@ -64,11 +74,11 @@ func Test_All_Index_Funcs(t *testing.T) {
 
 	// testing UpdateIndex func
 	for i := 10; i <= 1111; i++ {
-		UpdateIndex(i, int64(i+5), int64(i+10), IndexFile)
+		UpdateIndex(IndexFile, i, int64(i+5), int64(i+10))
 	}
 
 	//"input 1111: 2220
-	pageName, indx, size = GetIndex(1111, IndexFile)
+	pageName, indx, size = GetIndex(IndexFile, 1111)
 	if pageName != "1" {
 		t.Error("pageName must be 1")
 	}
@@ -81,9 +91,9 @@ func Test_All_Index_Funcs(t *testing.T) {
 	}
 
 	// testing DeleteIndex func
-	DeleteIndex(1091, IndexFile)
+	DeleteIndex(IndexFile, 1091)
 
-	pageName, indx, size = GetIndex(1091, IndexFile)
+	pageName, indx, size = GetIndex(IndexFile, 1091)
 	if pageName != "1" {
 		t.Error("pageName must be 1")
 	}
