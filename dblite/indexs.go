@@ -12,12 +12,7 @@ import (
 // buffer size of len
 const IndexChnucLen = 20
 
-// [[0,3],[3,8]]
-type CachedIndexs struct {
-	indexs [][2]int64
-}
-
-var IndexsCache *CachedIndexs
+var collect *Collection
 
 func initIndexsFile() {
 	// check if primary.index is exist
@@ -40,21 +35,22 @@ func initIndexsFile() {
 func initIndex() {
 	indexFilePath := db.Name + db.Collection + pi
 	db.PrimaryIndex = lastIndex(indexFilePath)
-	IndexsCache = NewCachedIndexs()
+	collect = NewCachedIndexs()
 
-	println("initialize Cached indexs, length is  ", len(IndexsCache.indexs))
+	println("initialize Cached indexs, length is  ", len(collect.cachedIndexs))
 }
 
-func (cachedIndexs *CachedIndexs) GetIndex(id int) (pageName string, index [2]int64) {
-	return strconv.Itoa(int(id) / 1000), cachedIndexs.indexs[id]
+func (c *Collection) GetIndex(id int) (pageName string, index [2]int64) {
+	return strconv.Itoa(int(id) / 1000), c.cachedIndexs[id]
 }
 
 // initialize cache of indexs
-func NewCachedIndexs() *CachedIndexs {
+func NewCachedIndexs() *Collection {
 	path := db.Name + db.Collection + pi
 
-	cachedIndexs := &CachedIndexs{
-		indexs: make([][2]int64, 0),
+	c := &Collection{
+
+		cachedIndexs: make([][2]int64, 0),
 	}
 
 	indxBuffer := make([]byte, IndexChnucLen)
@@ -78,24 +74,19 @@ func NewCachedIndexs() *CachedIndexs {
 		at, _ := strconv.ParseInt(slicIndexe[0], 10, 64)
 		size, _ := strconv.ParseInt(slicIndexe[1], 10, 64)
 
-		cachedIndexs.indexs = append(cachedIndexs.indexs, [2]int64{at, size})
+		c.cachedIndexs = append(c.cachedIndexs, [2]int64{at, size})
 	}
-	iLog.Println("primary indexs length : ", len(cachedIndexs.indexs))
+	iLog.Println("primary indexs length : ", len(c.cachedIndexs))
 
-	At = cachedIndexs.lastAt()
+	c.at = c.lastAt()
 
-	return cachedIndexs
+	return c
 }
 
 // get last data location
-func (cachedIndexs *CachedIndexs) lastAt() int {
-	/*
-		info, _ := os.Stat(db.Name + db.Collections + "0")
-		fmt.Println("At is : ", info.Size())
-
-	*/
-	if len(cachedIndexs.indexs) > 0 {
-		at := int(cachedIndexs.indexs[len(cachedIndexs.indexs)-1][0] + cachedIndexs.indexs[len(cachedIndexs.indexs)-1][1])
+func (c *Collection) lastAt() int64 {
+	if len(c.cachedIndexs) > 0 {
+		at := c.cachedIndexs[len(c.cachedIndexs)-1][0] + c.cachedIndexs[len(c.cachedIndexs)-1][1]
 		println("At is ", at)
 		return at
 	}
@@ -117,7 +108,7 @@ func lastIndex(path string) int64 {
 }
 
 // append new index in pi file
-func AppendIndex(indexFile *os.File, at int, dataSize int) {
+func AppendIndex(indexFile *os.File, at int64, dataSize int) {
 
 	strInt := fmt.Sprint(at) + " " + fmt.Sprint(dataSize)
 
@@ -132,7 +123,7 @@ func AppendIndex(indexFile *os.File, at int, dataSize int) {
 		fmt.Println("err when UpdateIndex, store.go line 127", err)
 	}
 
-	IndexsCache.indexs = append(IndexsCache.indexs, [2]int64{int64(at), int64(dataSize)})
+	collect.cachedIndexs = append(collect.cachedIndexs, [2]int64{at, int64(dataSize)})
 	// TODO use assgined insteade append here e.g IndexsCache.indexs[id] = [2]int64{int64(at), int64(dataSize)}
 }
 
@@ -152,7 +143,7 @@ func UpdateIndex(indexFile *os.File, id int, dataAt, dataSize int64) {
 	}
 
 	// TODO update index in indexsCache
-	IndexsCache.indexs[id] = [2]int64{dataAt, dataSize}
+	collect.cachedIndexs[id] = [2]int64{dataAt, dataSize}
 }
 
 // get pageName Data Location  & data size from primary.indexes file

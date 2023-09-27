@@ -3,7 +3,6 @@ module zaradb
 go 1.20
 
 require (
-	github.com/go-chi/chi v1.5.4
 	github.com/gorilla/websocket v1.5.0
 	github.com/tidwall/gjson v1.14.4
 	github.com/tidwall/sjson v1.2.5

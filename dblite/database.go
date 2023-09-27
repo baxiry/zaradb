@@ -5,21 +5,23 @@ import (
 	"os"
 )
 
-var pi = "pi" // primary index
+var pi = "pi" // primary index file
+
+type Collection struct {
+	at   int64
+	size int
+
+	// [[0,3],[3,8]]
+	cachedIndexs [][2]int64
+}
 
 type Database struct {
 	PrimaryIndex int64
-	Indexs       map[string]Index
-	Name         string
-	Collection   string
-	//	collections  map[string]Collection
-	Pages map[string]*os.File
-}
-
-type Index struct {
-	primaryIndex int64
-	at           int64
-	size         int
+	//Indexs       map[string]Index
+	Name        string
+	Collection  string
+	collections map[string]Collection
+	Pages       map[string]*os.File
 }
 
 // NewCollection constracts List of files collection
@@ -28,7 +30,7 @@ func NewDatabase(name string) *Database {
 		Name:       rootPath() + name + slash,
 		Collection: "test" + slash,
 		Pages:      make(map[string]*os.File, 2),
-		Indexs:     make(map[string]Index, 1),
+		//		Indexs:     make(map[string]Index, 1),
 	}
 	return database
 }
