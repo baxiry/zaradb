@@ -49,11 +49,12 @@ func Insert(query string) (res string) {
 	if err != nil {
 		// TODO check if collection exist
 		eLog.Printf("%v Path is %s ", err, path)
+		fmt.Println("collection is ", collection)
 		return "Fielure Insert,mybe collection not exist"
 	}
 
 	// set new index
-	AppendIndex(db.Pages[db.Name+collection+pi], collect.at, size)
+	AppendIndex(db.Pages[db.Name+collection+pix], collect.at, size)
 
 	collect.at += int64(size)
 	collect.primaryIndex++
@@ -123,7 +124,7 @@ func Update(query string) (result string) {
 	// Update index
 	size := int64(len(data))
 
-	UpdateIndex(db.Pages[db.Name+collection+pi], int(id), collect.at, size)
+	UpdateIndex(db.Pages[db.Name+collection+pix], int(id), collect.at, size)
 
 	collect.at += size
 

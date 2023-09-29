@@ -4,43 +4,33 @@ import (
 	"os"
 )
 
-var pi = "pi" // primary index file
+//var pi = "pi" // primary index file
 
 type Collection struct {
-	at           int64
+	// at : data locations store in file
+	at int64
+	// current primaryIndex value
 	primaryIndex int64
-	// [[0,3],[3,8]]
-	cachedIndexs [][2]int64
+	// indexes cache
+	cachedIndexs [][2]int64 // [[0,3],[3,8]]
 }
-
-type Collections map[string]Collection
 
 type Database struct {
 	//Indexs       map[string]Index
 	Name        string
 	Collection  string
-	collections Collections
+	collections map[string]Collection
 	Pages       map[string]*os.File
 }
 
-// NewCollection constracts List of files collection
+// NewDatabase create new *database
 func NewDatabase(name string) *Database {
 	return &Database{
 		Name:        rootPath() + name + slash,
 		Collection:  "test", // + slash,
-		collections: Collections{},
+		collections: make(map[string]Collection, 1),
 		Pages:       make(map[string]*os.File, 2),
 	}
-}
-
-// NewCollection constracts List of files collection
-func NewCollection(name string) Collection {
-	return Collection{
-		at:           0,
-		primaryIndex: 0,
-		cachedIndexs: [][2]int64{},
-	}
-
 }
 
 // opnens all collection in Root database folder
@@ -55,9 +45,9 @@ func (db *Database) Open() {
 		}
 	}
 
-	_, err = os.Stat(db.Name + db.Collection + pi)
+	_, err = os.Stat(db.Name + db.Collection + pix)
 	if os.IsNotExist(err) {
-		f, err := os.OpenFile(db.Name+db.Collection+pi, os.O_CREATE|os.O_RDWR, 0644)
+		f, err := os.OpenFile(db.Name+db.Collection+pix, os.O_CREATE|os.O_RDWR, 0644)
 		if err != nil {
 			eLog.Println("when creating pi ", err)
 			return

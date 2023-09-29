@@ -9,6 +9,9 @@ import (
 	"strings"
 )
 
+// pix is primary index file
+const pix = "pi"
+
 // buffer size of len
 const IndexChnucLen = 20
 
@@ -16,7 +19,7 @@ var collect *Collection
 
 func initIndexsFile() {
 	// check if primary.index is exist
-	indexFilePath := db.Name + db.Collection + pi
+	indexFilePath := db.Name + db.Collection + pix
 	_, err := os.Stat(indexFilePath)
 	if errors.Is(err, os.ErrNotExist) {
 		IndexsFile, err := os.OpenFile(indexFilePath, os.O_CREATE|os.O_RDWR, 0644)
@@ -33,7 +36,8 @@ func initIndexsFile() {
 }
 
 func initIndex() {
-	indexFilePath := db.Name + db.Collection + pi
+	indexFilePath := db.Name + db.Collection + pix
+	//collect = NewCollection("test")
 	collect = InitCollection()
 	collect.primaryIndex = lastIndex(indexFilePath)
 }
@@ -42,15 +46,29 @@ func (c *Collection) GetIndex(id int) (pageName string, index [2]int64) {
 	return strconv.Itoa(int(id) / 1000), c.cachedIndexs[id]
 }
 
+// NewCollection constracts List of files collection
+func NewCollection(name string) Collection {
+	return Collection{
+		// name : name,
+		at:           0,
+		primaryIndex: 0,
+		cachedIndexs: [][2]int64{},
+	}
+}
+
 // initialize cache of indexs
 func InitCollection() *Collection {
-	path := db.Name + db.Collection + pi
-	iLog.Println("indexFilePath: ", path)
-	iLog.Println("len of pages : ", len(db.Pages))
-
+	//c := Collection{cachedIndexs: make([][2]int64, 0)}
 	c := &Collection{
+		// name : name,
+		at:           0,
+		primaryIndex: 0,
 		cachedIndexs: make([][2]int64, 0),
 	}
+
+	path := db.Name + db.Collection + pix
+	iLog.Println("indexFilePath: ", path)
+	iLog.Println("len of pages : ", len(db.Pages))
 
 	indxBuffer := make([]byte, IndexChnucLen)
 
