@@ -1,7 +1,6 @@
 package dblite
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -14,33 +13,6 @@ const pix = "pi"
 
 // buffer size of len
 const IndexChnucLen = 20
-
-var collect *Collection
-
-func initIndexsFile() {
-	// check if primary.index is exist
-	indexFilePath := db.Name + db.Collection + pix
-	_, err := os.Stat(indexFilePath)
-	if errors.Is(err, os.ErrNotExist) {
-		IndexsFile, err := os.OpenFile(indexFilePath, os.O_CREATE|os.O_RDWR, 0644)
-		if err != nil {
-			eLog.Println("when create indexFile.", err)
-			return
-		}
-		//db.Pages[indexFilePath] = IndexsFile
-		IndexsFile.Close()
-	}
-
-	iLog.Println("indexFilePath is ", indexFilePath)
-
-}
-
-func initIndex() {
-	indexFilePath := db.Name + db.Collection + pix
-	//collect = NewCollection("test")
-	collect = InitCollection()
-	collect.primaryIndex = lastIndex(indexFilePath)
-}
 
 func (c *Collection) GetIndex(id int) (pageName string, index [2]int64) {
 	return strconv.Itoa(int(id) / 1000), c.cachedIndexs[id]
@@ -55,6 +27,8 @@ func NewCollection(name string) Collection {
 		cachedIndexs: [][2]int64{},
 	}
 }
+
+var collect *Collection
 
 // initialize cache of indexs
 func InitCollection() *Collection {
