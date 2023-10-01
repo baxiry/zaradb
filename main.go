@@ -8,7 +8,7 @@ import (
 var engine = db.NewEngine()
 
 func main() {
-	// TODO close programe greatfully
+	// TODO close programe greatfully.
 
 	engine.Run()
 	defer engine.Stop()
