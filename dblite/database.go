@@ -101,3 +101,5 @@ func (db *Database) Close() {
 
 	// TODO Close all collections in database
 }
+
+// end

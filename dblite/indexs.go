@@ -17,6 +17,7 @@ const IndexChnucLen = 20
 // collect
 var collect Index
 
+// here
 // initialize cache of indexs
 func InitIndex() Index {
 	//c := Index{indexCache: make([][2]int64, 0)}
