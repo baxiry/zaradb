@@ -25,7 +25,7 @@ func Get(file *os.File, at int64, size int) string {
 	n, err := file.ReadAt(buffer, at)
 	if err != nil && err != io.EOF {
 		eLog.Println(err)
-		return "Error! check if collection name is correct"
+		return "Error! collection doas not exist"
 	}
 
 	// out the buffer content

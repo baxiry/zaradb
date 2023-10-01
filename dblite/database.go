@@ -6,36 +6,42 @@ import (
 
 //var pi = "pi" // primary index file
 
-type Collection struct {
+type Database struct {
+	//Indexs       map[string]Index
+	Name string
+	//Index      string
+	Collection string
+	Pages      map[string]*os.File
+	//collections map[string]Index
+}
+
+type Index struct { // Index
 	// at : data locations store in file
 	at int64
 	// current primaryIndex value
 	primaryIndex int64
 	// indexes cache
-	cachedIndexs [][2]int64 // [[0,3],[3,8]]
+	indexCache [][2]int64 // [[0,3],[3,8]]
 }
 
-type Database struct {
-	//Indexs       map[string]Index
-	Name        string
-	Collection  string
-	collections map[string]Collection
-	Pages       map[string]*os.File
-}
+// list of collections
+type Indexs map[string]Index
+
+var indexs = Indexs{}
 
 // NewDatabase create new *database
 func NewDatabase(name string) *Database {
 	return &Database{
-		Name:        rootPath() + name + slash,
-		Collection:  "test", // + slash,
-		collections: make(map[string]Collection, 1),
-		Pages:       make(map[string]*os.File, 2),
+		Name:       rootPath() + name + slash,
+		Collection: "test", // + slash,
+		//collections: make(map[string]Index, 1),
+		Pages: make(map[string]*os.File, 2),
 	}
 }
 
 // opnens all collection in Root database folder
 func (db *Database) Open() {
-	path := db.Name // + db.Collection + slash
+	path := db.Name // + db.Index + slash
 
 	files, err := os.ReadDir(path)
 	if os.IsNotExist(err) {
@@ -92,4 +98,6 @@ func (db *Database) Close() {
 		page.Close()
 		iLog.Printf("%s closed\n", page.Name())
 	}
+
+	// TODO Close all collections in database
 }

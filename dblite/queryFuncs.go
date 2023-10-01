@@ -64,19 +64,19 @@ func Insert(query string) (res string) {
 // Select reads data form docs
 func SelectById(query string) (result string) {
 	id := gjson.Get(query, "where_id").Int()
-	if int(id) >= len(collect.cachedIndexs) {
+	if int(id) >= len(collect.indexCache) {
 		iLog.Println(id, "index not found")
 		return fmt.Sprintf("Not Found _id %v\n", id)
 	}
 
-	at := collect.cachedIndexs[id][0]
-	size := collect.cachedIndexs[id][1]
+	at := collect.indexCache[id][0]
+	size := collect.indexCache[id][1]
 
-	coll := gjson.Get(query, "collection").String() // + slash
+	collection := gjson.Get(query, "collection").String() // + slash
 	//fmt.Println("table is : ", in)
 	// TODO check is from exist!
 
-	path := db.Name + coll + fmt.Sprintf("%d", id/MaxObjects)
+	path := db.Name + collection + fmt.Sprint(id/MaxObjects)
 
 	return Get(db.Pages[path], at, int(size))
 }
@@ -94,7 +94,7 @@ func DeleteById(query string) (result string) {
 	UpdateIndex(db.Pages[path], int(id), 0, 0)
 
 	//fmt.Println(IndexsCache.indexs)
-	collect.cachedIndexs[id] = [2]int64{0, 0}
+	collect.indexCache[id] = [2]int64{0, 0}
 	//fmt.Println(IndexsCache.indexs)
 
 	return "Delete Success!"
