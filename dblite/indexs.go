@@ -8,26 +8,39 @@ import (
 	"strings"
 )
 
-// pix is primary index file
-const pix = "pi"
+const (
+	// pix is primary index file
+	pix = "pi"
 
-// buffer size of len
-const IndexChnucLen = 20
+	// buffer size of len
+	IndexChnucLen = 20
+)
 
-// collect
-var collect Index
+type Index struct { // Index
+	// at : data locations store in file
+	at int64
+	// current primaryIndex value
+	primaryIndex int64
+	// indexes cache
+	indexCache [][2]int64 // [[0,3],[3,8]]
+}
 
-// here
+// list of collections
+type Indexs map[string]*Index
+
+// indexs
+var indexs = Indexs{}
+
 // initialize cache of indexs
-func InitIndex() Index {
-	//c := Index{indexCache: make([][2]int64, 0)}
-	c := Index{
+func InitIndex() Indexs {
+
+	indx := &Index{
 		at:           0,
 		primaryIndex: 0,
 		indexCache:   make([][2]int64, 0),
 	}
 
-	path := db.Name + db.Collection + pix
+	path := db.Name + "test" + pix
 	// iLog.Println("indexFilePath: ", path)
 
 	indxBuffer := make([]byte, IndexChnucLen)
@@ -48,14 +61,15 @@ func InitIndex() Index {
 		at, _ := strconv.ParseInt(slicIndexe[0], 10, 64)
 		size, _ := strconv.ParseInt(slicIndexe[1], 10, 64)
 
-		c.indexCache = append(c.indexCache, [2]int64{at, size})
+		indx.indexCache = append(indx.indexCache, [2]int64{at, size})
 	}
 
 	//	iLog.Println("primary indexs length : ", len(c.indexCache))
 
-	c.at = c.lastAt()
+	indx.at = indx.lastAt()
 
-	return c
+	indexs["test"] = indx
+	return indexs
 }
 
 // GetIndex
@@ -75,7 +89,6 @@ func (c *Index) lastAt() int64 {
 
 // LastIndex return last index in table
 func lastIndex(path string) int64 {
-	iLog.Println("path in last index func is ", path)
 	info, err := os.Stat(path)
 	if err != nil {
 		// TODO
@@ -83,7 +96,9 @@ func lastIndex(path string) int64 {
 		return 0 // panic("ERROR! no primary.index file ")
 	}
 
-	iLog.Println("last index is", info.Size()/20)
+	iLog.Println("last index from Indexs Cache:  ", len(indexs["test"].indexCache))
+	iLog.Println("last index from Index file Size", info.Size()/20)
+
 	return info.Size() / 20
 }
 
@@ -97,14 +112,13 @@ func AppendIndex(indexFile *os.File, at int64, dataSize int) {
 		strInt += " "
 	}
 
-	//indexFile.WriteString(strInt)
-	_, err := indexFile.WriteAt([]byte(strInt), collect.primaryIndex*20)
+	_, err := indexFile.WriteAt([]byte(strInt), indexs["test"].primaryIndex*20) // indexfile.Name()
 	if err != nil {
 		fmt.Println("err when UpdateIndex, store.go line 127", err)
 	}
 
-	collect.indexCache = append(collect.indexCache, [2]int64{at, int64(dataSize)})
-	// TODO use assgined insteade append here e.g collect.indexs[id] = [2]int64{at, dataSize}
+	indexs["test"].indexCache = append(indexs["test"].indexCache, [2]int64{at, int64(dataSize)})
+	// TODO use assgined via index insteade append here e.g indexs[coll].indexs[id] = [2]int64{at, dataSize}
 }
 
 // update index val in primary.index file
@@ -123,7 +137,7 @@ func UpdateIndex(indexFile *os.File, id int, dataAt, dataSize int64) {
 	}
 
 	// TODO update index in indexsCache
-	collect.indexCache[id] = [2]int64{dataAt, dataSize}
+	indexs["test"].indexCache[id] = [2]int64{dataAt, dataSize}
 }
 
 // get pageName Data Location  & data size from primary.indexes file

@@ -22,10 +22,10 @@ func initIndexsFile() {
 }
 
 func initIndex() {
-	indexFilePath := db.Name + "testpi" // db.Index + pix
+	indexFilePath := db.Name + "testpi"
 	//collect = NewIndex("test")
-	collect = InitIndex()
-	collect.primaryIndex = lastIndex(indexFilePath)
+	indexs := InitIndex()
+	indexs["test"].primaryIndex = lastIndex(indexFilePath)
 	//db.colletions["testpi"].primaryIndex = lastIndex(indexFilePath)
 }
 

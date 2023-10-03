@@ -1,47 +1,52 @@
 package dblite
 
 import (
+	"io"
 	"os"
+	"strings"
 )
 
-//var pi = "pi" // primary index file
+// var pi = "pi" // primary index file
 
 type Database struct {
-	//Indexs       map[string]Index
 	Name string
-	//Index      string
-	Collection string
-	Pages      map[string]*os.File
-	//collections map[string]Index
+
+	// file of collections name
+	Infos string
+
+	// slice of collection's name in db
+	CollectsList []string
+
+	Pages map[string]*os.File
 }
-
-type Index struct { // Index
-	// at : data locations store in file
-	at int64
-	// current primaryIndex value
-	primaryIndex int64
-	// indexes cache
-	indexCache [][2]int64 // [[0,3],[3,8]]
-}
-
-// list of collections
-type Indexs map[string]Index
-
-var indexs = Indexs{}
 
 // NewDatabase create new *database
 func NewDatabase(name string) *Database {
 	return &Database{
-		Name:       rootPath() + name + slash,
-		Collection: "test", // + slash,
-		//collections: make(map[string]Index, 1),
-		Pages: make(map[string]*os.File, 2),
+		Name:         rootPath() + name + slash,
+		Infos:        "infos", // + slash,
+		CollectsList: make([]string, 0),
+		Pages:        make(map[string]*os.File, 2),
 	}
 }
 
 // opnens all collection in Root database folder
 func (db *Database) Open() {
 	path := db.Name // + db.Index + slash
+
+	// read cllections file name
+	collectsFile, err := os.OpenFile(db.Name+db.Infos, os.O_CREATE|os.O_RDWR, 0644)
+	if err != nil {
+		eLog.Println("open collectFiles : ", err)
+	}
+
+	names, err := io.ReadAll(collectsFile)
+	if err != nil {
+		eLog.Println(err)
+	}
+
+	db.CollectsList = strings.Split(string(names), " ")
+	collectsFile.Close()
 
 	files, err := os.ReadDir(path)
 	if os.IsNotExist(err) {
@@ -51,9 +56,9 @@ func (db *Database) Open() {
 		}
 	}
 
-	_, err = os.Stat(db.Name + db.Collection + pix)
+	_, err = os.Stat(db.Name + "test" + pix)
 	if os.IsNotExist(err) {
-		f, err := os.OpenFile(db.Name+db.Collection+pix, os.O_CREATE|os.O_RDWR, 0644)
+		f, err := os.OpenFile(db.Name+"test"+pix, os.O_CREATE|os.O_RDWR, 0644)
 		if err != nil {
 			eLog.Println("when creating pi ", err)
 			return
@@ -73,7 +78,6 @@ func (db *Database) Open() {
 		}
 
 		page, err := os.OpenFile(path+file.Name(), os.O_RDWR, 0644) //
-		iLog.Println("open db path file is : ", path)
 		if err != nil {
 			iLog.Printf("os open file: %s,  %v\n", path+file.Name(), err)
 		}
@@ -83,12 +87,12 @@ func (db *Database) Open() {
 
 	if len(db.Pages) < 2 {
 		println("path is ", path)
-		page, err := os.OpenFile(path+db.Collection+"0", os.O_CREATE|os.O_RDWR, 0644) //
+		page, err := os.OpenFile(path+"test"+"0", os.O_CREATE|os.O_RDWR, 0644) //
 		if err != nil {
 			iLog.Printf("os open file: %s,  %v\n", path+"0", err)
 		}
 
-		db.Pages[path+db.Collection+"0"] = page
+		db.Pages[path+"test"+"0"] = page
 	}
 }
 
@@ -100,6 +104,7 @@ func (db *Database) Close() {
 	}
 
 	// TODO Close all collections in database
+	// TODO delete indexs cache
 }
 
 // end

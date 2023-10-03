@@ -21,7 +21,7 @@ func Insert(query string) (res string) {
 		return fmt.Sprint("failure insert. insert into no collection")
 	}
 
-	pName := collect.primaryIndex / MaxObjects // page name as int
+	pName := indexs["test"].primaryIndex / MaxObjects // page name as int
 
 	if pName != numberPage {
 		numberPage++
@@ -38,7 +38,7 @@ func Insert(query string) (res string) {
 
 	data := gjson.Get(query, "data").String()
 
-	value, err := sjson.Set(data, "_id", collect.primaryIndex)
+	value, err := sjson.Set(data, "_id", indexs["test"].primaryIndex)
 	if err != nil {
 		fmt.Println("sjson.Set : ", err)
 	}
@@ -54,23 +54,23 @@ func Insert(query string) (res string) {
 	}
 
 	// set new index
-	AppendIndex(db.Pages[db.Name+collection+pix], collect.at, size)
+	AppendIndex(db.Pages[db.Name+collection+pix], indexs["test"].at, size)
 
-	collect.at += int64(size)
-	collect.primaryIndex++
-	return fmt.Sprint("Success Insert, _id: ", collect.primaryIndex-1)
+	indexs["test"].at += int64(size)
+	indexs["test"].primaryIndex++
+	return fmt.Sprint("Success Insert, _id: ", indexs["test"].primaryIndex-1)
 }
 
 // Select reads data form docs
 func SelectById(query string) (result string) {
 	id := gjson.Get(query, "where_id").Int()
-	if int(id) >= len(collect.indexCache) {
+	if int(id) >= len(indexs["test"].indexCache) {
 		iLog.Println(id, "index not found")
 		return fmt.Sprintf("Not Found _id %v\n", id)
 	}
 
-	at := collect.indexCache[id][0]
-	size := collect.indexCache[id][1]
+	at := indexs["test"].indexCache[id][0]
+	size := indexs["test"].indexCache[id][1]
 
 	collection := gjson.Get(query, "collection").String() // + slash
 	//fmt.Println("table is : ", in)
@@ -87,14 +87,14 @@ func DeleteById(query string) (result string) {
 	id := gjson.Get(query, "_id").Int()
 	in := gjson.Get(query, "collection").String() // + slash
 
-	path := db.Name + in + fmt.Sprint(collect.primaryIndex/MaxObjects)
+	path := db.Name + in + fmt.Sprint(indexs["test"].primaryIndex/MaxObjects)
 
 	fmt.Println("path id DeleteById: ", path)
 
 	UpdateIndex(db.Pages[path], int(id), 0, 0)
 
 	//fmt.Println(IndexsCache.indexs)
-	collect.indexCache[id] = [2]int64{0, 0}
+	indexs["test"].indexCache[id] = [2]int64{0, 0}
 	//fmt.Println(IndexsCache.indexs)
 
 	return "Delete Success!"
@@ -124,9 +124,9 @@ func Update(query string) (result string) {
 	// Update index
 	size := int64(len(data))
 
-	UpdateIndex(db.Pages[db.Name+collection+pix], int(id), collect.at, size)
+	UpdateIndex(db.Pages[db.Name+collection+pix], int(id), indexs["test"].at, size)
 
-	collect.at += size
+	indexs["test"].at += size
 
 	return "Success update"
 }
