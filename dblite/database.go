@@ -1,9 +1,7 @@
 package dblite
 
 import (
-	"io"
 	"os"
-	"strings"
 )
 
 // var pi = "pi" // primary index file
@@ -34,20 +32,6 @@ func NewDatabase(name string) *Database {
 func (db *Database) Open() {
 	path := db.Name // + db.Index + slash
 
-	// read cllections file name
-	collectsFile, err := os.OpenFile(db.Name+db.Infos, os.O_CREATE|os.O_RDWR, 0644)
-	if err != nil {
-		eLog.Println("open collectFiles : ", err)
-	}
-
-	names, err := io.ReadAll(collectsFile)
-	if err != nil {
-		eLog.Println(err)
-	}
-
-	db.CollectsList = strings.Split(string(names), " ")
-	collectsFile.Close()
-
 	files, err := os.ReadDir(path)
 	if os.IsNotExist(err) {
 		err = os.MkdirAll(db.Name, 0744)
@@ -73,7 +57,7 @@ func (db *Database) Open() {
 	}
 
 	for _, file := range files {
-		if file.IsDir() {
+		if file.IsDir() || file.Name() == "infos" {
 			continue
 		}
 

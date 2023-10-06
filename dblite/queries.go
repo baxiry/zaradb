@@ -25,8 +25,12 @@ func HandleQueries(query string) string {
 		DeleteById(query)
 		return "action is Delete"
 
+	case "create_collection":
+
+		return NewCollection(query)
+
 	default:
-		return "unknowena ction"
+		return "unknowen action"
 
 	}
 
@@ -45,14 +49,8 @@ func RemoveDB(dbName string) (err error) {
 
 // CreateDB create db. TODO return this directly
 func CreateDB(dbName string) (string, error) {
-	// _, err = os.Stat("go.mod")
-	//	if os.IsNotExist(err) {return err}
 
-	err := os.MkdirAll(db.Name+"/.Trash/", 0755)
-	if err != nil {
-		return dbName, err
-	}
-	return dbName, nil
+	return dbName + "is created", nil
 }
 
 // DeleteDB deletes db. (free hard drive).
