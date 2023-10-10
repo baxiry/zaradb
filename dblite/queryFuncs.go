@@ -17,9 +17,8 @@ const slash = string(os.PathSeparator) // not tested for windos
 func Insert(query string) (res string) {
 
 	collection := gjson.Get(query, "collection").String() // + slash
-	if len(collection) == 1 {
-		return fmt.Sprint("failure insert. insert into no collection")
-	}
+
+	// if collection == "" {return "ERROR! insert into no collection"}
 
 	pName := indexs["test"].primaryIndex / MaxObjects // page name as int
 
@@ -103,7 +102,7 @@ func DeleteById(query string) (result string) {
 // Update update document data
 func Update(query string) (result string) {
 	collection := gjson.Get(query, "collection").String() // + slash
-	if len(collection) == 1 {
+	if collection == "" {
 		return "ERROR! select no collection "
 	}
 

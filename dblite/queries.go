@@ -26,8 +26,10 @@ func HandleQueries(query string) string {
 		return "action is Delete"
 
 	case "create_collection":
+		return CreateCollection(query)
 
-		return NewCollection(query)
+	case "delete_collection":
+		return DeleteCollection(query)
 
 	default:
 		return "unknowen action"
