@@ -4,9 +4,15 @@ import (
 	"os"
 )
 
-// var pi = "pi" // primary index file
+// primary index file
+const pi = "pi"
 
+// a collection fot test
+const testCollection = "test"
+
+// db
 type Database struct {
+	// name of database
 	Name string
 
 	// file of collections name
@@ -40,9 +46,9 @@ func (db *Database) Open() {
 		}
 	}
 
-	_, err = os.Stat(db.Name + "test" + pix)
+	_, err = os.Stat(db.Name + testCollection + pix)
 	if os.IsNotExist(err) {
-		f, err := os.OpenFile(db.Name+"test"+pix, os.O_CREATE|os.O_RDWR, 0644)
+		f, err := os.OpenFile(db.Name+testCollection+pix, os.O_CREATE|os.O_RDWR, 0644)
 		if err != nil {
 			eLog.Println("when creating pi ", err)
 			return
@@ -71,12 +77,12 @@ func (db *Database) Open() {
 
 	if len(db.Pages) < 2 {
 		println("path is ", path)
-		page, err := os.OpenFile(path+"test"+"0", os.O_CREATE|os.O_RDWR, 0644) //
+		page, err := os.OpenFile(path+testCollection+"0", os.O_CREATE|os.O_RDWR, 0644) //
 		if err != nil {
 			iLog.Printf("os open file: %s,  %v\n", path+"0", err)
 		}
 
-		db.Pages[path+"test"+"0"] = page
+		db.Pages[path+testCollection+"0"] = page
 	}
 }
 

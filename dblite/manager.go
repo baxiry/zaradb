@@ -14,7 +14,7 @@ func DeleteCollection(query string) string {
 	collectName := gjson.Get(query, "collection").String()
 
 	if collectName == "" {
-		return "please choose a collection you want to delete"
+		return "please type a collection you want to delete"
 	}
 
 	// read cllections file name
@@ -26,7 +26,6 @@ func DeleteCollection(query string) string {
 	// remove all
 	i := 0
 	for range db.Pages {
-		fmt.Println("f")
 		file := collectName + strconv.Itoa(i)
 		i++
 		for path := range db.Pages {
@@ -37,8 +36,8 @@ func DeleteCollection(query string) string {
 		}
 	}
 
-	_ = os.Remove(db.Name + collectName + "pi")
-	delete(db.Pages, db.Name+collectName+"pi")
+	_ = os.Remove(db.Name + collectName + pi)
+	delete(db.Pages, db.Name+collectName+pi)
 	fmt.Println(db.Pages)
 
 	// remove collection from  infos
@@ -60,6 +59,10 @@ func DeleteCollection(query string) string {
 	err = os.WriteFile(db.Name+db.Infos, []byte(res), 0644)
 	if err != nil {
 		fmt.Println(err)
+	}
+
+	for k, v := range db.Pages {
+		fmt.Println(k, "  : ", v)
 	}
 
 	return collectName + " is deleted"
@@ -88,15 +91,32 @@ func CreateCollection(query string) string {
 	collectsList := strings.Split(string(names), " ")
 
 	for _, coll := range collectsList {
-		fmt.Println(coll, collectName)
 		if coll == collectName {
 			return collectName + " already exist!"
 		}
 	}
 
+	// create index of collection & first page.
+
+	firstPage, err := os.OpenFile(db.Name+collectName+fmt.Sprint(0), os.O_CREATE|os.O_RDWR, 0644)
+	if err != nil {
+		return err.Error()
+	}
+	db.Pages[db.Name+collectName+fmt.Sprint(0)] = firstPage
+
+	indxPage, err := os.OpenFile(db.Name+collectName+pi, os.O_CREATE|os.O_RDWR, 0644)
+	if err != nil {
+		return err.Error()
+	}
+	db.Pages[db.Name+collectName+pi] = indxPage
+
 	_, err = infos.WriteString(collectName + " ")
 	if err != nil {
 		return fmt.Sprintf("ERROR can't create %s collectiln", collectName)
+	}
+
+	for k, v := range db.Pages {
+		fmt.Println(k, "  : ", v)
 	}
 
 	return "collecteon " + collectName + " is created"
