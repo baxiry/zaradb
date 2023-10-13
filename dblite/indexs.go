@@ -10,7 +10,7 @@ import (
 
 const (
 	// pix is primary index file
-	pix = "pi"
+	pIndex = "pi"
 
 	// buffer size of len
 	IndexChnucLen = 20
@@ -40,7 +40,7 @@ func InitIndex() Indexs {
 		indexCache:   make([][2]int64, 0),
 	}
 
-	path := db.Name + "test" + pix
+	path := db.Name + "test" + pIndex
 	// iLog.Println("indexFilePath: ", path)
 
 	indxBuffer := make([]byte, IndexChnucLen)

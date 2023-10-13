@@ -21,7 +21,6 @@ func Test_Append(t *testing.T) {
 	}
 	defer DataFile.Close()
 
-	collect.at = 0
 	var at int64
 	for i := 0; i < 13; i++ {
 
@@ -33,9 +32,9 @@ func Test_Append(t *testing.T) {
 			t.Error("error is : ", err)
 		}
 
-		myData := Get(DataFile, collect.at, lenByte)
+		myData := Get(DataFile, at, lenByte)
 		fmt.Printf("Data is %s: \nlen byte is %d, at is %d\n\n", myData, lenByte, at)
-		collect.at += int64(lenByte)
+		at += int64(lenByte)
 	}
 }
 

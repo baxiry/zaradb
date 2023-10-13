@@ -53,7 +53,7 @@ func Insert(query string) (res string) {
 	}
 
 	// set new index
-	AppendIndex(db.Pages[db.Name+collection+pix], indexs["test"].at, size)
+	AppendIndex(db.Pages[db.Name+collection+pIndex], indexs["test"].at, size)
 
 	indexs["test"].at += int64(size)
 	indexs["test"].primaryIndex++
@@ -123,7 +123,7 @@ func Update(query string) (result string) {
 	// Update index
 	size := int64(len(data))
 
-	UpdateIndex(db.Pages[db.Name+collection+pix], int(id), indexs["test"].at, size)
+	UpdateIndex(db.Pages[db.Name+collection+pIndex], int(id), indexs["test"].at, size)
 
 	indexs["test"].at += size
 

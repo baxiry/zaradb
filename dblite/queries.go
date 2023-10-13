@@ -7,23 +7,19 @@ import (
 )
 
 func HandleQueries(query string) string {
-	action := gjson.Get(query, "action")
 
-	switch action.String() {
+	switch gjson.Get(query, "action").String() {
 	case "insert":
 		return Insert(query)
 
 	case "select":
-
 		return SelectById(query)
 
 	case "update":
-
-		return Update(query) // db.Name = RootPath
+		return Update(query)
 
 	case "delete":
-		DeleteById(query)
-		return "action is Delete"
+		return DeleteById(query)
 
 	case "create_collection":
 		return CreateCollection(query)
@@ -31,12 +27,12 @@ func HandleQueries(query string) string {
 	case "delete_collection":
 		return DeleteCollection(query)
 
+	case "show_collection":
+		return showCollections(db.Name)
+
 	default:
 		return "unknowen action"
-
 	}
-
-	//return result.String()
 }
 
 // Rename renames db.

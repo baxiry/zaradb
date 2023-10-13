@@ -4,9 +4,6 @@ import (
 	"os"
 )
 
-// primary index file
-const pi = "pi"
-
 // a collection fot test
 const testCollection = "test"
 
@@ -46,9 +43,9 @@ func (db *Database) Open() {
 		}
 	}
 
-	_, err = os.Stat(db.Name + testCollection + pix)
+	_, err = os.Stat(db.Name + testCollection + pIndex)
 	if os.IsNotExist(err) {
-		f, err := os.OpenFile(db.Name+testCollection+pix, os.O_CREATE|os.O_RDWR, 0644)
+		f, err := os.OpenFile(db.Name+testCollection+pIndex, os.O_CREATE|os.O_RDWR, 0644)
 		if err != nil {
 			eLog.Println("when creating pi ", err)
 			return
