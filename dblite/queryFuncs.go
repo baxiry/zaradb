@@ -36,6 +36,9 @@ func Insert(query string) (res string) {
 	}
 
 	data := gjson.Get(query, "data").String()
+	if data == "" {
+		return "there is no data to insert"
+	}
 
 	value, err := sjson.Set(data, "_id", indexs["test"].primaryIndex)
 	if err != nil {
@@ -83,18 +86,13 @@ func SelectById(query string) (result string) {
 // delete
 func DeleteById(query string) (result string) {
 
-	id := gjson.Get(query, "_id").Int()
-	in := gjson.Get(query, "collection").String() // + slash
+	collection := gjson.Get(query, "collection").String() // + slash
+	// check collection
 
-	path := db.Name + in + fmt.Sprint(indexs["test"].primaryIndex/MaxObjects)
+	id := gjson.Get(query, "where_id").Int()
+	fmt.Println("id is : ", id)
 
-	fmt.Println("path id DeleteById: ", path)
-
-	UpdateIndex(db.Pages[path], int(id), 0, 0)
-
-	//fmt.Println(IndexsCache.indexs)
-	indexs["test"].indexCache[id] = [2]int64{0, 0}
-	//fmt.Println(IndexsCache.indexs)
+	UpdateIndex(db.Pages[db.Name+collection+pIndex], int(id), 0, 0)
 
 	return "Delete Success!"
 }
@@ -112,6 +110,7 @@ func Update(query string) (result string) {
 	data = gjson.Get("["+data+","+newData+"]", "@join").String()
 
 	id := gjson.Get(data, "_id").Int()
+	fmt.Println("id is : ", id)
 
 	path := db.Name + collection + fmt.Sprint(id/MaxObjects)
 

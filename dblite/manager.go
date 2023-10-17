@@ -21,7 +21,7 @@ func showCollections(dbName string) string {
 		return err.Error()
 	}
 
-	nfiles := "\n"
+	nfiles := ""
 	for _, f := range files {
 		if f.IsDir() || !strings.HasSuffix(f.Name(), pIndex) {
 			continue
@@ -53,10 +53,10 @@ func DeleteCollection(query string) string {
 			}
 		}
 	}
-
 	_ = os.Remove(db.Name + collectName + pIndex)
 	delete(db.Pages, db.Name+collectName+pIndex)
 
+	// TODO return number of deleted objects
 	return collectName + " is deleted"
 }
 

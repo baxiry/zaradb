@@ -121,22 +121,19 @@ func AppendIndex(indexFile *os.File, at int64, dataSize int) {
 	// TODO use assgined via index insteade append here e.g indexs[coll].indexs[id] = [2]int64{at, dataSize}
 }
 
-// update index val in primary.index file
+// update index val in primary.index file & cache index file
 func UpdateIndex(indexFile *os.File, id int, dataAt, dataSize int64) {
 
-	at := int64(id * 20)
+	at := int64(id * 20) // shnuck
 
 	strIndex := fmt.Sprint(dataAt) + " " + fmt.Sprint(dataSize) + " "
-	//for i := len(strIndex); i < 20; i++ {	strIndex += " "}
 
 	_, err := indexFile.WriteAt([]byte(strIndex), at)
 	if err != nil {
 		fmt.Println("id & at is ", id, at)
-		fmt.Println("err when UpdateIndex, store.go line 127", err)
-
+		eLog.Println("err when UpdateIndex", err)
 	}
 
-	// TODO update index in indexsCache
 	indexs["test"].indexCache[id] = [2]int64{dataAt, dataSize}
 }
 

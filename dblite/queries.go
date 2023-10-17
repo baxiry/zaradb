@@ -7,12 +7,11 @@ import (
 )
 
 func HandleQueries(query string) string {
-
 	switch gjson.Get(query, "action").String() {
 	case "insert":
 		return Insert(query)
 
-	case "select":
+	case "selectById":
 		return SelectById(query)
 
 	case "update":
@@ -21,6 +20,7 @@ func HandleQueries(query string) string {
 	case "delete":
 		return DeleteById(query)
 
+	// manage database
 	case "create_collection":
 		return CreateCollection(query)
 
@@ -30,9 +30,16 @@ func HandleQueries(query string) string {
 	case "show_collection":
 		return showCollections(db.Name)
 
+	case "select":
+		return findByField(query, "filter")
 	default:
 		return "unknowen action"
 	}
+}
+
+// extract filter
+func findByField(json, field string) string {
+	return gjson.Get(json, field).String()
 }
 
 // Rename renames db.
