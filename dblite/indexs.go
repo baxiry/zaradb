@@ -26,49 +26,75 @@ type Index struct { // Index
 }
 
 // list of collections
-type Indexs map[string]*Index
+var Indexs = make(map[string]*Index)
 
-// indexs
-var indexs = Indexs{}
+// global var! be careful
+//var index = Index{}
 
 // initialize cache of indexs
-func InitIndex() Indexs {
+func InitIndex() map[string]*Index {
+	indexs := make(map[string]*Index)
 
-	indx := &Index{
-		at:           0,
-		primaryIndex: 0,
-		indexCache:   make([][2]int64, 0),
-	}
-
-	path := db.Name + "test" + pIndex
 	// iLog.Println("indexFilePath: ", path)
 
 	indxBuffer := make([]byte, IndexChnucLen)
 
-	for {
-		n, err := db.Pages[path].Read(indxBuffer)
-		if err != nil && err != io.EOF {
-			eLog.Printf("ERROR! %s wher os.Read  file %v\n", err, path)
-			iLog.Println("file is : ", db.Pages[path])
-			os.Exit(1)
+	// get all collection in this database first
+	//iFile := db.Name + collection + pIndex
+	for _, indexfile := range getCollections(db.Name) {
+
+		index := &Index{
+			at:           0,
+			primaryIndex: 0,
+			indexCache:   make([][2]int64, 0),
 		}
-		if err == io.EOF {
-			break
+
+		for {
+			n, err := db.Pages[db.Name+indexfile].Read(indxBuffer)
+			if err != nil && err != io.EOF {
+				eLog.Println("file is : ", err)
+				os.Exit(1)
+			}
+			if err == io.EOF {
+				break
+			}
+			if n%20 != 0 {
+				eLog.Println("why n is :", n)
+			}
+
+			slicIndexe := strings.Split(string(indxBuffer[:n]), " ")
+
+			fmt.Printf("slicIndexe: .%s.\n", string(indxBuffer[:n]))
+			fmt.Println("path", db.Name+indexfile)
+			// TODO check bug here
+			if len(slicIndexe) == 1 {
+				eLog.Println("len slicIndexe is just 1", slicIndexe[0])
+				continue
+			}
+			fmt.Println()
+
+			at, _ := strconv.ParseInt(slicIndexe[0], 10, 64)
+			size, _ := strconv.ParseInt(slicIndexe[1], 10, 64)
+
+			index.indexCache = append(index.indexCache, [2]int64{at, size})
 		}
 
-		slicIndexe := strings.Split(string(indxBuffer[:n]), " ")
+		iLog.Println("indexs length : ", len(indexs))
+		fmt.Println()
 
-		at, _ := strconv.ParseInt(slicIndexe[0], 10, 64)
-		size, _ := strconv.ParseInt(slicIndexe[1], 10, 64)
+		indexs[indexfile] = index
 
-		indx.indexCache = append(indx.indexCache, [2]int64{at, size})
+		lst, primary := lasts(db.Name + indexfile)
+		indexs[indexfile].at = lst // check here
+
+		indexs[indexfile].primaryIndex = primary // check here
 	}
 
-	//	iLog.Println("primary indexs length : ", len(c.indexCache))
+	for k, v := range indexs {
+		fmt.Printf("at in %s is %d\n", k, v.at)
+		fmt.Printf("pi in %s is %d\n", k, v.primaryIndex)
+	}
 
-	indx.at = indx.lastAt()
-
-	indexs["test"] = indx
 	return indexs
 }
 
@@ -78,14 +104,41 @@ func (c *Index) GetIndex(id int) (pageName string, index [2]int64) {
 }
 
 // get last data location
+func lasts(path string) (int64, int64) {
+	info, err := os.Stat(path)
+	if err != nil {
+		// TODO
+		eLog.Printf(path, err)
+		return 0, 0 // panic("ERROR! no primary.index file ")
+	}
+
+	size := info.Size()
+
+	at := size - 20
+	buf := make([]byte, 20)
+	f, _ := os.OpenFile(path, os.O_RDONLY, 0644)
+	f.ReadAt(buf, at)
+
+	slc := strings.Split(string(buf), " ")
+	lastat, _ := strconv.ParseInt(slc[0], 10, 64)
+
+	lastPrimaryIndex := size / 20
+
+	return lastat, lastPrimaryIndex
+}
+
+/*
+// get last data location
 func (c *Index) lastAt() int64 {
 	if len(c.indexCache) > 0 {
+
 		at := c.indexCache[len(c.indexCache)-1][0] + c.indexCache[len(c.indexCache)-1][1]
-		println("At is ", at)
+		println("last at is ", at)
 		return at
 	}
 	return 0
 }
+*/
 
 // LastIndex return last index in table
 func lastIndex(path string) int64 {
@@ -96,8 +149,9 @@ func lastIndex(path string) int64 {
 		return 0 // panic("ERROR! no primary.index file ")
 	}
 
-	iLog.Println("last index from Indexs Cache:  ", len(indexs["test"].indexCache))
-	iLog.Println("last index from Index file Size", info.Size()/20)
+	// for file := range Indexs {fmt.Println(file)}
+	//iLog.Println("last index from Indexs Cache:  ", len(indexs[collection+pIndex].indexCache))
+	//iLog.Println("last index from Index file Size", info.Size()/20)
 
 	return info.Size() / 20
 }
@@ -112,12 +166,14 @@ func AppendIndex(indexFile *os.File, at int64, dataSize int) {
 		strInt += " "
 	}
 
-	_, err := indexFile.WriteAt([]byte(strInt), indexs["test"].primaryIndex*20) // indexfile.Name()
+	iLog.Println("Collection in AppendIndex is : ", collection+pIndex)
+
+	_, err := indexFile.WriteAt([]byte(strInt), Indexs[collection+pIndex].primaryIndex*20) // indexfile.Name()
 	if err != nil {
 		fmt.Println("err when UpdateIndex, store.go line 127", err)
 	}
 
-	indexs["test"].indexCache = append(indexs["test"].indexCache, [2]int64{at, int64(dataSize)})
+	Indexs[collection+pIndex].indexCache = append(Indexs[collection+pIndex].indexCache, [2]int64{at, int64(dataSize)})
 	// TODO use assgined via index insteade append here e.g indexs[coll].indexs[id] = [2]int64{at, dataSize}
 }
 
@@ -134,7 +190,7 @@ func UpdateIndex(indexFile *os.File, id int, dataAt, dataSize int64) {
 		eLog.Println("err when UpdateIndex", err)
 	}
 
-	indexs["test"].indexCache[id] = [2]int64{dataAt, dataSize}
+	Indexs[collection].indexCache[id] = [2]int64{dataAt, dataSize}
 }
 
 // get pageName Data Location  & data size from primary.indexes file

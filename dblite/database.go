@@ -7,13 +7,15 @@ import (
 // a collection fot test
 const testCollection = "test"
 
+var collection string //= "test"
+
 // db
 type Database struct {
 	// name of database
 	Name string
 
 	// file of collections name
-	Infos string
+	collection string
 
 	// slice of collection's name in db
 	CollectsList []string
@@ -25,7 +27,6 @@ type Database struct {
 func NewDatabase(name string) *Database {
 	return &Database{
 		Name:         rootPath() + name + slash,
-		Infos:        "infos", // + slash,
 		CollectsList: make([]string, 0),
 		Pages:        make(map[string]*os.File, 2),
 	}

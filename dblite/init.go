@@ -2,12 +2,13 @@ package dblite
 
 import (
 	"errors"
+	"fmt"
 	"os"
 )
 
 func initIndexsFile() {
 	// check if primary.index is exist
-	indexFilePath := db.Name + "testpi" //db.Index + pix
+	indexFilePath := db.Name + testCollection + pIndex
 	_, err := os.Stat(indexFilePath)
 	if errors.Is(err, os.ErrNotExist) {
 		IndexsFile, err := os.OpenFile(indexFilePath, os.O_CREATE|os.O_RDWR, 0644)
@@ -22,11 +23,12 @@ func initIndexsFile() {
 }
 
 func initIndex() {
-	indexFilePath := db.Name + "testpi"
-	//collect = NewIndex("test")
-	indexs := InitIndex()
-	indexs["test"].primaryIndex = lastIndex(indexFilePath)
-	//db.colletions["testpi"].primaryIndex = lastIndex(indexFilePath)
+
+	indexFilePath := db.Name + testCollection + pIndex
+	fmt.Println("index file path", indexFilePath)
+	Indexs = InitIndex()
+
+	//Indexs[testCollection+pIndex].primaryIndex = lastIndex(indexFilePath)
 }
 
 //end

@@ -9,6 +9,30 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+func getCollections(dbName string) (collections []string) {
+	f, err := os.Open(dbName)
+	if err != nil {
+		eLog.Println(err)
+		return nil
+	}
+
+	files, err := f.Readdir(0)
+	if err != nil {
+		eLog.Println(err)
+		return nil
+	}
+
+	for _, f := range files {
+		if f.IsDir() || !strings.HasSuffix(f.Name(), pIndex) {
+
+			continue
+		}
+		collections = append(collections, f.Name())
+	}
+
+	return collections
+}
+
 // shows collections in corrent database
 func showCollections(dbName string) string {
 	f, err := os.Open(dbName)
@@ -35,16 +59,16 @@ func showCollections(dbName string) string {
 
 // deletes collection
 func DeleteCollection(query string) string {
-	collectName := gjson.Get(query, "collection").String()
+	collection = gjson.Get(query, "collection").String()
 
-	if collectName == "" {
+	if collection == "" {
 		return "please type a collection you want to delete"
 	}
 
 	// remove all
 	i := 0
 	for range db.Pages {
-		file := collectName + strconv.Itoa(i)
+		file := collection + strconv.Itoa(i)
 		i++
 		for path := range db.Pages {
 			if path == db.Name+file {
@@ -53,34 +77,44 @@ func DeleteCollection(query string) string {
 			}
 		}
 	}
-	_ = os.Remove(db.Name + collectName + pIndex)
-	delete(db.Pages, db.Name+collectName+pIndex)
+	_ = os.Remove(db.Name + collection + pIndex)
+	delete(db.Pages, db.Name+collection+pIndex)
 
 	// TODO return number of deleted objects
-	return collectName + " is deleted"
+	return collection + " is deleted"
 }
 
 // creates new collection
 func CreateCollection(query string) string {
-	collectName := gjson.Get(query, "collection").String()
 
-	if collectName == "" {
-		return "please shose a collectin name"
+	collection = gjson.Get(query, "collection").String()
+	action := gjson.Get(query, "action").String()
+
+	if collection == "" {
+		if action != "" {
+			return "please shose a collectin name"
+		}
+		collection = query
 	}
 
 	// create index of collection & first page.
 
-	firstPage, err := os.OpenFile(db.Name+collectName+fmt.Sprint(0), os.O_CREATE|os.O_RDWR, 0644)
+	firstPage, err := os.OpenFile(db.Name+collection+fmt.Sprint(0), os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
 		return err.Error()
 	}
-	db.Pages[db.Name+collectName+fmt.Sprint(0)] = firstPage
+	db.Pages[db.Name+collection+fmt.Sprint(0)] = firstPage
 
-	indxPage, err := os.OpenFile(db.Name+collectName+pIndex, os.O_CREATE|os.O_RDWR, 0644)
+	indxPage, err := os.OpenFile(db.Name+collection+pIndex, os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
 		return err.Error()
 	}
-	db.Pages[db.Name+collectName+pIndex] = indxPage
+	db.Pages[db.Name+collection+pIndex] = indxPage
 
-	return "collecteon " + collectName + " is created"
+	// init new index in indexs
+
+	Indexs[collection+pIndex] = &Index{at: 0, indexCache: [][2]int64{}, primaryIndex: 0}
+	//	iLog.Println(Indexs)
+
+	return "collecteon " + collection + " is created"
 }
