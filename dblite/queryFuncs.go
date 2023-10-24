@@ -75,7 +75,10 @@ func Insert(query string) (res string) {
 
 // Select reads data form docs
 func SelectById(query string) (result string) {
+	collection := gjson.Get(query, "collection").String() // + slash
+
 	id := gjson.Get(query, "where_id").Int()
+
 	if int(id) >= len(Indexs[collection+pIndex].indexCache) {
 		iLog.Println(id, "index not found")
 		return fmt.Sprintf("Not Found _id %v\n", id)
@@ -85,7 +88,6 @@ func SelectById(query string) (result string) {
 	at := Indexs[collection+pIndex].indexCache[id][0]
 	size := Indexs[collection+pIndex].indexCache[id][1]
 
-	collection := gjson.Get(query, "collection").String() // + slash
 	//fmt.Println("table is : ", in)
 	// TODO check is from exist!
 

@@ -104,8 +104,6 @@ func Ws(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		fmt.Printf("Recve: %s", message)
-
 		// Hande all of Queries
 		start := time.Now()
 		result := db.HandleQueries(string(message)) + "\n" + time.Since(start).String()

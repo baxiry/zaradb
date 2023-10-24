@@ -12,7 +12,6 @@ func (Enginge) Run() {
 	// check & init index map & firs page store
 	initIndexsFile()
 
-	//db := NewDatabase()
 	initIndex()
 
 }
