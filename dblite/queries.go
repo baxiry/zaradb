@@ -8,7 +8,6 @@ import (
 
 func HandleQueries(query string) string {
 	switch gjson.Get(query, "action").String() {
-
 	case "insert":
 		return Insert(query)
 

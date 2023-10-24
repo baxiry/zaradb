@@ -85,8 +85,7 @@ func InitIndex() map[string]*Index {
 		indexs[indexfile] = index
 
 		lst, primary := lasts(db.Name + indexfile)
-		indexs[indexfile].at = lst // check here
-
+		indexs[indexfile].at = lst               // check here
 		indexs[indexfile].primaryIndex = primary // check here
 	}
 

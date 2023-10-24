@@ -14,11 +14,11 @@ func main() {
 	defer engine.Stop()
 
 	// standard endpoint
-	http.HandleFunc("/ws", db.Ws)
+	http.HandleFunc("/ws", Ws)
 
 	// endpoints for speed network
-	http.HandleFunc("/query", db.Resever)
-	http.HandleFunc("/result", db.Sender)
+	http.HandleFunc("/query", Resever)
+	http.HandleFunc("/result", Sender)
 
 	http.ListenAndServe(":1111", nil)
 }
