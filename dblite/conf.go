@@ -5,6 +5,8 @@ import (
 	"os"
 )
 
+var PORT = "1111"
+
 var MaxObjects int64 = 10_000
 
 var iLog = log.New(os.Stdout, "\n\033[33mINFO!:  \033[0m", log.Lshortfile)  // log.LstdFlags|

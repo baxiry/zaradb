@@ -17,15 +17,16 @@ const slash = string(os.PathSeparator) // not tested for windos
 func Insert(query string) (res string) {
 
 	collection = gjson.Get(query, "collection").String() // + slash
+	pindex := db.Name + collection + pIndex
 
 	// if collection == "" {return "ERROR! insert into no collection"}
-	_, ok := Indexs[collection+pIndex]
+	_, ok := Indexs[pindex]
 	if !ok {
 		CreateCollection(collection)
 		//return "create " + collection + " first"
 	}
 	// page name as int
-	pName := Indexs[collection+pIndex].primaryIndex / MaxObjects
+	pName := Indexs[pindex].primaryIndex / MaxObjects
 
 	if pName != numberPage {
 		numberPage++
@@ -45,7 +46,7 @@ func Insert(query string) (res string) {
 		return "there is no data to insert"
 	}
 
-	value, err := sjson.Set(data, "_id", Indexs[collection+pIndex].primaryIndex)
+	value, err := sjson.Set(data, "_id", Indexs[pindex].primaryIndex)
 	if err != nil {
 		fmt.Println("sjson.Set : ", err)
 	}
@@ -63,14 +64,14 @@ func Insert(query string) (res string) {
 		fmt.Printf("at in %s is %d\n", k, v.at)
 	}
 	// set new index
-	AppendIndex(db.Pages[db.Name+collection+pIndex], Indexs[collection+pIndex].at, size)
+	AppendIndex(db.Pages[pindex], Indexs[pindex].at, size)
 
-	Indexs[collection+pIndex].at += int64(size)
-	Indexs[collection+pIndex].primaryIndex++
+	Indexs[pindex].at += int64(size)
+	Indexs[pindex].primaryIndex++
 
-	iLog.Printf("coll: %s, primaryIndex: %d\n", collection, Indexs[collection+pIndex].primaryIndex)
+	iLog.Printf("coll: %s, primaryIndex: %d\n", collection, Indexs[pindex].primaryIndex)
 
-	return fmt.Sprint("Success Insert, _id: ", Indexs[collection+pIndex].primaryIndex-1)
+	return fmt.Sprint("Success Insert, _id: ", Indexs[pindex].primaryIndex-1)
 }
 
 // Select reads data form docs
@@ -78,17 +79,16 @@ func SelectById(query string) (result string) {
 	collection := gjson.Get(query, "collection").String() // + slash
 
 	id := gjson.Get(query, "where_id").Int()
+	pindex := db.Name + collection + pIndex
 
-	if int(id) >= len(Indexs[collection+pIndex].indexCache) {
+	if int(id) >= len(Indexs[pindex].indexCache) {
 		iLog.Println(id, "index not found")
 		return fmt.Sprintf("Not Found _id %v\n", id)
 	}
-	//iLog.Println("collection ; ", collection)
 
-	at := Indexs[collection+pIndex].indexCache[id][0]
-	size := Indexs[collection+pIndex].indexCache[id][1]
+	at := Indexs[pindex].indexCache[id][0]
+	size := Indexs[pindex].indexCache[id][1]
 
-	//fmt.Println("table is : ", in)
 	// TODO check is from exist!
 
 	path := db.Name + collection + fmt.Sprint(id/MaxObjects)
@@ -122,8 +122,7 @@ func Update(query string) (result string) {
 
 	data = gjson.Get("["+data+","+newData+"]", "@join").String()
 
-	id := gjson.Get(data, "_id").Int()
-	fmt.Println("id is : ", id)
+	id := gjson.Get(data, "_id").Int() //fmt.Println("id is : ", id)
 
 	path := db.Name + collection + fmt.Sprint(id/MaxObjects)
 
@@ -135,9 +134,11 @@ func Update(query string) (result string) {
 	// Update index
 	size := int64(len(data))
 
-	UpdateIndex(db.Pages[db.Name+collection+pIndex], int(id), Indexs[collection].at, size)
+	pindex := db.Name + collection + pIndex
 
-	Indexs[collection+pIndex].at += size
+	UpdateIndex(db.Pages[pindex], int(id), Indexs[pindex].at, size)
+
+	Indexs[pindex].at += size
 
 	return "Success update"
 }

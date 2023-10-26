@@ -9,7 +9,7 @@ import (
 
 // appends data to Pagefile & returns file size or error
 func Append(file *os.File, data string) (size int, err error) {
-	size, err = file.WriteAt([]byte(data), Indexs[collection+pIndex].at)
+	size, err = file.WriteAt([]byte(data), Indexs[db.Name+collection+pIndex].at)
 	if err != nil {
 		eLog.Println("Error WriteString ", err)
 	}

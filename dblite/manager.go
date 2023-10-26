@@ -103,17 +103,20 @@ func CreateCollection(query string) string {
 	if err != nil {
 		return err.Error()
 	}
+
+	ipath := db.Name + collection + pIndex
+
 	db.Pages[db.Name+collection+fmt.Sprint(0)] = firstPage
 
-	indxPage, err := os.OpenFile(db.Name+collection+pIndex, os.O_CREATE|os.O_RDWR, 0644)
+	indxPage, err := os.OpenFile(ipath, os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
 		return err.Error()
 	}
-	db.Pages[db.Name+collection+pIndex] = indxPage
+	db.Pages[ipath] = indxPage
 
 	// init new index in indexs
 
-	Indexs[collection+pIndex] = &Index{at: 0, indexCache: [][2]int64{}, primaryIndex: 0}
+	Indexs[ipath] = &Index{at: 0, indexCache: [][2]int64{}, primaryIndex: 0}
 	//	iLog.Println(Indexs)
 
 	return "collecteon " + collection + " is created"

@@ -35,12 +35,9 @@ var Indexs = make(map[string]*Index)
 func InitIndex() map[string]*Index {
 	indexs := make(map[string]*Index)
 
-	// iLog.Println("indexFilePath: ", path)
-
 	indxBuffer := make([]byte, IndexChnucLen)
 
 	// get all collection in this database first
-	//iFile := db.Name + collection + pIndex
 	for _, indexfile := range getCollections(db.Name) {
 
 		index := &Index{
@@ -58,14 +55,9 @@ func InitIndex() map[string]*Index {
 			if err == io.EOF {
 				break
 			}
-			if n%20 != 0 {
-				eLog.Println("why n is :", n)
-			}
 
 			slicIndexe := strings.Split(string(indxBuffer[:n]), " ")
 
-			fmt.Printf("slicIndexe: .%s.\n", string(indxBuffer[:n]))
-			fmt.Println("path", db.Name+indexfile)
 			// TODO check bug here
 			if len(slicIndexe) == 1 {
 				eLog.Println("len slicIndexe is just 1", slicIndexe[0])
@@ -78,9 +70,6 @@ func InitIndex() map[string]*Index {
 
 			index.indexCache = append(index.indexCache, [2]int64{at, size})
 		}
-
-		iLog.Println("indexs length : ", len(indexs))
-		fmt.Println()
 
 		indexs[indexfile] = index
 
@@ -126,19 +115,6 @@ func lasts(path string) (int64, int64) {
 	return lastat, lastPrimaryIndex
 }
 
-/*
-// get last data location
-func (c *Index) lastAt() int64 {
-	if len(c.indexCache) > 0 {
-
-		at := c.indexCache[len(c.indexCache)-1][0] + c.indexCache[len(c.indexCache)-1][1]
-		println("last at is ", at)
-		return at
-	}
-	return 0
-}
-*/
-
 // LastIndex return last index in table
 func lastIndex(path string) int64 {
 	info, err := os.Stat(path)
@@ -147,10 +123,6 @@ func lastIndex(path string) int64 {
 		eLog.Println("pi is not exists ")
 		return 0 // panic("ERROR! no primary.index file ")
 	}
-
-	// for file := range Indexs {fmt.Println(file)}
-	//iLog.Println("last index from Indexs Cache:  ", len(indexs[collection+pIndex].indexCache))
-	//iLog.Println("last index from Index file Size", info.Size()/20)
 
 	return info.Size() / 20
 }
@@ -165,14 +137,15 @@ func AppendIndex(indexFile *os.File, at int64, dataSize int) {
 		strInt += " "
 	}
 
-	iLog.Println("Collection in AppendIndex is : ", collection+pIndex)
+	ipath := db.Name + collection + pIndex
+	iLog.Println("Collection in AppendIndex is : ", ipath)
 
-	_, err := indexFile.WriteAt([]byte(strInt), Indexs[collection+pIndex].primaryIndex*20) // indexfile.Name()
+	_, err := indexFile.WriteAt([]byte(strInt), Indexs[ipath].primaryIndex*20) // indexfile.Name()
 	if err != nil {
 		fmt.Println("err when UpdateIndex, store.go line 127", err)
 	}
 
-	Indexs[collection+pIndex].indexCache = append(Indexs[collection+pIndex].indexCache, [2]int64{at, int64(dataSize)})
+	Indexs[ipath].indexCache = append(Indexs[ipath].indexCache, [2]int64{at, int64(dataSize)})
 	// TODO use assgined via index insteade append here e.g indexs[coll].indexs[id] = [2]int64{at, dataSize}
 }
 
@@ -189,7 +162,7 @@ func UpdateIndex(indexFile *os.File, id int, dataAt, dataSize int64) {
 		eLog.Println("err when UpdateIndex", err)
 	}
 
-	Indexs[collection].indexCache[id] = [2]int64{dataAt, dataSize}
+	Indexs[db.Name+collection].indexCache[id] = [2]int64{dataAt, dataSize}
 }
 
 // get pageName Data Location  & data size from primary.indexes file

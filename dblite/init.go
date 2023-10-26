@@ -2,12 +2,11 @@ package dblite
 
 import (
 	"errors"
-	"fmt"
 	"os"
 )
 
-func initIndexsFile() {
-	// check if primary.index is exist
+func initIndexs() {
+	// initialize Primaryindexs file if not exist cache
 	indexFilePath := db.Name + testCollection + pIndex
 	_, err := os.Stat(indexFilePath)
 	if errors.Is(err, os.ErrNotExist) {
@@ -19,16 +18,9 @@ func initIndexsFile() {
 		//db.Pages[indexFilePath] = IndexsFile
 		IndexsFile.Close()
 	}
-	//iLog.Println("indexFilePath is ", indexFilePath)
-}
 
-func initIndex() {
-
-	indexFilePath := db.Name + testCollection + pIndex
-	fmt.Println("index file path", indexFilePath)
+	// initialize indexs cache
 	Indexs = InitIndex()
-
-	//Indexs[testCollection+pIndex].primaryIndex = lastIndex(indexFilePath)
 }
 
 //end
