@@ -69,17 +69,26 @@ func Insert(query string) (res string) {
 	Indexs[pindex].at += int64(size)
 	Indexs[pindex].primaryIndex++
 
-	iLog.Printf("coll: %s, primaryIndex: %d\n", collection, Indexs[pindex].primaryIndex)
-
 	return fmt.Sprint("Success Insert, _id: ", Indexs[pindex].primaryIndex-1)
 }
 
 // Select reads data form docs
 func SelectById(query string) (result string) {
+	// TODO check is collection exist! or make client lib check it
 	collection := gjson.Get(query, "collection").String() // + slash
 
-	id := gjson.Get(query, "where_id").Int()
 	pindex := db.Name + collection + pIndex
+	_, ok := Indexs[pindex]
+	if !ok {
+		return "Error! " + collection + "is not exists"
+		//return "create " + collection + " first"
+	}
+
+	id := gjson.Get(query, "where_id").Int()
+	// TODO if no where_id in update query then it return 0, it means update obj _id: 0.
+	// Solution is initialize primary Index to 1 ensteade 0,
+	// Or check lenth of where_id field befor convert it to int
+	// or make client lib checkeing this situation
 
 	if int(id) >= len(Indexs[pindex].indexCache) {
 		iLog.Println(id, "index not found")
@@ -88,8 +97,6 @@ func SelectById(query string) (result string) {
 
 	at := Indexs[pindex].indexCache[id][0]
 	size := Indexs[pindex].indexCache[id][1]
-
-	// TODO check is from exist!
 
 	path := db.Name + collection + fmt.Sprint(id/MaxObjects)
 

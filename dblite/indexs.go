@@ -13,7 +13,7 @@ const (
 	pIndex = "pi"
 
 	// buffer size of len
-	IndexChnucLen = 20
+	IndexChunkLen = 20
 )
 
 type Index struct { // Index
@@ -35,11 +35,11 @@ var Indexs = make(map[string]*Index)
 func InitIndex() map[string]*Index {
 	indexs := make(map[string]*Index)
 
-	indxBuffer := make([]byte, IndexChnucLen)
+	indxBuffer := make([]byte, IndexChunkLen)
 
 	// get all collection in this database first
 	for _, indexfile := range getCollections(db.Name) {
-
+		indexfile = db.Name + indexfile
 		index := &Index{
 			at:           0,
 			primaryIndex: 0,
@@ -47,7 +47,7 @@ func InitIndex() map[string]*Index {
 		}
 
 		for {
-			n, err := db.Pages[db.Name+indexfile].Read(indxBuffer)
+			n, err := db.Pages[indexfile].Read(indxBuffer)
 			if err != nil && err != io.EOF {
 				eLog.Println("file is : ", err)
 				os.Exit(1)
@@ -63,7 +63,6 @@ func InitIndex() map[string]*Index {
 				eLog.Println("len slicIndexe is just 1", slicIndexe[0])
 				continue
 			}
-			fmt.Println()
 
 			at, _ := strconv.ParseInt(slicIndexe[0], 10, 64)
 			size, _ := strconv.ParseInt(slicIndexe[1], 10, 64)
@@ -73,15 +72,16 @@ func InitIndex() map[string]*Index {
 
 		indexs[indexfile] = index
 
-		lst, primary := lasts(db.Name + indexfile)
+		lst, primary := lasts(indexfile)
 		indexs[indexfile].at = lst               // check here
 		indexs[indexfile].primaryIndex = primary // check here
 	}
-
-	for k, v := range indexs {
-		fmt.Printf("at in %s is %d\n", k, v.at)
-		fmt.Printf("pi in %s is %d\n", k, v.primaryIndex)
-	}
+	/*
+		for k, v := range indexs {
+			fmt.Printf("at in %s is %d\n", k, v.at)
+			fmt.Printf("pi in %s is %d\n", k, v.primaryIndex)
+		}
+	*/
 
 	return indexs
 }
@@ -132,17 +132,16 @@ func AppendIndex(indexFile *os.File, at int64, dataSize int) {
 
 	strInt := fmt.Sprint(at) + " " + fmt.Sprint(dataSize)
 
-	numSpaces := IndexChnucLen - len(strInt)
+	numSpaces := IndexChunkLen - len(strInt)
 	for i := 0; i < numSpaces; i++ {
 		strInt += " "
 	}
 
 	ipath := db.Name + collection + pIndex
-	iLog.Println("Collection in AppendIndex is : ", ipath)
 
 	_, err := indexFile.WriteAt([]byte(strInt), Indexs[ipath].primaryIndex*20) // indexfile.Name()
 	if err != nil {
-		fmt.Println("err when UpdateIndex, store.go line 127", err)
+		eLog.Println("err when UpdateIndex", err)
 	}
 
 	Indexs[ipath].indexCache = append(Indexs[ipath].indexCache, [2]int64{at, int64(dataSize)})
@@ -162,15 +161,15 @@ func UpdateIndex(indexFile *os.File, id int, dataAt, dataSize int64) {
 		eLog.Println("err when UpdateIndex", err)
 	}
 
-	Indexs[db.Name+collection].indexCache[id] = [2]int64{dataAt, dataSize}
+	Indexs[db.Name+collection+pIndex].indexCache[id] = [2]int64{dataAt, dataSize}
 }
 
 // get pageName Data Location  & data size from primary.indexes file
 func GetIndex(indexFile *os.File, id int) (pageName string, at, size int64) {
 
 	pageName = strconv.Itoa(id / int(MaxObjects))
-	bData := make([]byte, 20)
-	_, err := indexFile.ReadAt(bData, int64(id*20))
+	bData := make([]byte, IndexChunkLen)
+	_, err := indexFile.ReadAt(bData, int64(id*IndexChunkLen))
 	if err != nil {
 		panic(err)
 	}
