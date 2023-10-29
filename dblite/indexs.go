@@ -9,13 +9,14 @@ import (
 )
 
 const (
-	// pix is primary index file
+	// pIndex is primary index file sufix
 	pIndex = "pi"
 
-	// buffer size of len
+	// size of index buffer
 	IndexChunkLen = 20
 )
 
+// Index stor at primaryIndex & indexCache
 type Index struct { // Index
 	// at : data locations store in file
 	at int64
@@ -25,11 +26,8 @@ type Index struct { // Index
 	indexCache [][2]int64 // [[0,3],[3,8]]
 }
 
-// list of collections
+// list of Index type
 var Indexs = make(map[string]*Index)
-
-// global var! be careful
-//var index = Index{}
 
 // initialize cache of indexs
 func InitIndex() map[string]*Index {
@@ -84,11 +82,6 @@ func InitIndex() map[string]*Index {
 	*/
 
 	return indexs
-}
-
-// GetIndex
-func (c *Index) GetIndex(id int) (pageName string, index [2]int64) {
-	return strconv.Itoa(int(id) / 1000), c.indexCache[id]
 }
 
 // get last data location
@@ -184,8 +177,11 @@ func GetIndex(indexFile *os.File, id int) (pageName string, at, size int64) {
 // deletes index from primary.index file
 func DeleteIndex(indxfile *os.File, id int) { //
 	at := int64(id * 20)
+
+	// TODO SEARCH for how can i controll size of file without use string space ?
 	indxfile.WriteAt([]byte("                    "), at)
-	// TODO delete index from indexCache
+
+	// TODO Delete index from indexCache or use a Bloom filter to avoid unnecessary file reading.
 }
 
 //end

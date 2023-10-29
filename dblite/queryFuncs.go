@@ -22,8 +22,8 @@ func Insert(query string) (res string) {
 	// if collection == "" {return "ERROR! insert into no collection"}
 	_, ok := Indexs[pindex]
 	if !ok {
-		CreateCollection(collection)
 		//return "create " + collection + " first"
+		CreateCollection(collection)
 	}
 	// page name as int
 	pName := Indexs[pindex].primaryIndex / MaxObjects
@@ -57,13 +57,10 @@ func Insert(query string) (res string) {
 	if err != nil {
 		// TODO check if collection exist
 		eLog.Printf("%v\n Path is %s\n collection is %s\n", err, path, collection)
-		return "Fielure Insert,mybe collection not exist"
+		return "Fielure Insert, mybe collection is not exist"
 	}
 
-	for k, v := range Indexs {
-		fmt.Printf("at in %s is %d\n", k, v.at)
-	}
-	// set new index
+	// store the new index
 	AppendIndex(db.Pages[pindex], Indexs[pindex].at, size)
 
 	Indexs[pindex].at += int64(size)
@@ -73,21 +70,22 @@ func Insert(query string) (res string) {
 }
 
 // Select reads data form docs
-func SelectById(query string) (result string) {
-	// TODO check is collection exist! or make client lib check it
+func SelectById(query string) string {
+
 	collection := gjson.Get(query, "collection").String() // + slash
 
 	pindex := db.Name + collection + pIndex
-	_, ok := Indexs[pindex]
-	if !ok {
-		return "Error! " + collection + "is not exists"
+
+	if _, ok := Indexs[pindex]; !ok {
+		// TODO union all expected errors
+		return "Error! " + collection + " is not exists"
 		//return "create " + collection + " first"
 	}
 
 	id := gjson.Get(query, "where_id").Int()
 	// TODO if no where_id in update query then it return 0, it means update obj _id: 0.
-	// Solution is initialize primary Index to 1 ensteade 0,
-	// Or check lenth of where_id field befor convert it to int
+	// Solution is initialize primary Index to 1 insteade 0,
+	// Or check length of where_id field befor convert it to int
 	// or make client lib checkeing this situation
 
 	if int(id) >= len(Indexs[pindex].indexCache) {
@@ -97,6 +95,9 @@ func SelectById(query string) (result string) {
 
 	at := Indexs[pindex].indexCache[id][0]
 	size := Indexs[pindex].indexCache[id][1]
+	if size == 0 {
+		return ""
+	}
 
 	path := db.Name + collection + fmt.Sprint(id/MaxObjects)
 
@@ -104,7 +105,7 @@ func SelectById(query string) (result string) {
 }
 
 // delete
-func DeleteById(query string) (result string) {
+func DeleteById(query string) string {
 
 	collection = gjson.Get(query, "collection").String() // + slash
 	// check collection
@@ -150,11 +151,25 @@ func Update(query string) (result string) {
 	return "Success update"
 }
 
-// Delete removes document
-func Delete(path string) (err error) {
-	return
-}
+// Find finds many by filter.
+func Find(query string) string {
+	// if sub index not exists
+	coll := gjson.Get(query, "collection").String()
+	// if len(coll) == 0 {return "select collection"}
+	_ = coll
 
-func Select(query string) string {
+	filter := gjson.Get(query, "collection").String()
+	_ = filter
+
+	// TODO: Parse filter
+	limit := 20
+	// skape := 0
+	// reads first 20 item by default
+
+	for i := 0; i < limit; i++ {
+		// for indexss
+		//Get(db.Pages[db.Name+coll],0,0)
+	}
+
 	return ""
 }
