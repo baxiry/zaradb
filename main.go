@@ -1,3 +1,4 @@
+// Zaradb lite faset document database
 package main
 
 import (
