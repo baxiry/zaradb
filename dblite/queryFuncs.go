@@ -13,6 +13,79 @@ var numberPage int64 = 0
 
 const slash = string(os.PathSeparator) // not tested for windos
 
+// Find finds many by filter.
+func Find(query string) (res string) {
+	// if sub index not exists
+
+	coll := gjson.Get(query, "collection").String()
+	// if len(coll) == 0 {return "select collection"}
+	_ = coll
+
+	filter := gjson.Get(query, "where").String()
+	_ = filter
+
+	pindex := db.Name + coll + pIndex
+
+	limit := int64(20)
+	if int(limit) >= len(Indexs[pindex].indexCache) {
+		limit = int64(len(Indexs[pindex].indexCache)) - 1
+	}
+	// skape := 0
+	// reads first 20 item by default
+
+	listObj := make([]string, limit)
+	var i int64
+
+	for i = 0; i < limit; i++ {
+
+		at := Indexs[pindex].indexCache[i][0]
+		size := Indexs[pindex].indexCache[i][1]
+
+		path := db.Name + coll + fmt.Sprint(i/MaxObjects)
+
+		listObj[i] = Get(db.Pages[path], at, int(size)) // + ",\n"
+	}
+
+	res = "[\n"
+	for i := 0; i < int(limit); i++ {
+		res += listObj[i] + ",\n"
+	}
+	res += "]"
+
+	return res
+}
+
+// Select reads data form docs
+func SelectById(query string) string {
+
+	collection := gjson.Get(query, "collection").String() // + slash
+
+	pindex := db.Name + collection + pIndex
+
+	if _, ok := Indexs[pindex]; !ok {
+		// TODO union all expected errors
+		return "Error! " + collection + " is not exists"
+		//return "create " + collection + " first"
+	}
+
+	id := gjson.Get(query, "where_id").Int()
+
+	if int(id) >= len(Indexs[pindex].indexCache) {
+		iLog.Println(id, "index not found")
+		return fmt.Sprintf("Not Found _id %v\n", id)
+	}
+
+	at := Indexs[pindex].indexCache[id][0]
+	size := Indexs[pindex].indexCache[id][1]
+	if size == 0 {
+		return ""
+	}
+
+	path := db.Name + collection + fmt.Sprint(id/MaxObjects)
+
+	return Get(db.Pages[path], at, int(size))
+}
+
 // Insert
 func Insert(query string) (res string) {
 
@@ -69,41 +142,6 @@ func Insert(query string) (res string) {
 	return fmt.Sprint("Success Insert, _id: ", Indexs[pindex].primaryIndex-1)
 }
 
-// Select reads data form docs
-func SelectById(query string) string {
-
-	collection := gjson.Get(query, "collection").String() // + slash
-
-	pindex := db.Name + collection + pIndex
-
-	if _, ok := Indexs[pindex]; !ok {
-		// TODO union all expected errors
-		return "Error! " + collection + " is not exists"
-		//return "create " + collection + " first"
-	}
-
-	id := gjson.Get(query, "where_id").Int()
-	// TODO if no where_id in update query then it return 0, it means update obj _id: 0.
-	// Solution is initialize primary Index to 1 insteade 0,
-	// Or check length of where_id field befor convert it to int
-	// or make client lib checkeing this situation
-
-	if int(id) >= len(Indexs[pindex].indexCache) {
-		iLog.Println(id, "index not found")
-		return fmt.Sprintf("Not Found _id %v\n", id)
-	}
-
-	at := Indexs[pindex].indexCache[id][0]
-	size := Indexs[pindex].indexCache[id][1]
-	if size == 0 {
-		return ""
-	}
-
-	path := db.Name + collection + fmt.Sprint(id/MaxObjects)
-
-	return Get(db.Pages[path], at, int(size))
-}
-
 // delete
 func DeleteById(query string) string {
 
@@ -130,7 +168,11 @@ func Update(query string) (result string) {
 
 	data = gjson.Get("["+data+","+newData+"]", "@join").String()
 
-	id := gjson.Get(data, "_id").Int() //fmt.Println("id is : ", id)
+	id := gjson.Get(data, "_id").Int()
+	// TODO if no where_id in update query then it return 0, it means update obj _id: 0.
+	// Solution is initialize primary Index to 1 insteade 0,
+	// Or check length of where_id field befor convert it to int
+	// or make client lib checkeing this situation
 
 	path := db.Name + collection + fmt.Sprint(id/MaxObjects)
 
@@ -151,25 +193,4 @@ func Update(query string) (result string) {
 	return "Success update"
 }
 
-// Find finds many by filter.
-func Find(query string) string {
-	// if sub index not exists
-	coll := gjson.Get(query, "collection").String()
-	// if len(coll) == 0 {return "select collection"}
-	_ = coll
-
-	filter := gjson.Get(query, "collection").String()
-	_ = filter
-
-	// TODO: Parse filter
-	limit := 20
-	// skape := 0
-	// reads first 20 item by default
-
-	for i := 0; i < limit; i++ {
-		// for indexss
-		//Get(db.Pages[db.Name+coll],0,0)
-	}
-
-	return ""
-}
+// end

@@ -6,7 +6,7 @@ var db = NewDatabase("test")
 
 func (Enginge) Run() {
 
-	// open all database pages
+	// open all data pages
 	db.Open()
 
 	// check & init index map & firs page store
@@ -15,7 +15,7 @@ func (Enginge) Run() {
 }
 
 func (Enginge) Stop() {
-	println("Enginge Closing...")
+	println("Enginge stop...")
 	db.Close()
 }
 
