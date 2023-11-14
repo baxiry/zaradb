@@ -1,48 +1,74 @@
 package dblite
 
-import "github.com/tidwall/gjson"
+import (
+	"github.com/tidwall/gjson"
+)
 
-// Eq check numbers are equal
-func nEqual(json, field string, input int64) (result bool) {
-	return input == gjson.Get(json, field).Int()
+// valid verifies that data matches the conditions
+func valid(query, data string) (result bool) {
+	result = true
+
+	gjson.Parse(query).ForEach(func(qk, qv gjson.Result) bool {
+
+		dv := gjson.Get(data, qk.String())
+
+		if qv.Type == 5 {
+			qv.ForEach(func(sqk, sqv gjson.Result) bool {
+				if sqk.String()[0] == '$' {
+					switch sqk.String() {
+
+					case "$gt":
+						if !(dv.Int() > sqv.Int()) {
+							result = false
+							return false
+						}
+						return result
+
+					case "$lt":
+						if !(dv.Int() < sqv.Int()) {
+							result = false
+							return false
+						}
+						return result
+
+					case "$gte":
+						if !(dv.Int() >= sqv.Int()) {
+							result = false
+							return false
+						}
+						return result
+
+					case "$lte":
+						if !(dv.Int() <= sqv.Int()) {
+							result = false
+							return false
+						}
+						return result
+
+					case "$eq":
+						if dv.Int() != sqv.Int() {
+							result = false
+							return false
+						}
+						return result
+
+					default:
+						// ??
+					}
+				}
+				return result
+			})
+
+			valid(qv.String(), dv.String())
+			return result
+		}
+
+		if dv.String() != qv.String() {
+			result = false
+			return result
+		}
+
+		return result // if true keep iterating
+	})
+	return result
 }
-
-/*
-// sNe check strings args are not equal
-func strNotEqual(json, field, match string) (result bool) {
-	return match != gjson.Get(json, field).String()
-}
-
-// strEqual check strings args is equal ?
-func sEq(json, field, match string) (result bool) {
-	return match == gjson.Get(json, field).String()
-}
-
-
-
-// Eq check numbers are not equal
-func Ne(json, field, match string) (result bool) {
-	return match != gjson.Get(json, field).String()
-}
-
-// Eq check if field is Greater then input arg
-func Gt(json, field, match string) (result bool) {
-	return match == gjson.Get(json, field).String()
-}
-
-// Eq check if field is Less then input arg
-func Lt(json, field, match string) (result bool) {
-	return match != gjson.Get(json, field).String()
-}
-
-// Eq check if field is Greater or Equal to input arg
-func Ge(json, field, match string) (result bool) {
-	return match == gjson.Get(json, field).String()
-}
-
-// Eq check if field is Less or Equal to input arg
-func Le(json, field, match string) (result bool) {
-	return match != gjson.Get(json, field).String()
-}
-
-*/

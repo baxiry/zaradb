@@ -6,6 +6,7 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+// ok
 func HandleQueries(query string) string {
 	switch gjson.Get(query, "action").String() {
 	case "find":

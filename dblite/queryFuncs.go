@@ -22,20 +22,21 @@ func Find(query string) (res string) {
 	_ = coll
 
 	filter := gjson.Get(query, "where").String()
-	_ = filter
+	fmt.Println("filter is :", filter)
 
 	pindex := db.Name + coll + pIndex
 
 	limit := int64(20)
-	if int(limit) >= len(Indexs[pindex].indexCache) {
+	// offset := 0
+	if int(limit) >= len(Indexs[pindex].indexCache) /* -offset */ {
 		limit = int64(len(Indexs[pindex].indexCache)) - 1
 	}
-	// skape := 0
+
 	// reads first 20 item by default
 
 	listObj := make([]string, limit)
-	var i int64
 
+	var i int64
 	for i = 0; i < limit; i++ {
 
 		at := Indexs[pindex].indexCache[i][0]
@@ -50,9 +51,8 @@ func Find(query string) (res string) {
 	for i := 0; i < int(limit); i++ {
 		res += listObj[i] + ",\n"
 	}
-	res += "]"
 
-	return res
+	return res[:len(res)-2] + "\n]"
 }
 
 // Select reads data form docs

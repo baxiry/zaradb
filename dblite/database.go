@@ -25,6 +25,7 @@ type Database struct {
 
 // NewDatabase create new *database
 func NewDatabase(name string) *Database {
+
 	return &Database{
 		Name:         rootPath() + name + slash,
 		CollectsList: make([]string, 0),
@@ -34,6 +35,7 @@ func NewDatabase(name string) *Database {
 
 // opnens all collection in Root database folder
 func (db *Database) Open() {
+
 	path := db.Name // + db.Index + slash
 
 	files, err := os.ReadDir(path)
