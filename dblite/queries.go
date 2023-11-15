@@ -9,13 +9,18 @@ import (
 // ok
 func HandleQueries(query string) string {
 	switch gjson.Get(query, "action").String() {
-	case "find":
-		return Find(query)
+
+	case "findOne":
+		return findOne(query)
+
+	case "findMany":
+		return findMany(query)
+
+	case "findById":
+		return findById(query)
+
 	case "insert":
 		return Insert(query)
-
-	case "selectById":
-		return SelectById(query)
 
 	case "update":
 		return Update(query)
@@ -33,8 +38,6 @@ func HandleQueries(query string) string {
 	case "show_collection":
 		return showCollections(db.Name)
 
-	case "select":
-		return findByField(query, "filter")
 	default:
 		return "unknowen action"
 	}

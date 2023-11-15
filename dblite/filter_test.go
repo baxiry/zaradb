@@ -13,7 +13,7 @@ func test() {
 	result := make([]string, 0)
 	for _, v := range data {
 
-		if valid(query, v) {
+		if isMatch(query, v) {
 
 			result = append(result, v)
 		}

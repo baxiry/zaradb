@@ -13,15 +13,44 @@ var numberPage int64 = 0
 
 const slash = string(os.PathSeparator) // not tested for windos
 
+func findOne(query string) (res string) {
+	collection = gjson.Get(query, "collection").String()
+
+	filter := gjson.Get(query, "filter").String()
+
+	pindex := db.Name + collection + pIndex
+
+	path := ""
+
+	var i int64
+	for i = 0; i < int64(len(Indexs)); i++ {
+
+		at := Indexs[pindex].indexCache[i][0]
+		size := Indexs[pindex].indexCache[i][1]
+
+		// TODO check performence of this
+		path = db.Name + collection + fmt.Sprint(i/MaxObjects)
+
+		res = Get(db.Pages[path], at, int(size))
+		if match(filter, res) {
+			fmt.Println("res:  ", res)
+			fmt.Println("\nfilter", filter)
+			return res
+		}
+	}
+
+	return "now data match"
+
+}
+
 // Find finds many by filter.
-func Find(query string) (res string) {
+func findMany(query string) (res string) {
 	// if sub index not exists
 
 	coll := gjson.Get(query, "collection").String()
 	// if len(coll) == 0 {return "select collection"}
-	_ = coll
 
-	filter := gjson.Get(query, "where").String()
+	filter := gjson.Get(query, "filter").String()
 	fmt.Println("filter is :", filter)
 
 	pindex := db.Name + coll + pIndex
@@ -55,8 +84,8 @@ func Find(query string) (res string) {
 	return res[:len(res)-2] + "\n]"
 }
 
-// Select reads data form docs
-func SelectById(query string) string {
+// findById reads data form docs
+func findById(query string) string {
 
 	collection := gjson.Get(query, "collection").String() // + slash
 
@@ -163,7 +192,7 @@ func Update(query string) (result string) {
 		return "ERROR! select no collection "
 	}
 
-	data := SelectById(query)
+	data := findById(query)
 	newData := gjson.Get(query, "data").String()
 
 	data = gjson.Get("["+data+","+newData+"]", "@join").String()

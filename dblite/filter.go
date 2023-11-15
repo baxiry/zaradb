@@ -4,8 +4,8 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-// valid verifies that data matches the conditions
-func valid(query, data string) (result bool) {
+// match verifies that data matches the conditions
+func match(query, data string) (result bool) {
 	result = true
 
 	gjson.Parse(query).ForEach(func(qk, qv gjson.Result) bool {
@@ -59,7 +59,7 @@ func valid(query, data string) (result bool) {
 				return result
 			})
 
-			valid(qv.String(), dv.String())
+			isMatch(qv.String(), dv.String())
 			return result
 		}
 
