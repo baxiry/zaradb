@@ -13,6 +13,60 @@ var numberPage int64 = 0
 
 const slash = string(os.PathSeparator) // not tested for windos
 
+// Find finds any obs match creteria.
+func findMany(query string) (res string) {
+
+	collection = gjson.Get(query, "collection").String()
+	pindex := db.Name + collection + pIndex
+	if _, ok := Indexs[pindex]; !ok {
+		return collection + " collection not foun"
+	}
+
+	if Indexs[pindex].primaryIndex == 0 {
+		return "no data yet"
+	}
+
+	filter := gjson.Get(query, "filter").String()
+
+	limit := int64(20)
+	// offset := 0
+
+	if limit >= Indexs[pindex].primaryIndex { //
+		limit = int64(len(Indexs[pindex].indexCache))
+	}
+
+	// reads first 20 item by default
+
+	listObj := make([]string, limit)
+
+	var i int64
+	data, path := "", ""
+
+	for i = 0; i < limit; i++ {
+
+		at := Indexs[pindex].indexCache[i][0]
+		size := Indexs[pindex].indexCache[i][1]
+
+		path = db.Name + collection + fmt.Sprint(i/MaxObjects)
+
+		data = Get(db.Pages[path], at, int(size))
+		if match(filter, data) {
+			listObj[i] = data // + ",\n"
+		}
+	}
+
+	res = "[\n"
+	for i := 0; i < int(limit); i++ {
+		if listObj[i] == "" {
+			continue
+		}
+		res += " " + listObj[i] + ",\n"
+	}
+
+	return res[:len(res)-2] + "\n]"
+}
+
+// Finds first obj match creteria.
 func findOne(query string) (res string) {
 	collection = gjson.Get(query, "collection").String()
 
@@ -41,47 +95,6 @@ func findOne(query string) (res string) {
 
 	return "now data match"
 
-}
-
-// Find finds many by filter.
-func findMany(query string) (res string) {
-	// if sub index not exists
-
-	coll := gjson.Get(query, "collection").String()
-	// if len(coll) == 0 {return "select collection"}
-
-	filter := gjson.Get(query, "filter").String()
-	fmt.Println("filter is :", filter)
-
-	pindex := db.Name + coll + pIndex
-
-	limit := int64(20)
-	// offset := 0
-	if int(limit) >= len(Indexs[pindex].indexCache) /* -offset */ {
-		limit = int64(len(Indexs[pindex].indexCache)) - 1
-	}
-
-	// reads first 20 item by default
-
-	listObj := make([]string, limit)
-
-	var i int64
-	for i = 0; i < limit; i++ {
-
-		at := Indexs[pindex].indexCache[i][0]
-		size := Indexs[pindex].indexCache[i][1]
-
-		path := db.Name + coll + fmt.Sprint(i/MaxObjects)
-
-		listObj[i] = Get(db.Pages[path], at, int(size)) // + ",\n"
-	}
-
-	res = "[\n"
-	for i := 0; i < int(limit); i++ {
-		res += listObj[i] + ",\n"
-	}
-
-	return res[:len(res)-2] + "\n]"
 }
 
 // findById reads data form docs

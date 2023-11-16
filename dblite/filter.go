@@ -59,7 +59,7 @@ func match(query, data string) (result bool) {
 				return result
 			})
 
-			isMatch(qv.String(), dv.String())
+			match(qv.String(), dv.String())
 			return result
 		}
 
