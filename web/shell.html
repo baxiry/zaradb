@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Echo WebSocket Chat</title>
+<style>
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    color : whitesmoke;
+    background-color: #4a4e69;
+}
+
+#shell-container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#message-list {
+    width: 100%;
+    height: calc(100vh - 50px);
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+
+.message {
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #4a4e69;
+    /* background-color: #eee;*/
+    border-radius: 5px;
+
+}
+
+.data {
+    font-weight: bold;
+}
+
+#message-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+</style>
+</head>
+<body>
+<div id="shell-container">
+    <input type="text" id="message-input" placeholder="Enter your message">
+    <div id="message-list"></div>
+</div>
+
+<script>
+const ws = new WebSocket('ws://localhost:1111/ws');
+const messageList = document.getElementById('message-list');
+const queryInput = document.getElementById('message-input');
+
+ws.onopen = function(){
+    console.log('Connection established');
+};
+
+ws.onmessage = function(event) {
+    const messageData = prettyJSON(event.data)
+    const messageElement = document.createElement('pre');
+    messageElement.className = 'message';
+    messageElement.innerHTML = `<span class="data">${messageData}</span><h6>Done</h6>`;
+    messageList.appendChild(messageElement);
+    messageList.scrollTop = messageList.scrollHeight;
+};
+
+queryInput.addEventListener('keydown', function(event) {
+    if (event.keyCode === 13) {
+        const message = queryInput.value;
+        if (message) {
+            ws.send(message);// message
+            //queryInput.value = '';
+        }
+    }
+});
+
+function prettyJSON(jsonString) {
+    try {
+        const jsonObject = JSON.parse(jsonString);
+        let res = JSON.stringify(jsonObject, null, 4);
+        //console.log(res)
+        return  res
+    } catch (error) {
+        console.log("invalid json")
+        return jsonString;
+  }
+}
+</script>
+</body>
+</html>
+
