@@ -5,18 +5,17 @@ ws.onopen = function(){
 };
 
 
-const dataList = document.getElementById('data');
+const dataOutput = document.getElementById('data');
 const queryInput = document.getElementById('query-input');
 console.log("queryInput is : ",queryInput)
 
 ws.onmessage = function(event) {
     const Data = prettyJSON(event.data)
-    const dataOutput = document.createElement('pre');
-    dataOutput.className = 'message';
+    //dataOutput.className = 'message';
+
+    //$("#data").html(`<pre><span>${Data}</span></pre>`);
     dataOutput.innerHTML = `<pre><span>${Data}</span></pre>`;
-    //dataList.appendChild(dataOutput);
-    dataList.innerHTML =  `<pre><span>${Data}</span></pre>`;
-    dataList.scrollTop = dataOutput.scrollHeight;
+
     
 };
 
