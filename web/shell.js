@@ -4,23 +4,14 @@ ws.onopen = function(){
     console.log('Connection established');
 };
 
-
-const dataOutput = document.getElementById('data');
-const queryInput = document.getElementById('query-input');
-console.log("queryInput is : ",queryInput)
-
 ws.onmessage = function(event) {
-    const Data = prettyJSON(event.data)
-    //dataOutput.className = 'message';
-    //
+  const Data = prettyJSON(event.data)
   $('#data').html(`<pre><span>${Data}</span></pre>`);
   $('#data').fadeIn(500);
-    //$("#data").html(`<pre><span>${Data}</span></pre>`);
-  //  dataOutput.innerHTML = `<pre><span>${Data}</span></pre>`;
 
-    
 };
 
+const queryInput = document.getElementById('query-input');
 queryInput.addEventListener('keydown', function(event) {
     if (event.altKey && event.key === 'Enter') {
         const cursorPosition = queryInput.selectionStart;
@@ -37,10 +28,10 @@ queryInput.addEventListener('keydown', function(event) {
     }
    
     if (event.key === 'Enter') {
+       $("#data").css("display","none");
         event.preventDefault();
-        const message = queryInput.value;
-        if (message) {
-            ws.send(message);// message
+        if (queryInput.value) {
+            ws.send(queryInput.value);// message
             return;
         } 
     }
@@ -50,7 +41,6 @@ function prettyJSON(jsonString) {
     try {
         const jsonObject = JSON.parse(jsonString);
         let res = JSON.stringify(jsonObject, null, 4);
-        //console.log(res)
         return  res
     } catch (error) {
         console.log("invalid json")

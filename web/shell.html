@@ -39,7 +39,7 @@ body {
     padding-top: 9%; 
 }
 
-#message-list {
+#data-output {
 
     width: 100%;
     height: calc(100vh - 50px);
@@ -50,12 +50,13 @@ body {
     /*border: 1px solid #ccc;*/
 }
 
-.message {
+#data {
     margin-bottom: 10px;
     padding: 10px;
     background-color: #4a4e69;
     /* background-color: #eee;*/
     border-radius: 5px;
+    display: none;
 
 }
 
@@ -68,8 +69,8 @@ body {
 </head>
 <body>
 
-<textarea id="query-input" rows="4" cols="30" placeholder="Enter your query" autofocus></textarea>
 <div id="shell-container">
+    <textarea id="query-input" rows="4" cols="30" placeholder="Enter your query" autofocus></textarea>
     <div id="data"></div>
 </div>
 
