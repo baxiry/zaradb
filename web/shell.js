@@ -12,9 +12,11 @@ console.log("queryInput is : ",queryInput)
 ws.onmessage = function(event) {
     const Data = prettyJSON(event.data)
     //dataOutput.className = 'message';
-
+    //
+  $('#data').html(`<pre><span>${Data}</span></pre>`);
+  $('#data').fadeIn(500);
     //$("#data").html(`<pre><span>${Data}</span></pre>`);
-    dataOutput.innerHTML = `<pre><span>${Data}</span></pre>`;
+  //  dataOutput.innerHTML = `<pre><span>${Data}</span></pre>`;
 
     
 };

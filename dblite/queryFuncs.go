@@ -55,10 +55,6 @@ func findMany(query string) (res string) {
 		}
 	}
 
-	if listObj[0] == "" {
-		return "[]"
-	}
-
 	res = "[\n"
 	for i := 0; i < int(limit); i++ {
 		if listObj[i] == "" {
@@ -66,7 +62,9 @@ func findMany(query string) (res string) {
 		}
 		res += " " + listObj[i] + ",\n"
 	}
-
+	if len(res) == 2 {
+		return "[]"
+	}
 	return res[:len(res)-2] + "\n]"
 }
 
