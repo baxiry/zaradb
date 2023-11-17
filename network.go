@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"time"
 	db "zaradb/dblite"
 
 	"github.com/gorilla/websocket"
@@ -105,8 +104,8 @@ func Ws(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Hande all of Queries
-		start := time.Now()
-		result := db.HandleQueries(string(message)) + "\n" + time.Since(start).String()
+		//start := time.Now()
+		result := db.HandleQueries(string(message)) // + "\n" + time.Since(start).String()
 
 		// send result to client
 		err = c.WriteMessage(messageType, []byte(result))
