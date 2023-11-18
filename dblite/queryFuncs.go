@@ -31,8 +31,10 @@ func findMany(query string) (res string) {
 	limit := int64(20)
 	// offset := 0
 
-	if limit >= Indexs[pindex].primaryIndex { //
-		limit = int64(len(Indexs[pindex].indexCache))
+	lindx := int64(len(Indexs[pindex].indexCache))
+
+	if limit >= lindx { //
+		limit = int64(lindx)
 	}
 
 	// reads first 20 item by default
@@ -40,9 +42,14 @@ func findMany(query string) (res string) {
 	listObj := make([]string, limit)
 
 	var i int64
+	var ii int64
+
 	data, path := "", ""
 
-	for i = 0; i < limit; i++ {
+	for i = 0; ii < limit; i++ {
+		if i == lindx {
+			break
+		}
 
 		at := Indexs[pindex].indexCache[i][0]
 		size := Indexs[pindex].indexCache[i][1]
@@ -51,16 +58,18 @@ func findMany(query string) (res string) {
 
 		data = Get(db.Pages[path], at, int(size))
 		if match(filter, data) {
-			listObj[i] = data // + ",\n"
+			listObj[ii] = data // + ",\n"
+			ii++
 		}
 	}
 
 	res = "[\n"
-	for i := 0; i < int(limit); i++ {
-		if listObj[i] == "" {
-			continue
+	for k, v := range listObj {
+		if v == "" {
+			fmt.Println("zero val")
+			break
 		}
-		res += " " + listObj[i] + ",\n"
+		res += " " + listObj[k] + ",\n"
 	}
 	if len(res) == 2 {
 		return "[]"
