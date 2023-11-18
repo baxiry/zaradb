@@ -47,7 +47,7 @@ func InitIndex() map[string]*Index {
 		for {
 			n, err := db.Pages[indexfile].Read(indxBuffer)
 			if err != nil && err != io.EOF {
-				eLog.Println("file is : ", err)
+				eLog.Printf("file: %s. %s\n", indexfile, err)
 				os.Exit(1)
 			}
 			if err == io.EOF {
@@ -73,6 +73,7 @@ func InitIndex() map[string]*Index {
 		lst, primary := lasts(indexfile)
 		indexs[indexfile].at = lst               // check here
 		indexs[indexfile].primaryIndex = primary // check here
+		fmt.Printf("indexFile: %s\nindex: %d\n", indexfile, primary)
 	}
 	/*
 		for k, v := range indexs {
@@ -102,10 +103,11 @@ func lasts(path string) (int64, int64) {
 
 	slc := strings.Split(string(buf), " ")
 	lastat, _ := strconv.ParseInt(slc[0], 10, 64)
+	s, _ := strconv.ParseInt(slc[1], 10, 64)
 
 	lastPrimaryIndex := size / 20
 
-	return lastat, lastPrimaryIndex
+	return lastat + s, lastPrimaryIndex
 }
 
 // LastIndex return last index in table
@@ -134,7 +136,7 @@ func AppendIndex(indexFile *os.File, at int64, dataSize int) {
 
 	_, err := indexFile.WriteAt([]byte(strInt), Indexs[ipath].primaryIndex*20) // indexfile.Name()
 	if err != nil {
-		eLog.Println("err when UpdateIndex", err)
+		eLog.Println("UpdateIndex", err)
 	}
 
 	Indexs[ipath].indexCache = append(Indexs[ipath].indexCache, [2]int64{at, int64(dataSize)})
