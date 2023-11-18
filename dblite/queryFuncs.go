@@ -88,7 +88,8 @@ func findOne(query string) (res string) {
 	path := ""
 
 	var i int64
-	for i = 0; i < int64(len(Indexs)); i++ {
+	fmt.Println("len indexs: ", len(Indexs))
+	for i = 0; i < int64(len(Indexs[pindex].indexCache)); i++ {
 
 		at := Indexs[pindex].indexCache[i][0]
 		size := Indexs[pindex].indexCache[i][1]
@@ -98,10 +99,11 @@ func findOne(query string) (res string) {
 
 		res = Get(db.Pages[path], at, int(size))
 		if match(filter, res) {
-			fmt.Println("res:  ", res)
-			fmt.Println("\nfilter", filter)
+			fmt.Println("res   : ", res)
+			fmt.Println("filter: ", filter)
 			return res
 		}
+		fmt.Println("no match, res: ", res)
 	}
 
 	return "now data match"
