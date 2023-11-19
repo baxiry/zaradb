@@ -73,14 +73,7 @@ func InitIndex() map[string]*Index {
 		lst, primary := lasts(indexfile)
 		indexs[indexfile].at = lst               // check here
 		indexs[indexfile].primaryIndex = primary // check here
-		fmt.Printf("indexFile: %s\nindex: %d\n", indexfile, primary)
 	}
-	/*
-		for k, v := range indexs {
-			fmt.Printf("at in %s is %d\n", k, v.at)
-			fmt.Printf("pi in %s is %d\n", k, v.primaryIndex)
-		}
-	*/
 
 	return indexs
 }

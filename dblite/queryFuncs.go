@@ -99,11 +99,8 @@ func findOne(query string) (res string) {
 
 		res = Get(db.Pages[path], at, int(size))
 		if match(filter, res) {
-			fmt.Println("res   : ", res)
-			fmt.Println("filter: ", filter)
 			return res
 		}
-		fmt.Println("no match, res: ", res)
 	}
 
 	return "now data match"

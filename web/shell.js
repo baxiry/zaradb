@@ -28,14 +28,18 @@ queryInput.addEventListener('keydown', function(event) {
     }
    
     if (event.key === 'Enter') {
-       $("#data").css("display","none");
+        $("#data").css("display","none");
         event.preventDefault();
         if (queryInput.value) {
-            ws.send(queryInput.value);// message
+            eval("obj = "+ queryInput.value)
+            let query = JSON.stringify(obj)
+            ws.send(query);
             return;
         } 
     }
 });
+
+
 
 function prettyJSON(jsonString) {
     try {
