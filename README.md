@@ -1,5 +1,5 @@
 # ZaraDB 
-Zara is a lightweight, simple but very fast document database.
+Zara is a lightweight, simple and fast document database.
 
 It is intended to be a lightweight alternative to MongoDB.
 
