@@ -29,7 +29,7 @@ func main() {
   value := db.Get("key")
 
   // update data
-  db.Update(5) // 5 is primary key
+  db.Update(5, "hi every one") // 5 is primary key
 
   // delete data
   db.Delete(5)
