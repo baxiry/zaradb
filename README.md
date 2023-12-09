@@ -14,34 +14,31 @@ You can see BitCask's advantages through this [paper](https://riak.com/assets/bi
 package main
 
 import (
-	"github.com/baxiry/kvlite"
+	"github.com/baxiry/dblite"
 )
 
 func main() {
 
-  db := kvlite.Open("dbName/")
+  db := dblite.Open("dbName/")
   defer db.Close()
 
-  // inser, or update if key is exist
-  db.Put("key", "hello world!")
+  // insert new data
+  db.Insert("hello world!")
 
   // get data by key
   value := db.Get("key")
 
-  println(value) // "hello world"
+  // update data
+  db.Update(5) // 5 is primary key
+
+  // delete data
+  db.Delete(5)
+
 }
 
 ```
 ## Note
 kvlite now follows Bitcask design with some adjustments that serve the goals of the zaradb.
-
-## Similar projects
-https://github.com/basho/bitcask
-
-https://github.com/isgasho/bitcask
-
-https://github.com/rosedblabs/rosedb
-
 
 
 ## license BSD-3
