@@ -3,10 +3,9 @@ package main
 import (
 	"fmt"
 	"kvlite"
-	"time"
 )
 
-var max = 100_000
+var max = 10
 
 // main
 func main() {
@@ -15,22 +14,23 @@ func main() {
 	db := kvlite.Open("db1/")
 	defer db.Close()
 
-	s := time.Now()
+	lid := db.Lid
+	println("insert")
 	for i := 0; i < max; i++ {
-		db.Set(i, "users", "hello world:"+fmt.Sprint(i))
+		db.Insert("users", "hello world:"+fmt.Sprint(i+lid))
 	}
-	fmt.Println(time.Since(s))
-	s = time.Now()
 
-	// set data
-
-	l := 0
 	for i := 0; i < max; i++ {
-		l += len(db.Get(i))
+		fmt.Println("get: ", db.Get(i))
 	}
-	fmt.Println(time.Since(s))
 
-	data := db.Get(333)
-	fmt.Println("len & data:", l, data)
+	println("delete")
+	for i := 0; i < 7; i++ {
+		//		db.Delete(i, "users")
+	}
+
+	for i := 0; i < max+lid; i++ {
+		fmt.Println(i, "get: ", db.Get(i))
+	}
 
 }
