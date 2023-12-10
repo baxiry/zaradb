@@ -10,6 +10,7 @@ func Test_Open(t *testing.T) {
 
 	// test default dir db
 	db := Open("")
+	defer db.Close()
 
 	if _, err := os.Stat("mok/"); errors.Is(err, os.ErrNotExist) {
 		t.Errorf("err! %s should be exist", "mok/")
@@ -31,7 +32,6 @@ func Test_Open(t *testing.T) {
 	err = os.RemoveAll(dir)
 	check("", err)
 
-	db.Close()
 }
 
 // main
@@ -40,12 +40,12 @@ func Test_Get_Put(t *testing.T) {
 	db := Open("")
 	defer db.Close()
 
-	key := "hi"
+	coll := "users"
 	value := "hello world"
 
-	db.Put(key, value)
+	db.Insert(coll, value)
 
-	if db.Get(key) != value {
+	if db.Get(0) != value {
 		t.Errorf("value shold be %s\n", value)
 	}
 

@@ -19,13 +19,12 @@ type index struct {
 	// "i 0 199 45 0 users"
 	coll string
 	page int
-	id   int64
+	// id   int64
 	at   int64
 	size int
 }
 
 type Database struct {
-	name string
 	page int
 	Lid  int
 	lat  int64 // last at
@@ -259,17 +258,3 @@ func check(hint string, err error) {
 		//return
 	}
 }
-
-func (db *Database) ShowIndexs() {
-
-	for k, v := range db.indexs {
-		fmt.Println(k, v)
-	}
-
-	fmt.Println("len indexs : ", len(db.indexs))
-}
-
-/*
-
-
- */
