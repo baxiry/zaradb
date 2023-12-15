@@ -7,7 +7,8 @@ import (
 	"strings"
 )
 
-var str = fmt.Sprint
+// max items per page
+const MaxItems = 100000
 
 type Config struct {
 	Path string
@@ -17,50 +18,71 @@ type index struct {
 	// location format is :
 	// "i <id> <at> <size> <page-name> <coll>"
 	// "i 0 199 45 0 users"
-	coll string
-	page int
-	// id   int64
+	//id   int
 	at   int64
 	size int
+	page int
+	coll string
 }
 
 type Database struct {
-	page int
-	Lid  int
-	lat  int64 // last at
+	page    int
+	Lid     int
+	lindexs int
+	lat     int64 // last at
 
-	// int for file name will be emprove speed a lettel bit
+	// later page []*os.File
 	pages map[string]*os.File
+
+	indexs []index
 	//indexs map[int]index
-	indexs map[int]index
-	afile  string // active file
-	path   string
+	afile string // active file
+	path  string
 }
 
 // deletes exist value
-func (db *Database) Delete(id int, coll string) {
+func (db *Database) Delete(id int, coll string) string {
 
-	indx, ok := db.indexs[id]
-	if !ok {
-		println("no data to delete")
-		return
+	if id > db.Lid {
+		return "Id not exists"
 	}
+	/*
+		indx, ok := db.indexs[id]
+		if !ok {
+			return "no data to delete"
+		}
+	*/
+	indx := db.indexs[id]
+
 	if indx.coll != coll {
-		fmt.Println("======== no match", indx.coll, ",", coll)
-		return
+		return "coll wrong"
 	}
 
 	location := "d " + str(id) + "\n"
 
 	db.pages[db.afile].Write([]byte(location))
 
-	delete(db.indexs, id)
-
+	//delete(db.indexs, id)
+	db.indexs[id] = index{}
 	db.lat += int64(len(location))
+
+	return "done"
 }
 
+var str = fmt.Sprint
+
 // updates exist value
-func (db *Database) Update(id int, coll, value string) {
+func (db *Database) Update(id int, coll, value string) string {
+	if id > db.Lid {
+		return "Id not exists"
+	}
+
+	if db.indexs[id].coll != coll && db.indexs[id].coll != "" {
+		return "coll not match"
+	}
+	if db.indexs[id].at == 0 {
+		//return "item not exists"
+	}
 
 	size := len(value)
 	page := " 0 "
@@ -73,6 +95,8 @@ func (db *Database) Update(id int, coll, value string) {
 	db.indexs[id] = index{at: db.lat, size: size, coll: coll, page: db.page}
 
 	db.lat += int64(size + len(location))
+
+	return "done"
 }
 
 func (db *Database) lastAt() {
@@ -91,34 +115,47 @@ func (db *Database) lastAt() {
 // inserts new or update exist value
 func (db *Database) Insert(coll, value string) {
 
+	db.Lid++
+
 	size := len(value)
 	page := " 0 "
 
 	// TODO use string builder to reduce memory consomption
-
 	location := "\ni " + str(db.Lid) + " " + str(db.lat) + " " + str(size) + page + coll + "\n"
 
 	db.pages[db.afile].Write([]byte(value + location))
 
-	db.indexs[db.Lid] = index{at: db.lat, size: size, coll: coll, page: db.page}
+	if db.lindexs <= db.Lid {
+		db.indexs = append(db.indexs, index{at: db.lat, size: size, coll: coll, page: db.page})
+	} else {
+		db.indexs[db.Lid] = index{at: db.lat, size: size, coll: coll, page: db.page}
+	}
 
 	db.lat += int64(size + len(location))
-	db.Lid++
 }
 
 // Get data by key
-func (db *Database) Get(id int) string {
+func (db *Database) Get(id int, coll string) string {
 
 	// location format is :
 	// "i <id> <at> <size> <page> <coll>"
 	// "i 0 199 45 0 users"
-	index, ok := db.indexs[id]
-	if !ok {
-		return "no val"
+	if id > db.Lid {
+		return "Id not exists"
+	}
+
+	index := db.indexs[id]
+	if index.size == 0 {
+		return "not exist"
+	}
+
+	if index.coll != coll {
+		return "coll not match"
 	}
 
 	buffer := make([]byte, index.size)
 
+	// TODO cange page's type to list to improve cpu
 	db.pages[db.path+fmt.Sprint(index.page)].ReadAt(buffer, index.at)
 
 	// TODO make  reuse value will be improve mem & reduce gc
@@ -128,11 +165,10 @@ func (db *Database) Get(id int) string {
 }
 
 // rebuilds indexs
-func (db *Database) reIndex() (indexs map[int]index) {
+// func (db *Database) reIndex() (indexs map[int]index) {
+func (db *Database) reIndex() (indexs []index) {
 
-	// Read the entire file into a byte slice
-
-	indexs = make(map[int]index)
+	indexs = make([]index, MaxItems)
 
 	pages, err := os.ReadDir("db1")
 	if err != nil {
@@ -149,8 +185,7 @@ func (db *Database) reIndex() (indexs map[int]index) {
 		// Process each line
 		for _, line := range lines {
 			if len(line) == 0 {
-				fmt.Println("why this ? ")
-				break
+				continue
 			}
 			if line[0] == 'i' {
 
@@ -163,20 +198,22 @@ func (db *Database) reIndex() (indexs map[int]index) {
 					db.Lid = id
 				}
 
-				// TODO elso add pages and collections
-				indexs[id] = index{at: int64(at), size: size}
+				if id == len(indexs) {
+					indexs = append(indexs, index{at: int64(at), size: size, coll: pos[5]})
+				} else {
+					indexs[id] = index{at: int64(at), size: size, coll: pos[5]}
+				}
+
 			} else if line[0] == 'd' {
 				pos := strings.Fields(line)
 				id, _ := strconv.Atoi(pos[1])
-				delete(indexs, id)
+
+				indexs[id] = index{}
+				//delete(indexs, id)
 			}
 		}
 	}
 
-	if db.Lid != 0 {
-		db.Lid++
-	}
-	//db.Lid = len(indexs)
 	db.lastAt()
 
 	fmt.Println("last id : ", db.Lid)
@@ -210,6 +247,7 @@ func Open(path string) *Database {
 		db.pages[db.afile] = file
 
 		db.indexs = db.reIndex()
+		db.lindexs = len(db.indexs)
 
 		// complet db initalaze
 		return db
@@ -240,8 +278,28 @@ func Open(path string) *Database {
 		db.afile = dpage
 	}
 
+	// TODO we need reIndex wen server crushed. not in normal stopt
+	// for devloping mod i use reIndex fot testing
 	db.indexs = db.reIndex()
+	db.lindexs = len(db.indexs)
 	return db
+}
+
+func (db *Database) saveIndexs() {
+
+	/*
+		// TODO save index for fast start if sever stoptd greacefully
+		// if not then we new rebuild indexes from data
+
+		for k, v := range db.indexs {
+			//file.WriteString(fmt.Sprintf("%d %v\n", k, v))
+			fmt.Printf("%d, %v\n", k, v)
+		}
+
+			file, _ := os.Create(db.path + "indexs")
+			os.Create(db.path + "Done")
+	*/
+
 }
 
 // Close db
@@ -249,6 +307,9 @@ func (db *Database) Close() {
 	for _, f := range db.pages {
 		f.Close()
 	}
+
+	// TODO
+	db.saveIndexs()
 }
 
 // error
