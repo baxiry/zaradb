@@ -5,10 +5,8 @@ import (
 	"io"
 	"net/http"
 	"os"
-	db "zaradb/dblite"
+	"zaradb/dblite"
 )
-
-var engine = db.NewEngine()
 
 func js(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "web/shell.js")
@@ -17,8 +15,8 @@ func js(w http.ResponseWriter, r *http.Request) {
 func main() {
 	// TODO close programe greatfully.
 
-	engine.Run()
-	defer engine.Stop()
+	db := dblite.Run("test/")
+	defer db.Close()
 
 	http.HandleFunc("/web/shell.js", js)
 

@@ -36,7 +36,7 @@ func HandleQueries(query string) string {
 		return DeleteCollection(query)
 
 	case "show_collection":
-		return showCollections(db.Name)
+		return showCollections(db.path)
 
 	default:
 		return "unknowen action"

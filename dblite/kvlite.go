@@ -1,4 +1,4 @@
-package kvlite
+package dblite
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 // max items per page
-const MaxItems = 100000
+const MaxItems = 10
 
 type Config struct {
 	Path string
@@ -46,12 +46,9 @@ func (db *Database) Delete(id int, coll string) string {
 	if id > db.Lid {
 		return "Id not exists"
 	}
-	/*
-		indx, ok := db.indexs[id]
-		if !ok {
-			return "no data to delete"
-		}
-	*/
+
+	// indx, ok := db.indexs[id]; if !ok { return "no data to delete"	}
+
 	indx := db.indexs[id]
 
 	if indx.coll != coll {
@@ -99,6 +96,7 @@ func (db *Database) Update(id int, coll, value string) string {
 	return "done"
 }
 
+// last primary index
 func (db *Database) lastAt() {
 
 	files, err := os.ReadDir(db.path)
@@ -139,7 +137,8 @@ func (db *Database) Get(id int, coll string) string {
 
 	// location format is :
 	// "i <id> <at> <size> <page> <coll>"
-	// "i 0 199 45 0 users"
+
+	// "i 1 0 33 0 users"
 	if id > db.Lid {
 		return "Id not exists"
 	}
@@ -170,7 +169,7 @@ func (db *Database) reIndex() (indexs []index) {
 
 	indexs = make([]index, MaxItems)
 
-	pages, err := os.ReadDir("db1")
+	pages, err := os.ReadDir(db.path)
 	if err != nil {
 		fmt.Println("read dir", err)
 	}
@@ -188,20 +187,22 @@ func (db *Database) reIndex() (indexs []index) {
 				continue
 			}
 			if line[0] == 'i' {
-
 				pos := strings.Fields(line)
-				at, _ := strconv.Atoi(pos[2])
 
-				size, _ := strconv.Atoi(pos[3])
+				// "i 1 0 33 0 users"
 				id, _ := strconv.Atoi(pos[1])
 				if id > db.Lid {
 					db.Lid = id
 				}
+				at, _ := strconv.Atoi(pos[2])
+				size, _ := strconv.Atoi(pos[3])
 
 				if id == len(indexs) {
 					indexs = append(indexs, index{at: int64(at), size: size, coll: pos[5]})
+					fmt.Println("collection is : ", pos[5])
 				} else {
 					indexs[id] = index{at: int64(at), size: size, coll: pos[5]}
+					fmt.Println("collection is : ", pos[5])
 				}
 
 			} else if line[0] == 'd' {
@@ -223,7 +224,7 @@ func (db *Database) reIndex() (indexs []index) {
 // Open initialaze db pages
 func Open(path string) *Database {
 
-	db := &Database{}
+	db = &Database{}
 
 	//fmt.Println("last id is : ", db.lid)
 
@@ -281,6 +282,7 @@ func Open(path string) *Database {
 	// TODO we need reIndex wen server crushed. not in normal stopt
 	// for devloping mod i use reIndex fot testing
 	db.indexs = db.reIndex()
+
 	db.lindexs = len(db.indexs)
 	return db
 }
