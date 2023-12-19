@@ -18,22 +18,18 @@ func findOne(query string) (res string) {
 
 	collection := gjson.Get(query, "collection").String() // + slash
 
-	for i := 0; i < db.Lid; i++ {
+	for i := 0; i <= db.Lid; i++ {
 		if db.indexs[i].coll != collection {
 			continue
 		}
 		data := db.Get(i, collection)
-		fmt.Println(i, "coll is : ", db.indexs[i].coll)
-		fmt.Println("data: ", data)
-		fmt.Println("query: ", query)
 		filter := gjson.Get(query, "filter").String()
 		if match(filter, data) {
 			return data
 		}
 	}
 
-	fmt.Println("data not match")
-	return ""
+	return "noting mutch"
 }
 
 // Find finds any obs match creteria.
