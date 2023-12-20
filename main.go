@@ -2,6 +2,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -17,6 +18,7 @@ func main() {
 
 	db := dblite.Run("test/")
 	defer db.Close()
+	fmt.Printf("zara run on :%s\n", dblite.PORT)
 
 	http.HandleFunc("/web/shell.js", js)
 

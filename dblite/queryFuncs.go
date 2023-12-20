@@ -61,8 +61,11 @@ func Insert(query string) (res string) {
 	value, err := sjson.Set(data, "_id", db.Lid+1)
 	if err != nil {
 		fmt.Println("sjson.Set : ", err)
+		return "internal error"
+
 	}
 
+	// make this return error
 	db.Insert(collection, value)
 
 	return fmt.Sprint("Success Insert, _id: ", db.Lid)
@@ -88,16 +91,13 @@ func Update(query string) (result string) {
 		return "ERROR! select no collection "
 	}
 
+	// TODO make findById return error
 	data := findById(query)
-	newData := gjson.Get(query, "data").String()
 
+	newData := gjson.Get(query, "data").String()
 	data = gjson.Get("["+data+","+newData+"]", "@join").String()
 
 	id := gjson.Get(data, "_id").Int()
-	// TODO if no where_id in update query then it return 0, it means update obj _id: 0.
-	// Solution is initialize primary Index to 1 insteade 0,
-	// Or check length of where_id field befor convert it to int
-	// or make client lib checkeing this situation
 
 	db.Update(int(id), collection, data)
 

@@ -14,15 +14,11 @@ type Config struct {
 	Path string
 }
 
-type index struct {
-	// location format is :
-	// "i <id> <at> <size> <page-name> <coll>"
-	// "i 0 199 45 0 users"
-	//id   int
-	at   int64
-	size int
-	page int
-	coll string
+var db *Database
+
+func Run(path string) *Database {
+	db = Open(path)
+	return db
 }
 
 type Database struct {
@@ -38,6 +34,18 @@ type Database struct {
 	//indexs map[int]index
 	afile string // active file
 	path  string
+}
+
+type index struct {
+	// location format is :
+	// "i <id> <at> <size> <page-name> <coll>"
+	// "i 0 199 45 0 users"
+	//id   int
+
+	at   int64
+	size int
+	page int
+	coll string
 }
 
 // deletes exist value
@@ -199,12 +207,9 @@ func (db *Database) reIndex() (indexs []index) {
 
 				if id == len(indexs) {
 					indexs = append(indexs, index{at: int64(at), size: size, coll: pos[5]})
-					fmt.Println("collection is : ", pos[5])
 				} else {
 					indexs[id] = index{at: int64(at), size: size, coll: pos[5]}
-					fmt.Println("collection is : ", pos[5])
 				}
-
 			} else if line[0] == 'd' {
 				pos := strings.Fields(line)
 				id, _ := strconv.Atoi(pos[1])
