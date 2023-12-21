@@ -156,9 +156,7 @@ func (db *Database) Get(id int, coll string) string {
 		return "not exist"
 	}
 
-	if index.coll != coll {
-		return "coll not match"
-	}
+	//if index.coll != coll {return "coll not match"}
 
 	buffer := make([]byte, index.size)
 

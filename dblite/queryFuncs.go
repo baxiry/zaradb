@@ -90,6 +90,24 @@ func Insert(query string) (res string) {
 }
 
 // delete
+func Delete(query string) string {
+
+	collection := gjson.Get(query, "collection").String() // + slash
+	// check collection
+	for i := 0; i < db.Lid; i++ {
+		if db.indexs[i].size == 0 {
+			continue
+		}
+
+		// isMach
+
+		db.Delete(int(i), collection)
+
+	}
+	return "not implement yet"
+}
+
+// delete
 func DeleteById(query string) string {
 
 	collection := gjson.Get(query, "collection").String() // + slash
