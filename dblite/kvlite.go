@@ -27,7 +27,7 @@ type Database struct {
 	lindexs int
 	lat     int64 // last at
 
-	// later page []*os.File
+	// TODO page []*os.File
 	pages map[string]*os.File
 
 	indexs []index

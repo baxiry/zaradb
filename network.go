@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 	db "zaradb/dblite"
 
@@ -18,14 +18,14 @@ type Notify struct {
 
 var Channel = make(chan Notify, 100)
 
-// DemonNet listens incoming queries form ws & send result
+// Resever listens incoming queries form ws & send result
 func Resever(w http.ResponseWriter, r *http.Request) {
 
 	var upgrader = websocket.Upgrader{} // default options
 
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		fmt.Print("when upgrade ", err)
+		log.Print("when upgrade ", err)
 		return
 	}
 	defer c.Close()
@@ -35,11 +35,12 @@ func Resever(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		if note.err {
+			log.Println(err)
 			return
 		}
 		note.messageType, message, err = c.ReadMessage()
 		if err != nil {
-			fmt.Println("ReadMessage ", err)
+			log.Println("ReadMessage ", err)
 			note.err = true
 			Channel <- note
 			return
@@ -60,7 +61,7 @@ func Sender(w http.ResponseWriter, r *http.Request) {
 
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		fmt.Print("upgrade:", err)
+		log.Print("upgrade:", err)
 
 		return
 	}
@@ -71,12 +72,14 @@ func Sender(w http.ResponseWriter, r *http.Request) {
 	for {
 		note = <-Channel
 		if note.err {
+			log.Println(err)
 			return
 		}
 		// send result to client
 		err = c.WriteMessage(note.messageType, []byte(note.message))
 		if err != nil {
-			fmt.Println("ERROR! :Panic WriteMessage ", err)
+			log.Println("ERROR! :Panic WriteMessage ", err)
+
 			note.err = true
 			Channel <- note
 			return
@@ -91,7 +94,7 @@ func Ws(w http.ResponseWriter, r *http.Request) {
 
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		fmt.Print("upgrade:", err)
+		log.Print("upgrade:", err)
 		return
 	}
 	defer c.Close()
@@ -99,7 +102,8 @@ func Ws(w http.ResponseWriter, r *http.Request) {
 	for {
 		messageType, message, err := c.ReadMessage()
 		if err != nil {
-			fmt.Println("ERROR! :Panic ReadMessage ", err)
+			log.Println("ERROR! :Panic ReadMessage ", err)
+
 			break
 		}
 
@@ -110,7 +114,7 @@ func Ws(w http.ResponseWriter, r *http.Request) {
 		// send result to client
 		err = c.WriteMessage(messageType, []byte(result))
 		if err != nil {
-			fmt.Println("ERROR! :Panic WriteMessage ", err)
+			log.Println("ERROR! :Panic WriteMessage ", err)
 			break
 		}
 	}

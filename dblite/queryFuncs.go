@@ -34,7 +34,25 @@ func findOne(query string) (res string) {
 
 // Find finds any obs match creteria.
 func findMany(query string) (res string) {
-	return "not emplement yet"
+
+	collection := gjson.Get(query, "collection").String() // + slash
+
+	res = "["
+	for i := 0; i <= db.Lid; i++ {
+		if db.indexs[i].coll != collection {
+			continue
+		}
+		data := db.Get(i, collection)
+		filter := gjson.Get(query, "filter").String()
+		if match(filter, data) {
+			res += data + ","
+		}
+	}
+	if len(res) == 1 {
+		return "[]"
+	}
+	res = res[:len(res)-1] + "]"
+	return res
 }
 
 // findById reads data form docs

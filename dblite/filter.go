@@ -1,8 +1,6 @@
 package dblite
 
 import (
-	"fmt"
-
 	"github.com/tidwall/gjson"
 )
 
@@ -13,15 +11,15 @@ func match(query, data string) (result bool) {
 	gjson.Parse(query).ForEach(func(qk, qv gjson.Result) bool {
 
 		dv := gjson.Get(data, qk.String())
-		fmt.Println("q value type : ", qv.Type)
+		//fmt.Println("q value type : ", qv.Type)
 
 		if qv.Type == 5 {
 
-			fmt.Println("inter ", qv.Type)
+			//fmt.Println("inter ", qv.Type)
 
 			qv.ForEach(func(sqk, sqv gjson.Result) bool {
 
-				fmt.Println("    sqv type : ", sqv.Type)
+				//	fmt.Println("    sqv type : ", sqv.Type)
 				if sqk.String()[0] == '$' {
 					switch sqk.String() {
 
@@ -62,7 +60,7 @@ func match(query, data string) (result bool) {
 
 					default:
 						// ??
-						fmt.Println("default")
+						//fmt.Println("default")
 					}
 				}
 				return result

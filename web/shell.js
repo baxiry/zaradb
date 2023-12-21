@@ -9,6 +9,8 @@ ws.onmessage = function(event) {
   $('#data').html(`<pre><span>${Data}</span></pre>`);
   $('#data').fadeIn(500);
 
+    $('body').animate({scrollTop:0}, 4000);
+
 };
 
 const queryInput = document.getElementById('query-input');
