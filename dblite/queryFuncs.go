@@ -90,7 +90,7 @@ func Insert(query string) (res string) {
 }
 
 // delete
-func Delete(query string) string {
+func deleteOne(query string) string {
 
 	collection := gjson.Get(query, "collection").String() // + slash
 	// check collection
@@ -99,25 +99,56 @@ func Delete(query string) string {
 			continue
 		}
 
-		// isMach
+		// Mach
+		filter := gjson.Get(query, "filter").String()
+		data := db.Get(i, collection)
+		if match(filter, data) {
 
-		db.Delete(int(i), collection)
-
+			return db.Delete(i, collection)
+		}
 	}
-	return "not implement yet"
+	return "nothing match"
 }
 
 // delete
-func DeleteById(query string) string {
+func deleteMany(query string) string {
 
 	collection := gjson.Get(query, "collection").String() // + slash
 	// check collection
 
-	id := gjson.Get(query, "where_id").Int()
+	// indx, ok := db.indexs[id]; if !ok { return "no data to delete"	}
+	res := 0
 
-	db.Delete(int(id), collection)
+	for i := 0; i < db.Lid; i++ {
+		if db.indexs[i].size == 0 {
+			continue
+		}
 
-	return "Delete Success!"
+		if db.indexs[i].coll != collection {
+			continue
+		}
+
+		// Mach
+		filter := gjson.Get(query, "filter").String()
+		data := db.Get(i, collection)
+		if match(filter, data) {
+
+			if db.Delete(i, collection) == "delete success!" {
+				res++
+			}
+		}
+	}
+	return str(res) + " items deleted!"
+}
+
+// delete by id
+func DeleteById(query string) string {
+
+	collection := gjson.Get(query, "collection").String() // + slash
+
+	id := gjson.Get(query, "_id").Int()
+
+	return db.Delete(int(id), collection)
 }
 
 // Update update document data

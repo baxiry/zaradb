@@ -8,10 +8,22 @@ ws.onmessage = function(event) {
     const Data = prettyJSON(event.data)
     $('#data').html(`<pre><span>${Data}</span></pre>`);
     $('#data').fadeIn(500);
-
-    //$('body').animate({scrollTop:0}, 4000);
-
 };
+
+
+//  when ws closed reconnect after 2 second
+ws.onclose = function() {
+    console.log('WebSocket connection closed');
+    $('.reconnecte').show();
+    //$('#reload').show();
+};
+
+// reload to reconnecte
+$("#reload").click(function() {
+    location.reload();
+    //TODO setInterval()->id : for loop with sleep. cleaarInterval(intervalId) : break for loop
+});
+
 
 const queryInput = document.getElementById('query-input');
 queryInput.addEventListener('keydown', function(event) {

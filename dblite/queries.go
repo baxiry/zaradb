@@ -25,8 +25,14 @@ func HandleQueries(query string) string {
 	case "update":
 		return Update(query)
 
-	case "delete":
+	case "deleteById":
 		return DeleteById(query)
+
+	case "deleteOne":
+		return deleteOne(query)
+
+	case "deleteMany":
+		return deleteMany(query)
 
 	// manage database
 	case "create_collection":

@@ -59,6 +59,10 @@ func (db *Database) Delete(id int, coll string) string {
 
 	indx := db.indexs[id]
 
+	if indx.size == 0 {
+		return "no data to delete"
+	}
+
 	if indx.coll != coll {
 		return "coll wrong"
 	}
@@ -71,7 +75,7 @@ func (db *Database) Delete(id int, coll string) string {
 	db.indexs[id] = index{}
 	db.lat += int64(len(location))
 
-	return "done"
+	return "delete success!"
 }
 
 var str = fmt.Sprint

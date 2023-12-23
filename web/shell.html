@@ -69,18 +69,30 @@ textarea {
     background-color: transparent;
 }
 
+.reconnecte {
+    display: none;
+    width: 100%;
+    margin: "0 auto";
+}
+
 </style>
 </head>
 <body>
 
 <div id="fixed-area" >
-     <textarea id="query-input" rows="4" cols="30" placeholder="Enter your query" autofocus></textarea>
+     <textarea id="query-input" rows="4" cols="30"
+         placeholder="Enter your query" spellcheck="false" autofocus
+     ></textarea>
      <div id="space"></div>
-     
 
-  <div id="output">
-    <div id="data"></div>
-  </div>
+     <div id="output">
+       <div id="data"></div>
+
+       <div class="reconnecte">
+        <p>desconnected</p>
+       <button id='reload' >reload page</button>
+       </div>
+     </div>
     
      <div id="config"> hello make som buttons here </div>
 </div>
