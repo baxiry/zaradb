@@ -30,10 +30,10 @@ type Database struct {
 	// TODO page []*os.File
 	pages map[string]*os.File
 
-	indexs []index
-	//indexs map[int]index
-	afile string // active file
-	path  string
+	//indexs []index
+	indexs map[int]index
+	afile  string // active file
+	path   string
 }
 
 type index struct {
@@ -135,11 +135,7 @@ func (db *Database) Insert(coll, value string) {
 
 	db.pages[db.afile].Write([]byte(value + location))
 
-	if db.lindexs <= db.Lid {
-		db.indexs = append(db.indexs, index{at: db.lat, size: size, coll: coll, page: db.page})
-	} else {
-		db.indexs[db.Lid] = index{at: db.lat, size: size, coll: coll, page: db.page}
-	}
+	db.indexs[db.Lid] = index{at: db.lat, size: size, coll: coll, page: db.page}
 
 	db.lat += int64(size + len(location))
 }
@@ -175,9 +171,9 @@ func (db *Database) Get(id int, coll string) string {
 
 // rebuilds indexs
 // func (db *Database) reIndex() (indexs map[int]index) {
-func (db *Database) reIndex() (indexs []index) {
+func (db *Database) reIndex() (indexs map[int]index) {
 
-	indexs = make([]index, MaxItems)
+	indexs = make(map[int]index, MaxItems)
 
 	pages, err := os.ReadDir(db.path)
 	if err != nil {
@@ -206,12 +202,8 @@ func (db *Database) reIndex() (indexs []index) {
 				}
 				at, _ := strconv.Atoi(pos[2])
 				size, _ := strconv.Atoi(pos[3])
+				indexs[id] = index{at: int64(at), size: size, coll: pos[5]}
 
-				if id == len(indexs) {
-					indexs = append(indexs, index{at: int64(at), size: size, coll: pos[5]})
-				} else {
-					indexs[id] = index{at: int64(at), size: size, coll: pos[5]}
-				}
 			} else if line[0] == 'd' {
 				pos := strings.Fields(line)
 				id, _ := strconv.Atoi(pos[1])

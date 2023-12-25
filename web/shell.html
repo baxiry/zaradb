@@ -39,7 +39,6 @@ body {
 #config {
     float: right;
     color : whitesmoke;
-    background-color: none;
     border:  3px solid;
     border-color: white;
 }
@@ -51,16 +50,18 @@ body {
 
 
 textarea:focus {
-  border: 0px solid transparent ; /* Replace blue with your desired color */
+    border: none;
+    box-shadow: none;
+    outline: 1px solid yellow;
 }
 
 textarea {
     width: 100%;
     padding: 10px;
-
     color : whitesmoke;
     background-color: #2e3440;
     border: none;
+    box-shadow: none;
 }
 
 #fixed-area {
@@ -71,8 +72,9 @@ textarea {
 
 .reconnecte {
     display: none;
-    width: 100%;
-    margin: "0 auto";
+    color: #808b8a;
+    padding-left:35%;
+
 }
 
 </style>
@@ -86,21 +88,21 @@ textarea {
      <div id="space"></div>
 
      <div id="output">
-       <div id="data"></div>
+           <div id="data">
+           </div>
 
-       <div class="reconnecte">
-        <p>desconnected</p>
-       <button id='reload' >reload page</button>
-       </div>
+           <div class="reconnecte">
+               <h6>desconnected</h6>
+               <a style="color: #808b8a;" href="/">reload</a>
+               <p>alt + r</p>
+           </div>
      </div>
-    
      <div id="config"> hello make som buttons here </div>
 </div>
 
 
 <script>
 </script>
-
 </body>
 </html>
 
