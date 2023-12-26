@@ -10,12 +10,10 @@ ws.onmessage = function(event) {
     $('#data').fadeIn(500);
 };
 
-
 //  when ws closed reconnect after 2 second
 ws.onclose = function() {
     console.log('WebSocket connection closed');
-    $('.reconnecte').show();
-    //$('#reload').show();
+    $('#reconnecte').show();
 };
 
 // reload to reconnecte

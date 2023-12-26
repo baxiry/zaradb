@@ -23,7 +23,6 @@ body {
 #data {
     margin-bottom: 110px;
     padding: 10px;
-    background-color: #4a4e69;
 }
 
 #config {
@@ -60,3 +59,7 @@ textarea {
     padding-left:35%;
 }
 
+#examples {
+    color: #88c0d0;
+    padding-left:5%;
+}

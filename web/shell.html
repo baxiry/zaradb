@@ -6,7 +6,7 @@
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script src="shell.js" defer ></script>
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="style.css">
     <title>zara shell</title>
 </head>
 <body>
@@ -22,11 +22,31 @@
 
            <div class="reconnecte">
                <h6>desconnected</h6>
-               <a style="color: #808b8a;" href="/">reload</a>
+               <a style="color: #808b8a;" href="/shell">reload</a>
                <p>alt + r</p>
            </div>
+         <div id="examples">
+             
+              insert
+           </br> {action:"insert", collection:"users", data:{name:"adam", age:12}}
+             
+            </br> </br> select one object
+            </br> {action:"findOne", collection:"users", filter:{name:"adam"}}
+
+            </br> </br> select firs 20 objects
+             </br>{action:"findMany", collection:"users", filter:{name:"adam"}}
+
+             </br> </br>select firs 20 objects match conditions
+             </br>{action:"findMany", collection:"users", filter:{name:"adam", age:{$gt:12}}}
+
+              </br></br>delete first obj match conditions
+             </br>{action:"deleteOne", collection:"users", filter:{name:"adam", age:{$gt:12}}}
+
+              </br>delete all objs match conditions
+            </br></br> {action:"deleteMany", collection:"users", filter:{name:"adam", age:{$gt:12}}}
+         </div>
+         <div id="config"> hello make som buttons here </div>
      </div>
-     <div id="config"> hello make som buttons here </div>
 </div>
 
 </body>
