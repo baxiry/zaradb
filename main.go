@@ -9,10 +9,6 @@ import (
 	"zaradb/dblite"
 )
 
-func js(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "web/shell.js")
-}
-
 func main() {
 	// TODO close programe greatfully.
 
@@ -20,9 +16,9 @@ func main() {
 	defer db.Close()
 	fmt.Printf("zara run on :%s\n", dblite.PORT)
 
-	http.HandleFunc("/web/shell.js", js)
+	http.Handle("/", http.FileServer(http.Dir("web")))
 
-	http.HandleFunc("/", shell)
+	http.HandleFunc("/shell", shell)
 
 	// standard endpoint
 	http.HandleFunc("/ws", Ws)

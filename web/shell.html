@@ -5,79 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    <script src="web/shell.js" defer ></script>
+    <script src="shell.js" defer ></script>
+    <link rel="stylesheet" href="/style.css">
     <title>zara shell</title>
-<style>
-* {
-    font-size: 1.05em; /* Ems */
-}
-
-body {
-    font-family: sans-serif;
-    margin: 0;
-    padding: 0;
-    color : whitesmoke;
-    background-color: #4a4e69;
-    height: 100vh; /* Adjust as needed */
-    overflow: hidden;
-}
-
-#output {
-    width: 100%;
-    height: calc(100vh);
-    flex-direction: column;
-    overflow: auto; /*Show scrollbars only when content overflows */
-    font-size: 1.2em; /* Ems */
-}
-
-#data {
-    margin-bottom: 110px;
-    padding: 10px;
-    background-color: #4a4e69;
-}
-
-#config {
-    float: right;
-    color : whitesmoke;
-    border:  3px solid;
-    border-color: white;
-}
-#space {
-    height: 2px;
-    width: 100%;
-    background-color: transparent;
-}
-
-
-textarea:focus {
-    border: none;
-    box-shadow: none;
-    outline: 1px solid yellow;
-}
-
-textarea {
-    width: 100%;
-    padding: 10px;
-    color : whitesmoke;
-    background-color: #2e3440;
-    border: none;
-    box-shadow: none;
-}
-
-#fixed-area {
-    position: fixed;
-    width: 100%;
-    background-color: transparent;
-}
-
-.reconnecte {
-    display: none;
-    color: #808b8a;
-    padding-left:35%;
-
-}
-
-</style>
 </head>
 <body>
 
@@ -85,7 +15,6 @@ textarea {
      <textarea id="query-input" rows="4" cols="30"
          placeholder="Enter your query" spellcheck="false" autofocus
      ></textarea>
-     <div id="space"></div>
 
      <div id="output">
            <div id="data">
@@ -100,9 +29,6 @@ textarea {
      <div id="config"> hello make som buttons here </div>
 </div>
 
-
-<script>
-</script>
 </body>
 </html>
 

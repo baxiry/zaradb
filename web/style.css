@@ -1,0 +1,62 @@
+* {
+    font-size: 1.05em; /* Ems */
+}
+
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    color : whitesmoke;
+    background-color: #4a4e69;
+    height: 100vh; /* Adjust as needed */
+    overflow: hidden;
+}
+
+#output {
+    width: 100%;
+    height: calc(100vh);
+    flex-direction: column;
+    overflow: auto; 
+    font-size: 1.2em; 
+}
+
+#data {
+    margin-bottom: 110px;
+    padding: 10px;
+    background-color: #4a4e69;
+}
+
+#config {
+    float: right;
+    color : whitesmoke;
+    border:  3px solid;
+    border-color: white;
+}
+
+textarea:focus {
+    border: none;
+    box-shadow: none;
+    outline: 1px solid yellow;
+}
+
+textarea {
+    width: 100%;
+    padding: 10px;
+    color : whitesmoke;
+    background-color: #2e3440;
+    border: none;
+    box-shadow: none;
+}
+
+#fixed-area {
+    position: fixed;
+    width: 100%;
+    background-color: transparent;
+}
+
+.reconnecte {
+    display: none;
+    color: #808b8a;
+    padding-left:35%;
+}
+
