@@ -28,19 +28,16 @@ type Database struct {
 	lat     int64 // last at
 
 	// TODO page []*os.File
-	pages map[string]*os.File
-
-	//indexs []index
-	indexs map[int]index
-	afile  string // active file
-	path   string
+	pages      map[string]*os.File
+	indexs     map[int]index
+	activeFile string
+	path       string
 }
 
 type index struct {
 	// location format is :
 	// "i <id> <at> <size> <page-name> <coll>"
 	// "i 0 199 45 0 users"
-	//id   int
 
 	at   int64
 	size int
@@ -55,11 +52,8 @@ func (db *Database) Delete(id int, coll string) string {
 		return "Id not exists"
 	}
 
-	// indx, ok := db.indexs[id]; if !ok { return "no data to delete"	}
-
-	indx := db.indexs[id]
-
-	if indx.size == 0 {
+	indx, ok := db.indexs[id]
+	if !ok {
 		return "no data to delete"
 	}
 
@@ -69,7 +63,7 @@ func (db *Database) Delete(id int, coll string) string {
 
 	location := "d " + str(id) + "\n"
 
-	db.pages[db.afile].Write([]byte(location))
+	db.pages[db.activeFile].Write([]byte(location))
 
 	//delete(db.indexs, id)
 	db.indexs[id] = index{}
@@ -99,7 +93,7 @@ func (db *Database) Update(id int, coll, value string) string {
 	// TODO use string builder to reduce memory consomption
 	location := "\ni " + str(id) + " " + str(db.lat) + " " + str(size) + page + coll + "\n"
 
-	db.pages[db.afile].Write([]byte(value + location))
+	db.pages[db.activeFile].Write([]byte(value + location))
 
 	db.indexs[id] = index{at: db.lat, size: size, coll: coll, page: db.page}
 
@@ -115,8 +109,8 @@ func (db *Database) lastAt() {
 	check("ReadDir ", err)
 
 	for _, f := range files {
-		dpage := db.path + f.Name()
-		state, err := os.Stat(dpage)
+		dataPage := db.path + f.Name()
+		state, err := os.Stat(dataPage)
 		check("read state", err)
 		db.lat += state.Size()
 	}
@@ -133,7 +127,7 @@ func (db *Database) Insert(coll, value string) {
 	// TODO use string builder to reduce memory consomption
 	location := "\ni " + str(db.Lid) + " " + str(db.lat) + " " + str(size) + page + coll + "\n"
 
-	db.pages[db.afile].Write([]byte(value + location))
+	db.pages[db.activeFile].Write([]byte(value + location))
 
 	db.indexs[db.Lid] = index{at: db.lat, size: size, coll: coll, page: db.page}
 
@@ -222,29 +216,26 @@ func (db *Database) reIndex() (indexs map[int]index) {
 
 // Open initialaze db pages
 func Open(path string) *Database {
-
 	db = &Database{}
 
-	//fmt.Println("last id is : ", db.lid)
-
 	db.pages = make(map[string]*os.File)
-	afile := "0" // active file
+	activeFile := "0"
 	db.path = path
 
 	if db.path == "" {
 		//path, _ = os.Getwd()
-		db.path = "mok/"
+		db.path = "data/"
 
 		err := os.Mkdir(db.path, 0744)
 		check("Mkdir ", err)
 
-		db.afile = db.path + afile // active file
+		db.activeFile = db.path + activeFile // active file
 
-		file, err := os.OpenFile(db.afile, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
+		file, err := os.OpenFile(db.activeFile, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 		check("when open file", err)
 
 		fmt.Println("file active is : ", file.Name())
-		db.pages[db.afile] = file
+		db.pages[db.activeFile] = file
 
 		db.indexs = db.reIndex()
 		db.lindexs = len(db.indexs)
@@ -256,9 +247,9 @@ func Open(path string) *Database {
 	err := os.Mkdir(db.path, 0744)
 	check("Mkdir", err)
 
-	db.afile = db.path + afile // active file
+	db.activeFile = db.path + activeFile
 
-	file, err := os.OpenFile(db.afile, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
+	file, err := os.OpenFile(db.activeFile, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 	check("when open file", err)
 	file.Close()
 
@@ -266,16 +257,13 @@ func Open(path string) *Database {
 	check("ReadDir ", err)
 
 	for _, f := range files {
-
-		dpage := db.path + f.Name()
-
-		file, err := os.OpenFile(dpage, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
+		dataPage := db.path + f.Name()
+		file, err := os.OpenFile(dataPage, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
 		check("", err)
 
 		// TODO int as file name
-		db.pages[dpage] = file
-
-		db.afile = dpage
+		db.pages[dataPage] = file
+		db.activeFile = dataPage
 	}
 
 	// TODO we need reIndex wen server crushed. not in normal stopt
@@ -286,7 +274,7 @@ func Open(path string) *Database {
 	return db
 }
 
-func (db *Database) saveIndexs() {
+func (db *Database) storeIndexs() {
 
 	/*
 		// TODO save index for fast start if sever stoptd greacefully
@@ -310,7 +298,7 @@ func (db *Database) Close() {
 	}
 
 	// TODO
-	db.saveIndexs()
+	db.storeIndexs()
 }
 
 // error

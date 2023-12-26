@@ -49,7 +49,7 @@ func showCollections(dbName string) string {
 }
 
 // deletes collection
-func DeleteCollection(query string) string {
+func deleteCollection(query string) string {
 	collection := gjson.Get(query, "collection").String()
 
 	if collection == "" {
@@ -65,7 +65,7 @@ func DeleteCollection(query string) string {
 }
 
 // creates new collection
-func CreateCollection(query string) string {
+func createCollection(query string) string {
 
 	collection := gjson.Get(query, "collection").String()
 	action := gjson.Get(query, "action").String()
@@ -80,4 +80,25 @@ func CreateCollection(query string) string {
 	// create index of collection & first page.
 
 	return "collecteon " + collection + " is created"
+}
+
+// Rename renames db.
+func renameDB(oldPath, newPath string) error {
+	return os.Rename(oldPath, newPath)
+}
+
+// Remove remove db to .Trash dir
+func removeDB(dbName string) (err error) {
+	return RenameDB(dbName, ".Trash/"+dbName)
+}
+
+// CreateDB create db. TODO return this directly
+func createDB(dbName string) (string, error) {
+
+	return dbName + "is created", nil
+}
+
+// DeleteDB deletes db. (free hard drive).
+func deleteDB(dbName string) string {
+	return dbName + " is deleted!"
 }

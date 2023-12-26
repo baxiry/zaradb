@@ -1,76 +1,167 @@
 package dblite
 
 import (
-	"os"
+	"fmt"
 
 	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 )
 
-// ok
-func HandleQueries(query string) string {
-	switch gjson.Get(query, "action").String() {
+// Finds first obj match creteria.
+func findOne(query string) (res string) {
 
-	case "findOne":
-		return findOne(query)
+	collection := gjson.Get(query, "collection").String() // + slash
 
-	case "findMany":
-		return findMany(query)
-
-	case "findById":
-		return findById(query)
-
-	case "insert":
-		return Insert(query)
-
-	case "update":
-		return Update(query)
-
-	case "deleteById":
-		return DeleteById(query)
-
-	case "deleteOne":
-		return deleteOne(query)
-
-	case "deleteMany":
-		return deleteMany(query)
-
-	// manage database
-	case "create_collection":
-		return CreateCollection(query)
-
-	case "delete_collection":
-		return DeleteCollection(query)
-
-	case "show_collection":
-		return showCollections(db.path)
-
-	default:
-		return "unknowen action"
+	for i := 0; i <= db.Lid; i++ {
+		if db.indexs[i].coll != collection {
+			continue
+		}
+		data := db.Get(i, collection)
+		filter := gjson.Get(query, "filter").String()
+		if match(filter, data) {
+			return data
+		}
 	}
+
+	return "noting mutch"
 }
 
-// extract filter
-func findByField(json, field string) string {
-	return gjson.Get(json, field).String()
+// Find finds any obs match creteria.
+func findMany(query string) (res string) {
+
+	collection := gjson.Get(query, "collection").String() // + slash
+
+	res = "["
+	for i := 0; i <= db.Lid; i++ {
+		if db.indexs[i].coll != collection {
+			continue
+		}
+		data := db.Get(i, collection)
+		filter := gjson.Get(query, "filter").String()
+		if match(filter, data) {
+			res += data + ","
+		}
+	}
+	if len(res) == 1 {
+		return "[]"
+	}
+	res = res[:len(res)-1] + "]"
+	return res
 }
 
-// Rename renames db.
-func RenameDB(oldPath, newPath string) error {
-	return os.Rename(oldPath, newPath)
+// findById reads data form docs
+func findById(query string) string {
+
+	collection := gjson.Get(query, "collection").String() // + slash
+
+	id := gjson.Get(query, "_id").Int()
+
+	return db.Get(int(id), collection)
 }
 
-// Remove remove db to .Trash dir
-func RemoveDB(dbName string) (err error) {
-	return RenameDB(dbName, ".Trash/"+dbName)
+// Insert
+func insert(query string) (res string) {
+
+	collection := gjson.Get(query, "collection").String() // + slash
+	//	CreateCollection(collection)
+
+	data := gjson.Get(query, "data").String()
+	if data == "" {
+		return "there is no data to insert"
+	}
+
+	value, err := sjson.Set(data, "_id", db.Lid+1)
+	if err != nil {
+		fmt.Println("sjson.Set : ", err)
+		return "internal error"
+	}
+
+	// make this return error
+	db.Insert(collection, value)
+
+	return fmt.Sprint("Success Insert, _id: ", db.Lid)
 }
 
-// CreateDB create db. TODO return this directly
-func CreateDB(dbName string) (string, error) {
+// delete
+func deleteOne(query string) string {
 
-	return dbName + "is created", nil
+	collection := gjson.Get(query, "collection").String() // + slash
+	// check collection
+	for i := 0; i < db.Lid; i++ {
+		if db.indexs[i].size == 0 {
+			continue
+		}
+
+		// Mach
+		filter := gjson.Get(query, "filter").String()
+		data := db.Get(i, collection)
+		if match(filter, data) {
+
+			return db.Delete(i, collection)
+		}
+	}
+	return "nothing match"
 }
 
-// DeleteDB deletes db. (free hard drive).
-func DeleteDB(dbName string) string {
-	return dbName + " is deleted!"
+// delete
+func deleteMany(query string) string {
+
+	collection := gjson.Get(query, "collection").String() // + slash
+	// check collection
+
+	// indx, ok := db.indexs[id]; if !ok { return "no data to delete"	}
+	res := 0
+
+	for i := 0; i < db.Lid; i++ {
+		if db.indexs[i].size == 0 {
+			continue
+		}
+
+		if db.indexs[i].coll != collection {
+			continue
+		}
+
+		// Mach
+		filter := gjson.Get(query, "filter").String()
+		data := db.Get(i, collection)
+		if match(filter, data) {
+
+			if db.Delete(i, collection) == "delete success!" {
+				res++
+			}
+		}
+	}
+	return str(res) + " items deleted!"
 }
+
+// delete by id
+func deleteById(query string) string {
+
+	collection := gjson.Get(query, "collection").String() // + slash
+
+	id := gjson.Get(query, "_id").Int()
+
+	return db.Delete(int(id), collection)
+}
+
+// Update update document data
+func update(query string) (result string) {
+	collection := gjson.Get(query, "collection").String() // + slash
+	if collection == "" {
+		return "ERROR! select no collection "
+	}
+
+	// TODO make findById return error
+	data := findById(query)
+
+	newData := gjson.Get(query, "data").String()
+	data = gjson.Get("["+data+","+newData+"]", "@join").String()
+
+	id := gjson.Get(data, "_id").Int()
+
+	db.Update(int(id), collection, data)
+
+	return "Success update"
+}
+
+// end
