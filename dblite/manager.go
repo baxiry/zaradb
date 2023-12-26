@@ -89,7 +89,7 @@ func renameDB(oldPath, newPath string) error {
 
 // Remove remove db to .Trash dir
 func removeDB(dbName string) (err error) {
-	return RenameDB(dbName, ".Trash/"+dbName)
+	return renameDB(dbName, ".Trash/"+dbName)
 }
 
 // CreateDB create db. TODO return this directly
