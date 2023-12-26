@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script src="shell.js" defer ></script>
     <link rel="stylesheet" href="style.css">
@@ -25,30 +24,35 @@
                <a style="color: #808b8a;" href="/shell">reload</a>
                <p>alt + r</p>
            </div>
+
          <div id="examples">
-             
-              insert
-           </br> {action:"insert", collection:"users", data:{name:"adam", age:12}}
-             
-            </br> </br> select one object
-            </br> {action:"findOne", collection:"users", filter:{name:"adam"}}
+             <h5>examples</h5>
+             <p> insert</p>
+             {action:"insert", collection:"users", data:{name:"adam", age:12}}
+             <p>  select one object</p>
+             {action:"findOne", collection:"users", filter:{name:"adam"}}
+             <p>  select firs 20 objects</p>
+             {action:"findMany", collection:"users", filter:{name:"adam"}}
+             <p>select firs 20 objects match conditions</p>
+             {action:"findMany", collection:"users", filter:{name:"adam", age:{$gt:12}}}
+             <p>delete first obj match conditions</p>
+             {action:"deleteOne", collection:"users", filter:{name:"adam", age:{$gt:12}}}
+             <p>delete all objs match conditions </p>
+             {action:"deleteMany", collection:"users", filter:{name:"adam", age:{$gt:12}}}
+             <p></p>
 
-            </br> </br> select firs 20 objects
-             </br>{action:"findMany", collection:"users", filter:{name:"adam"}}
-
-             </br> </br>select firs 20 objects match conditions
-             </br>{action:"findMany", collection:"users", filter:{name:"adam", age:{$gt:12}}}
-
-              </br></br>delete first obj match conditions
-             </br>{action:"deleteOne", collection:"users", filter:{name:"adam", age:{$gt:12}}}
-
-              </br>delete all objs match conditions
-            </br></br> {action:"deleteMany", collection:"users", filter:{name:"adam", age:{$gt:12}}}
+            
+            <div id="config"> <a href="doc">documentatin</a> config  </div>
          </div>
-         <div id="config"> hello make som buttons here </div>
      </div>
 </div>
 
+<style>
+p {
+    color: #808b8a;
+    margin-bottom: 0px;
+}
+</style>
 </body>
 </html>
 

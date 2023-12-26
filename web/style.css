@@ -14,22 +14,20 @@ body {
 
 #output {
     width: 100%;
-    height: calc(100vh);
+    height: calc(100vh - 120px);
     flex-direction: column;
     overflow: auto; 
     font-size: 1.2em; 
 }
 
 #data {
-    margin-bottom: 110px;
     padding: 10px;
 }
 
 #config {
     float: right;
     color : whitesmoke;
-    border:  3px solid;
-    border-color: white;
+    margin-right: 15px;
 }
 
 textarea:focus {
@@ -50,7 +48,6 @@ textarea {
 #fixed-area {
     position: fixed;
     width: 100%;
-    background-color: transparent;
 }
 
 .reconnecte {
