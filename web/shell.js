@@ -6,6 +6,7 @@ ws.onopen = function(){
 
 ws.onmessage = function(event) {
     const Data = prettyJSON(event.data)
+    $('#examples').hide();
     $('#data').html(`<pre><span>${Data}</span></pre>`);
     $('#data').fadeIn(500);
 };
