@@ -143,7 +143,7 @@ func deleteById(query string) string {
 }
 
 // Update update document data
-func update(query string) (result string) {
+func updateById(query string) (result string) {
 	collection := gjson.Get(query, "collection").String() // + slash
 	if collection == "" {
 		return "ERROR! select no collection "
@@ -160,6 +160,60 @@ func update(query string) (result string) {
 	db.Update(int(id), collection, data)
 
 	return "Success update"
+}
+
+// TODO updateOne one update document data
+func updateOne(query string) (result string) {
+	collection := gjson.Get(query, "collection").String() // + slash
+	if collection == "" {
+		return "ERROR! select no collection "
+	}
+
+	filter := gjson.Get(query, "filter").String()
+	newData := gjson.Get(query, "data").String()
+
+	for i := 0; i <= db.lastId; i++ {
+
+		data := db.Get(i, collection)
+
+		if match(filter, data) {
+
+			data = gjson.Get("["+data+","+newData+"]", "@join").String()
+			db.Update(i, collection, data)
+			return "success updated"
+		}
+	}
+	return "nothing to update"
+}
+
+// TODO updateMany update document data
+func updateMany(query string) (result string) {
+	collection := gjson.Get(query, "collection").String() // + slash
+	if collection == "" {
+		return "ERROR! select no collection "
+	}
+
+	filter := gjson.Get(query, "filter").String()
+	newData := gjson.Get(query, "data").String()
+
+	tot := 0
+
+	for i := 0; i <= db.lastId; i++ {
+		if db.indexs[i].coll != collection {
+			continue
+		}
+
+		data := db.Get(i, collection)
+
+		if match(filter, data) {
+			id := gjson.Get(data, "_id").Int()
+
+			data = gjson.Get("["+data+","+newData+"]", "@join").String()
+			db.Update(int(id), collection, data)
+			tot++
+		}
+	}
+	return str(tot) + " item updated"
 }
 
 // end

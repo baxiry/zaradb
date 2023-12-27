@@ -20,8 +20,15 @@ func HandleQueries(query string) string {
 	case "insert":
 		return insert(query)
 
-	case "update":
-		return update(query)
+		// update
+	case "updateById":
+		return updateById(query)
+
+	case "updateOne":
+		return updateOne(query)
+
+	case "updateMany":
+		return updateMany(query)
 
 	case "deleteById":
 		return deleteById(query)
