@@ -23,7 +23,7 @@ func Run(path string) *Database {
 
 type Database struct {
 	page    int
-	Lid     int
+	lastId  int
 	lindexs int
 	lat     int64 // last at
 
@@ -48,7 +48,7 @@ type index struct {
 // deletes exist value
 func (db *Database) Delete(id int, coll string) string {
 
-	if id > db.Lid {
+	if id > db.lastId {
 		return "Id not exists"
 	}
 
@@ -76,7 +76,7 @@ var str = fmt.Sprint
 
 // updates exist value
 func (db *Database) Update(id int, coll, value string) string {
-	if id > db.Lid {
+	if id > db.lastId {
 		return "Id not exists"
 	}
 
@@ -119,17 +119,17 @@ func (db *Database) lastAt() {
 // inserts new or update exist value
 func (db *Database) Insert(coll, value string) {
 
-	db.Lid++
+	db.lastId++
 
 	size := len(value)
 	page := " 0 "
 
 	// TODO use string builder to reduce memory consomption
-	location := "\ni " + str(db.Lid) + " " + str(db.lat) + " " + str(size) + page + coll + "\n"
+	location := "\ni " + str(db.lastId) + " " + str(db.lat) + " " + str(size) + page + coll + "\n"
 
 	db.pages[db.activeFile].Write([]byte(value + location))
 
-	db.indexs[db.Lid] = index{at: db.lat, size: size, coll: coll, page: db.page}
+	db.indexs[db.lastId] = index{at: db.lat, size: size, coll: coll, page: db.page}
 
 	db.lat += int64(size + len(location))
 }
@@ -141,7 +141,7 @@ func (db *Database) Get(id int, coll string) string {
 	// "i <id> <at> <size> <page> <coll>"
 
 	// "i 1 0 33 0 users"
-	if id > db.Lid {
+	if id > db.lastId {
 		return "Id not exists"
 	}
 
@@ -191,8 +191,8 @@ func (db *Database) reIndex() (indexs map[int]index) {
 
 				// "i 1 0 33 0 users"
 				id, _ := strconv.Atoi(pos[1])
-				if id > db.Lid {
-					db.Lid = id
+				if id > db.lastId {
+					db.lastId = id
 				}
 				at, _ := strconv.Atoi(pos[2])
 				size, _ := strconv.Atoi(pos[3])
@@ -210,7 +210,7 @@ func (db *Database) reIndex() (indexs map[int]index) {
 
 	db.lastAt()
 
-	fmt.Println("last id : ", db.Lid)
+	fmt.Println("last id : ", db.lastId)
 	return indexs
 }
 

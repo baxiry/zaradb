@@ -12,7 +12,7 @@ func findOne(query string) (res string) {
 
 	collection := gjson.Get(query, "collection").String() // + slash
 
-	for i := 0; i <= db.Lid; i++ {
+	for i := 0; i <= db.lastId; i++ {
 		if db.indexs[i].coll != collection {
 			continue
 		}
@@ -22,7 +22,6 @@ func findOne(query string) (res string) {
 			return data
 		}
 	}
-
 	return "noting mutch"
 }
 
@@ -32,7 +31,7 @@ func findMany(query string) (res string) {
 	collection := gjson.Get(query, "collection").String() // + slash
 
 	res = "["
-	for i := 0; i <= db.Lid; i++ {
+	for i := 0; i <= db.lastId; i++ {
 		if db.indexs[i].coll != collection {
 			continue
 		}
@@ -70,7 +69,7 @@ func insert(query string) (res string) {
 		return "there is no data to insert"
 	}
 
-	value, err := sjson.Set(data, "_id", db.Lid+1)
+	value, err := sjson.Set(data, "_id", db.lastId+1)
 	if err != nil {
 		fmt.Println("sjson.Set : ", err)
 		return "internal error"
@@ -79,7 +78,7 @@ func insert(query string) (res string) {
 	// make this return error
 	db.Insert(collection, value)
 
-	return fmt.Sprint("Success Insert, _id: ", db.Lid)
+	return fmt.Sprint("Success Insert, _id: ", db.lastId)
 }
 
 // delete
@@ -87,7 +86,7 @@ func deleteOne(query string) string {
 
 	collection := gjson.Get(query, "collection").String() // + slash
 	// check collection
-	for i := 0; i < db.Lid; i++ {
+	for i := 0; i < db.lastId; i++ {
 		if db.indexs[i].size == 0 {
 			continue
 		}
@@ -96,7 +95,6 @@ func deleteOne(query string) string {
 		filter := gjson.Get(query, "filter").String()
 		data := db.Get(i, collection)
 		if match(filter, data) {
-
 			return db.Delete(i, collection)
 		}
 	}
@@ -110,9 +108,9 @@ func deleteMany(query string) string {
 	// check collection
 
 	// indx, ok := db.indexs[id]; if !ok { return "no data to delete"	}
-	res := 0
+	tot := 0
 
-	for i := 0; i < db.Lid; i++ {
+	for i := 0; i < db.lastId; i++ {
 		if db.indexs[i].size == 0 {
 			continue
 		}
@@ -127,11 +125,11 @@ func deleteMany(query string) string {
 		if match(filter, data) {
 
 			if db.Delete(i, collection) == "delete success!" {
-				res++
+				tot++
 			}
 		}
 	}
-	return str(res) + " items deleted!"
+	return str(tot) + " items deleted!"
 }
 
 // delete by id
