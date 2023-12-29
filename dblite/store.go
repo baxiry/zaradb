@@ -29,7 +29,7 @@ type Database struct {
 
 	// TODO page []*os.File
 	pages      map[string]*os.File
-	indexs     map[int]index
+	indexs     []index
 	activeFile string
 	path       string
 }
@@ -52,8 +52,8 @@ func (db *Database) Delete(id int, coll string) string {
 		return "Id not exists"
 	}
 
-	indx, ok := db.indexs[id]
-	if !ok {
+	indx := db.indexs[id]
+	if indx.at == 0 {
 		return "no data to delete"
 	}
 
@@ -63,9 +63,9 @@ func (db *Database) Delete(id int, coll string) string {
 
 	location := "d " + str(id) + "\n"
 
+	// TODO represent file as number to emprove performence
 	db.pages[db.activeFile].Write([]byte(location))
 
-	//delete(db.indexs, id)
 	db.indexs[id] = index{}
 	db.lat += int64(len(location))
 
@@ -102,6 +102,55 @@ func (db *Database) Update(id int, coll, value string) string {
 	return "done"
 }
 
+// inserts new or update exist value
+func (db *Database) Insert(coll, value string) {
+
+	db.lastId++
+
+	size := len(value)
+	page := " 0 "
+
+	// TODO use string builder to reduce memory consomption
+	location := "\ni " + str(db.lastId) + " " + str(db.lat) + " " + str(size) + page + coll + "\n"
+
+	db.pages[db.activeFile].Write([]byte(value + location))
+
+	// db.indexs[db.lastId] = index{at: db.lat, size: size, coll: coll, page: db.page}
+	db.indexs = append(db.indexs, index{at: db.lat, size: size, coll: coll, page: db.page})
+
+	db.lat += int64(size + len(location))
+}
+
+// Get data by id
+func (db *Database) Get(id int, coll string) string {
+	// location format is :
+	// "i <id> <at> <size> <page> <coll>"
+	// "i 1 0 33 0 users"
+
+	if id > db.lastId {
+		return "Id not exists"
+	}
+
+	index := db.indexs[id]
+	if index.size == 0 {
+		return "not exist"
+	}
+
+	if index.coll != coll {
+		return "coll not match"
+	}
+
+	buffer := make([]byte, index.size)
+
+	// TODO cange page's type to list to improve cpu
+	db.pages[db.path+fmt.Sprint(index.page)].ReadAt(buffer, index.at)
+
+	// TODO reuse value mybe improves mem & reduce gc
+	// db.value ?!
+
+	return string(buffer)
+}
+
 // last primary index
 func (db *Database) lastAt() {
 
@@ -116,58 +165,11 @@ func (db *Database) lastAt() {
 	}
 }
 
-// inserts new or update exist value
-func (db *Database) Insert(coll, value string) {
-
-	db.lastId++
-
-	size := len(value)
-	page := " 0 "
-
-	// TODO use string builder to reduce memory consomption
-	location := "\ni " + str(db.lastId) + " " + str(db.lat) + " " + str(size) + page + coll + "\n"
-
-	db.pages[db.activeFile].Write([]byte(value + location))
-
-	db.indexs[db.lastId] = index{at: db.lat, size: size, coll: coll, page: db.page}
-
-	db.lat += int64(size + len(location))
-}
-
-// Get data by key
-func (db *Database) Get(id int, coll string) string {
-
-	// location format is :
-	// "i <id> <at> <size> <page> <coll>"
-
-	// "i 1 0 33 0 users"
-	if id > db.lastId {
-		return "Id not exists"
-	}
-
-	index := db.indexs[id]
-	if index.size == 0 {
-		return "not exist"
-	}
-
-	//if index.coll != coll {return "coll not match"}
-
-	buffer := make([]byte, index.size)
-
-	// TODO cange page's type to list to improve cpu
-	db.pages[db.path+fmt.Sprint(index.page)].ReadAt(buffer, index.at)
-
-	// TODO make  reuse value will be improve mem & reduce gc
-	// db.value ?!
-
-	return string(buffer)
-}
-
 // rebuilds indexs
 // func (db *Database) reIndex() (indexs map[int]index) {
-func (db *Database) reIndex() (indexs map[int]index) {
+func (db *Database) reIndex() (indexs []index) {
 
-	indexs = make(map[int]index, MaxItems)
+	indexs = make([]index, 1)
 
 	pages, err := os.ReadDir(db.path)
 	if err != nil {
@@ -196,14 +198,14 @@ func (db *Database) reIndex() (indexs map[int]index) {
 				}
 				at, _ := strconv.Atoi(pos[2])
 				size, _ := strconv.Atoi(pos[3])
-				indexs[id] = index{at: int64(at), size: size, coll: pos[5]}
+				// indexs[id] = index{at: int64(at), size: size, coll: pos[5]}
+				indexs = append(indexs, index{at: int64(at), size: size, coll: pos[5]})
 
 			} else if line[0] == 'd' {
+				// delete index
 				pos := strings.Fields(line)
 				id, _ := strconv.Atoi(pos[1])
-
 				indexs[id] = index{}
-				//delete(indexs, id)
 			}
 		}
 	}

@@ -1,4 +1,9 @@
+// hestory queriers
+// queryID is a identity of entir saved queries
+var queryID = 0
 
+
+// WebSocket
 const ws = new WebSocket('ws://localhost:1111/ws');
 ws.onopen = function(){
     console.log('Connection established');
@@ -47,12 +52,12 @@ queryInput.addEventListener('keydown', function(event) {
             eval("obj = "+ queryInput.value)
             let query = JSON.stringify(obj)
             ws.send(query);
+
+
             return;
         } 
     }
 });
-
-
 
 function prettyJSON(jsonString) {
     try {
@@ -64,4 +69,15 @@ function prettyJSON(jsonString) {
         return jsonString;
   }
 }
+
+
+
+function saveQuery() {
+ 
+}
+
+function previuesQuery() {}
+
+function nextQuery() {}
+
 
