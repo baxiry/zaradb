@@ -10,6 +10,8 @@ import (
 // max items per page
 const MaxItems = 10
 
+var str = fmt.Sprint
+
 type Config struct {
 	Path string
 }
@@ -45,6 +47,25 @@ type index struct {
 	coll string
 }
 
+// inserts new or update exist value
+func (db *Database) Insert(coll, value string) {
+
+	db.lastId++
+
+	size := len(value)
+	page := " 0 "
+
+	// TODO use string builder to reduce memory consomption
+	location := "\ni " + str(db.lastId) + " " + str(db.lat) + " " + str(size) + page + coll + "\n"
+
+	db.pages[db.activeFile].Write([]byte(value + location))
+
+	// db.indexs[db.lastId] = index{at: db.lat, size: size, coll: coll, page: db.page}
+	db.indexs = append(db.indexs, index{at: db.lat, size: size, coll: coll, page: db.page})
+
+	db.lat += int64(size + len(location))
+}
+
 // deletes exist value
 func (db *Database) Delete(id int, coll string) string {
 
@@ -71,8 +92,6 @@ func (db *Database) Delete(id int, coll string) string {
 
 	return "delete success!"
 }
-
-var str = fmt.Sprint
 
 // updates exist value
 func (db *Database) Update(id int, coll, value string) string {
@@ -102,25 +121,6 @@ func (db *Database) Update(id int, coll, value string) string {
 	return "done"
 }
 
-// inserts new or update exist value
-func (db *Database) Insert(coll, value string) {
-
-	db.lastId++
-
-	size := len(value)
-	page := " 0 "
-
-	// TODO use string builder to reduce memory consomption
-	location := "\ni " + str(db.lastId) + " " + str(db.lat) + " " + str(size) + page + coll + "\n"
-
-	db.pages[db.activeFile].Write([]byte(value + location))
-
-	// db.indexs[db.lastId] = index{at: db.lat, size: size, coll: coll, page: db.page}
-	db.indexs = append(db.indexs, index{at: db.lat, size: size, coll: coll, page: db.page})
-
-	db.lat += int64(size + len(location))
-}
-
 // Get data by id
 func (db *Database) Get(id int, coll string) string {
 	// location format is :
@@ -143,7 +143,7 @@ func (db *Database) Get(id int, coll string) string {
 	buffer := make([]byte, index.size)
 
 	// TODO cange page's type to list to improve cpu
-	db.pages[db.path+fmt.Sprint(index.page)].ReadAt(buffer, index.at)
+	db.pages[db.path+str(index.page)].ReadAt(buffer, index.at)
 
 	// TODO reuse value mybe improves mem & reduce gc
 	// db.value ?!

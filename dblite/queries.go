@@ -30,7 +30,13 @@ func findMany(query string) (res string) {
 
 	collection := gjson.Get(query, "collection").String() // + slash
 
+	limit := gjson.Get(query, "limit").Int()
+	if limit == 0 {
+		limit = 20
+	}
+
 	res = "["
+
 	for i := 0; i <= db.lastId; i++ {
 		if db.indexs[i].coll != collection {
 			continue
@@ -39,6 +45,10 @@ func findMany(query string) (res string) {
 		filter := gjson.Get(query, "filter").String()
 		if match(filter, data) {
 			res += data + ","
+			limit--
+			if limit == 0 {
+				break
+			}
 		}
 	}
 	if len(res) == 1 {
