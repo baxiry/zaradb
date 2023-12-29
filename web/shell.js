@@ -53,16 +53,17 @@ queryInput.addEventListener('keydown', function(event) {
             let query = JSON.stringify(obj)
             ws.send(query);
 
-
             return;
         } 
     }
 });
 
+
+
 function prettyJSON(jsonString) {
     try {
         const jsonObject = JSON.parse(jsonString);
-        let res = JSON.stringify(jsonObject, null, 4);
+        let res = JSON.stringify(jsonObject, null, 3);
         return  res
     } catch (error) {
         console.log("invalid json")
@@ -71,13 +72,10 @@ function prettyJSON(jsonString) {
 }
 
 
-
 function saveQuery() {
- 
+            // save query-val in localstor for history
+            console.log($('textarea').val())
+            localStorage.setItem("{queryID}", textareaValue);
+            queryID++
 }
-
-function previuesQuery() {}
-
-function nextQuery() {}
-
 

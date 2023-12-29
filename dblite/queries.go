@@ -35,9 +35,15 @@ func findMany(query string) (res string) {
 		limit = 20
 	}
 
+	skip := int(gjson.Get(query, "skip").Int())
+	if skip > db.lastId {
+		skip = db.lastId - 1
+		println("skip greater then last id", skip)
+	}
+
 	res = "["
 
-	for i := 0; i <= db.lastId; i++ {
+	for i := skip + 1; i <= db.lastId; i++ {
 		if db.indexs[i].coll != collection {
 			continue
 		}
