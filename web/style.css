@@ -14,20 +14,22 @@ body {
 
 #output {
     width: 100%;
-    height: calc(100vh - 120px);
+    height: calc(100vh - 100px);
     flex-direction: column;
     overflow: auto; 
     font-size: 1.2em; 
 }
 
 #data {
-    padding: 10px;
+    padding: 5px;
 }
 
 #config {
-    float: right;
+    position: fixed;
+    bottom: 0;
+    right:0;
     color : whitesmoke;
-    margin-right: 15px;
+    margin-right:10px;
 }
 
 textarea:focus {
