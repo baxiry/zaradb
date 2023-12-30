@@ -1,13 +1,21 @@
 // hestory queriers
 // queryID is a identity of entir saved queries
 var queryID = 0
-
-
 // WebSocket
-const ws = new WebSocket('ws://localhost:1111/ws');
+function Connection() {
+var ws = new WebSocket('ws://localhost:1111/ws');
 ws.onopen = function(){
     console.log('Connection established');
-};
+}
+
+
+ws.onerror = function(){
+    console.log('Connection error');
+    setTimeout(function() {
+        Connection();
+    }, 3000) // 3 second
+}
+
 
 ws.onmessage = function(event) {
     const Data = prettyJSON(event.data)
@@ -20,13 +28,11 @@ ws.onmessage = function(event) {
 ws.onclose = function() {
     console.log('WebSocket connection closed');
     $('#reconnecte').show();
+    console.log("reconnet after 3 second")
+    setTimeout(function() {
+        Connection()
+    }, 3000) // 3 second
 };
-
-// reload to reconnecte
-$("#reload").click(function() {
-    location.reload();
-    //TODO setInterval()->id : for loop with sleep. cleaarInterval(intervalId) : break for loop
-});
 
 
 const queryInput = document.getElementById('query-input');
@@ -58,8 +64,6 @@ queryInput.addEventListener('keydown', function(event) {
     }
 });
 
-
-
 function prettyJSON(jsonString) {
     try {
         const jsonObject = JSON.parse(jsonString);
@@ -70,7 +74,9 @@ function prettyJSON(jsonString) {
         return jsonString;
   }
 }
+}
 
+Connection()
 
 function saveQuery() {
             // save query-val in localstor for history

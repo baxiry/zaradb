@@ -5,12 +5,12 @@ import (
 )
 
 // match verifies that data matches the conditions
-func match(query, data string) (result bool) {
+func match(filter, data string) (result bool) {
 	// TODO sould ber return syntax error if op unknown
 
 	result = true
 
-	gjson.Parse(query).ForEach(func(qk, qv gjson.Result) bool {
+	gjson.Parse(filter).ForEach(func(qk, qv gjson.Result) bool {
 
 		dv := gjson.Get(data, qk.String())
 		//fmt.Println("q value type : ", qv.Type)

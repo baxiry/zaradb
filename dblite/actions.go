@@ -39,6 +39,9 @@ func HandleQueries(query string) string {
 	case "deleteMany":
 		return deleteMany(query)
 
+	case "transaction":
+		return transaction(query)
+
 	// manage database
 	case "create_collection":
 		return createCollection(query)

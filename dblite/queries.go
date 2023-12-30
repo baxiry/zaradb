@@ -30,9 +30,11 @@ func findMany(query string) (res string) {
 
 	collection := gjson.Get(query, "collection").String() // + slash
 
-	limit := gjson.Get(query, "limit").Int()
+	limit := int(gjson.Get(query, "limit").Int())
 	if limit == 0 {
 		limit = 20
+	} else if limit > db.lastId {
+		limit = 200
 	}
 
 	skip := int(gjson.Get(query, "skip").Int())
