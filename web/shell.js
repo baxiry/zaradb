@@ -1,11 +1,15 @@
 // hestory queriers
 // queryID is a identity of entir saved queries
 var queryID = 0
+
 // WebSocket
+var ws;
 function Connection() {
-var ws = new WebSocket('ws://localhost:1111/ws');
+ws = new WebSocket('ws://localhost:1111/ws');
 ws.onopen = function(){
     console.log('Connection established');
+
+    $('#reconnecte').fadeOut(500);
 }
 
 
@@ -22,16 +26,17 @@ ws.onmessage = function(event) {
     $('#examples').hide();
     $('#data').html(`<pre><span>${Data}</span></pre>`);
     $('#data').fadeIn(500);
+
 };
 
 //  when ws closed reconnect after 2 second
 ws.onclose = function() {
     console.log('WebSocket connection closed');
     $('#reconnecte').show();
-    console.log("reconnet after 3 second")
+    console.log("reconnet after 4 second")
     setTimeout(function() {
         Connection()
-    }, 3000) // 3 second
+    }, 4000) // 3 second
 };
 
 
