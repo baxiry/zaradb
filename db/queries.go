@@ -1,4 +1,4 @@
-package dblite
+package db
 
 import (
 	"fmt"
@@ -32,7 +32,7 @@ func findMany(query string) (res string) {
 
 	limit := int(gjson.Get(query, "limit").Int())
 	if limit == 0 {
-		limit = 20
+		limit = 100
 	} else if limit > db.lastId {
 		limit = 200
 	}
@@ -68,7 +68,9 @@ func findMany(query string) (res string) {
 
 // findById reads data form docs
 func findById(query string) string {
-
+	for i := 0; i <= db.lastId; i++ {
+		fmt.Println(i, db.indexs[i])
+	}
 	collection := gjson.Get(query, "collection").String() // + slash
 
 	id := gjson.Get(query, "_id").Int()
@@ -104,8 +106,9 @@ func deleteOne(query string) string {
 
 	collection := gjson.Get(query, "collection").String() // + slash
 	// check collection
-	for i := 0; i < db.lastId; i++ {
+	for i := 0; i <= db.lastId; i++ {
 		if db.indexs[i].size == 0 {
+			println("skiping id: ", i)
 			continue
 		}
 
@@ -113,6 +116,7 @@ func deleteOne(query string) string {
 		filter := gjson.Get(query, "filter").String()
 		data := db.Get(i, collection)
 		if match(filter, data) {
+			println("delete id: ", i)
 			return db.Delete(i, collection)
 		}
 	}
@@ -128,7 +132,7 @@ func deleteMany(query string) string {
 	// indx, ok := db.indexs[id]; if !ok { return "no data to delete"	}
 	tot := 0
 
-	for i := 0; i < db.lastId; i++ {
+	for i := 0; i <= db.lastId; i++ {
 		if db.indexs[i].size == 0 {
 			continue
 		}

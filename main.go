@@ -6,15 +6,17 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"zaradb/dblite"
+	"zaradb/db"
 )
+
+var port = db.PORT
 
 func main() {
 	// TODO close programe greatfully.
 
-	db := dblite.Run("test/")
+	db := db.Run("test/")
 	defer db.Close()
-	fmt.Printf("zara run on :%s\n", dblite.PORT)
+	fmt.Printf("zara run on :%s\n", port)
 
 	http.Handle("/", http.FileServer(http.Dir("web")))
 

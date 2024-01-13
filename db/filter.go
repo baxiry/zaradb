@@ -1,4 +1,4 @@
-package dblite
+package db
 
 import (
 	"github.com/tidwall/gjson"

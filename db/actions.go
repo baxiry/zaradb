@@ -1,12 +1,25 @@
-package dblite
+package db
 
 import (
+	"zaradb/kv"
+
 	"github.com/tidwall/gjson"
 )
 
 // ok
 func HandleQueries(query string) string {
 	switch gjson.Get(query, "action").String() {
+
+	// key value actions
+	case "set":
+		return kv.Set(query)
+
+	case "get":
+		return kv.Get(query)
+
+		// database actions
+	case "insert":
+		return insert(query)
 
 	case "findOne":
 		return findOne(query)
@@ -16,10 +29,6 @@ func HandleQueries(query string) string {
 
 	case "findById":
 		return findById(query)
-
-	case "insert":
-		return insert(query)
-
 		// update
 	case "updateById":
 		return updateById(query)

@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"kvlite"
 	"time"
+	database "zaradb/db"
 )
 
 var max = 10
@@ -12,7 +12,7 @@ var max = 10
 // main
 func main() {
 
-	db := kvlite.Open("db1/")
+	db := database.Open("db1/")
 	defer db.Close()
 
 	s := time.Now()

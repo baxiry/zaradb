@@ -3,7 +3,8 @@ package main
 import (
 	"log"
 	"net/http"
-	db "zaradb/dblite"
+
+	"zaradb/db"
 
 	"github.com/gorilla/websocket"
 )
