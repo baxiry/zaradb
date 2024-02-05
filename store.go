@@ -3,6 +3,7 @@ package store
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/tidwall/wal"
 )
@@ -10,7 +11,8 @@ import (
 func (coll *Collection) insert(data string) error {
 	coll.lastIndex++
 	coll.id++
-	err := coll.log.Write(coll.lastIndex, []byte(fmt.Sprint(coll.id)+" "+data))
+	id := fmt.Sprint(coll.id)
+	err := coll.log.Write(coll.lastIndex, []byte(id+strings.Repeat(" ", 20-len(id))+data))
 	if err != nil {
 		l, _ := coll.log.LastIndex()
 		println(err.Error(), coll.lastIndex, l)
@@ -50,13 +52,13 @@ type Collection struct {
 func NewDatabase(path string) *Database {
 	db := &Database{
 		Collections: make(map[string]*Collection, 0),
-		path:        path,
+		path:        "../dbs/" + path,
 	}
 
 	dirs, err := os.ReadDir(path)
 	if os.IsNotExist(err) {
 		// test is a default collection
-		err = os.MkdirAll(path+"/test", 0766)
+		err = os.MkdirAll(db.path+"/test", 0766)
 		if err != nil {
 			panic(err)
 		}

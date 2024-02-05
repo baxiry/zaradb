@@ -3,6 +3,7 @@ package store
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -10,16 +11,16 @@ var db *Database
 var coll *Collection
 
 func Test_NewDatabase(t *testing.T) {
-	var path = "test/test"
+	var path = "test"
 
-	db = NewDatabase("test")
+	db = NewDatabase(path)
 
 	coll, _ = db.Collections["test"]
 
-	_, err := os.Stat(path + "/00000000000000000001")
+	_, err := os.Stat(db.path + "/test" + "/00000000000000000001")
 	if err != nil {
 		if !os.IsExist(err) {
-			t.Errorf("%s  should be exists", path)
+			t.Errorf("%s  should be exists", db.path+"/00000000000000000001")
 		}
 	}
 
@@ -38,21 +39,15 @@ func Test_get(t *testing.T) {
 		if err != nil {
 			panic(err)
 		}
-		if data != fmt.Sprint(i)+" hello" {
-			t.Error("data shoul be:", fmt.Sprint(i)+" hello")
+		id := fmt.Sprint(i)
+		be := id + strings.Repeat(" ", 20-len(id)) + "hello"
+
+		if data != be {
+			t.Error("data shoul be:", be)
 		}
 		t.Log(data, ".. ok")
 	}
 
-	data, err := coll.get(1)
-	if err != nil {
-		t.Log(err)
-		t.Log(coll.lastIndex)
-	}
-	if data != "1 hello" {
-		t.Error(data, "should be '1 hello'")
-		t.Log(data)
-	}
 }
 
 func Test_Close(t *testing.T) {
