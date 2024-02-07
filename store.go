@@ -25,13 +25,11 @@ func (coll *Collection) insert(data string) error {
 }
 
 func (coll *Collection) get(id uint64) (string, error) {
-	coll.lastIndex++
-	coll.id++
 	bdata, err := coll.log.Read(id)
 	if err != nil {
 		return "", err
 	}
-	return string(bdata), nil
+	return string(bdata)[20:], nil
 }
 
 type Database struct {

@@ -1,11 +1,9 @@
 package main
 
-import (
-	"store"
-)
+import "store"
 
 func main() {
-	eng := store.NewEngine("mydb")
+	eng := store.NewDatabase("mydb")
 	for ok := range eng.Collections {
 
 		println(ok)

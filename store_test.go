@@ -1,9 +1,7 @@
 package store
 
 import (
-	"fmt"
 	"os"
-	"strings"
 	"testing"
 )
 
@@ -22,15 +20,21 @@ func Test_NewDatabase(t *testing.T) {
 		if !os.IsExist(err) {
 			t.Errorf("%s  should be exists", db.path+"/00000000000000000001")
 		}
+
 	}
 
 }
 
-func Test_get(t *testing.T) {
+func Test_insert(t *testing.T) {
 	var i uint64
 
+	data := "hello"
+
 	for i = 1; i < 12; i++ {
-		coll.insert("hello")
+		err := coll.insert(data)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	l, _ := coll.log.LastIndex()
@@ -39,13 +43,29 @@ func Test_get(t *testing.T) {
 		if err != nil {
 			panic(err)
 		}
-		id := fmt.Sprint(i)
-		be := id + strings.Repeat(" ", 20-len(id)) + "hello"
 
-		if data != be {
-			t.Error("data shoul be:", be)
+		if data != "hello" {
+			t.Errorf("shoul be: %s, not %s", "hello", data)
 		}
-		t.Log(data, ".. ok")
+	}
+
+}
+
+func Test_get(t *testing.T) {
+	var i uint64
+
+	want := "hello"
+
+	l, _ := coll.log.LastIndex()
+	for i = 1; i < l; i++ {
+		data, err := coll.get(i)
+		if err != nil {
+			panic(err)
+		}
+
+		if data != want {
+			t.Errorf("shoul be: %s, not %s", want, data)
+		}
 	}
 
 }
