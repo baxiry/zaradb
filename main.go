@@ -2,12 +2,14 @@
 package main
 
 import (
+	"embed"
 	"fmt"
-	"io"
 	"net/http"
-	"os"
 	"zaradb/db"
 )
+
+//go:embed static/*
+var staticDir embed.FS
 
 var port = db.PORT
 
@@ -16,9 +18,9 @@ func main() {
 
 	db := db.Run("test/")
 	defer db.Close()
-	fmt.Printf("zara run on :%s\n", port)
+	fmt.Printf("zara run on :%s\n", "localhost:"+port+"/shell")
 
-	http.Handle("/", http.FileServer(http.Dir("web")))
+	http.Handle("/static/", http.FileServer(http.FS(staticDir)))
 
 	http.HandleFunc("/shell", shell)
 
@@ -32,16 +34,8 @@ func main() {
 	http.ListenAndServe(":1111", nil)
 }
 
+// render static shell.html file
 func shell(w http.ResponseWriter, r *http.Request) {
-	// Open the index.html file
-	f, err := os.Open("web/shell.html")
 
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer f.Close()
-
-	// Copy the index.html file to the response
-	io.Copy(w, f)
+	http.ServeFile(w, r, "shell.html")
 }

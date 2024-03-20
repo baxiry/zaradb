@@ -10,14 +10,7 @@ import (
 func HandleQueries(query string) string {
 	switch gjson.Get(query, "action").String() {
 
-	// key value actions
-	case "set":
-		return kv.Set(query)
-
-	case "get":
-		return kv.Get(query)
-
-		// database actions
+	// database actions
 	case "insert":
 		return insert(query)
 
@@ -60,6 +53,13 @@ func HandleQueries(query string) string {
 
 	case "show_collection":
 		return showCollections(db.path)
+
+	// key value query actions not emplement yet
+	case "set":
+		return kv.Set(query)
+
+	case "get":
+		return kv.Get(query)
 
 	default:
 		return "unknowen action"

@@ -21,26 +21,37 @@
 
            <div id="reconnecte">
                <h6>desconnected</h6>
-               <p>reconnect automaticlly after 3 second</p>
+               <p>please wait 3 second</p>
            </div>
 
          <div id="examples">
-             <h5>examples</h5>
+             <h4>examples</h4>
              <p> insert</p>
              {action:"insert", collection:"users", data:{name:"adam", age:12}}
              <p>  select one object</p>
              {action:"findOne", collection:"users", filter:{name:"adam"}}
              <p>  select firs 20 objects</p>
              {action:"findMany", collection:"users", filter:{name:"adam"}}
-             <p>select firs 20 objects match conditions</p>
+             <p>select firs 20 objects that match the conditions</p>
              {action:"findMany", collection:"users", filter:{name:"adam", age:{$gt:12}}}
-             <p>delete first obj match conditions</p>
+             <p>delete first objects that match the conditions</p>
              {action:"deleteOne", collection:"users", filter:{name:"adam", age:{$gt:12}}}
-             <p>delete all objs match conditions </p>
+             <p>delete all objects that match the conditions </p>
              {action:"deleteMany", collection:"users", filter:{name:"adam", age:{$gt:12}}}
-             <p></p>
+             <p>skip or ignor some matching objects</p>
+             {action:"deleteMany", collection:"users", filter:{name:"adam", age:{$gt:12}}, skip: 3}
+             <p>Limited to a number of matching objects</p>
+             {action:"deleteMany", collection:"users", filter:{name:"adam", age:{$gt:12}}, skip: 3, limit:3}
+
+             <p>filter numeric data by $eq $nq $lt $gt $ge $le</p>
+             <p>filter text data by $eq $nq </p>
+             <br/>
+             <br/>
+             <br/>
+             <br/>
+
          </div>
-        <div id="config"> <a href="doc">documentatin</a> config  </div>
+        <div id="config"> <a href="shell">examples</a>  <a href="doc">doc</a> config  </div>
      </div>
 </div>
 
