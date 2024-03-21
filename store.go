@@ -8,29 +8,7 @@ import (
 	"github.com/tidwall/wal"
 )
 
-func (coll *Collection) insert(data string) error {
-	coll.lastIndex++
-	coll.id++
-	id := fmt.Sprint(coll.id)
-	err := coll.log.Write(coll.lastIndex, []byte(id+strings.Repeat(" ", 20-len(id))+data))
-	if err != nil {
-		l, _ := coll.log.LastIndex()
-		println(err.Error(), coll.lastIndex, l)
-		coll.lastIndex--
-		coll.id--
-		return err
-	}
-	coll.indexs = append(coll.indexs, coll.id)
-	return nil
-}
-
-func (coll *Collection) get(id uint64) (string, error) {
-	bdata, err := coll.log.Read(id)
-	if err != nil {
-		return "", err
-	}
-	return string(bdata)[20:], nil
-}
+var slash = Slash()
 
 type Database struct {
 	path        string
@@ -45,12 +23,71 @@ type Collection struct {
 	id        uint64
 }
 
+func (db *Database) reIndex() (indexs []uint64) {
+	indexs = make([]uint64, 1)
+
+	indexs = append(indexs, 1)
+
+	for key, coll := range db.Collections {
+
+		fmt.Println(" ++++ collection: ", key)
+
+		for _, k := range coll.indexs[1:] {
+
+			d, err := coll.getData(k)
+			if err != nil {
+				println("k is :", k, err.Error())
+				return indexs
+			}
+			fmt.Printf("key %d data: %s \n", k, d)
+		}
+	}
+
+	return indexs
+}
+
+func (coll *Collection) insert(data string) error {
+	coll.lastIndex++
+	coll.id++
+	id := fmt.Sprint(coll.id)
+	err := coll.log.Write(coll.lastIndex, []byte(id+strings.Repeat(" ", 20-len(id))+data))
+	if err != nil {
+		//l, _ := coll.log.LastIndex()
+		//println(err.Error(), coll.lastIndex, l)
+		coll.lastIndex--
+		coll.id--
+		return err
+	}
+	coll.indexs = append(coll.indexs, coll.id)
+	return nil
+}
+
+func (coll *Collection) getIndex(id uint64) (string, error) {
+	//println(len(coll.indexs), "id: ", id)
+	//coll.indexs[id]
+	bdata, err := coll.log.Read(id)
+	if err != nil {
+		return "", err
+	}
+	return string(bdata)[:20], nil
+}
+
+func (coll *Collection) getData(id uint64) (string, error) {
+	//println(len(coll.indexs), "id: ", id)
+	//coll.indexs[id]
+	bdata, err := coll.log.Read(id)
+	if err != nil {
+		return "", err
+	}
+	return string(bdata)[20:], nil
+}
+
 // NewEngine open exests path or creates new if not exists.
 // this func create test as default collection
 func NewDatabase(path string) *Database {
 	db := &Database{
 		Collections: make(map[string]*Collection, 0),
-		path:        "../dbs/" + path,
+		path:        path,
 	}
 
 	dirs, err := os.ReadDir(path)
@@ -61,23 +98,23 @@ func NewDatabase(path string) *Database {
 			panic(err)
 		}
 
-		db.newCollection("test")
+		db.NewCollection("test")
 	} else {
 		//		return nil
 	}
 
 	for _, p := range dirs {
 		if p.IsDir() {
-			db.newCollection(p.Name())
+			db.NewCollection(p.Name())
 		}
 	}
 	return db
 }
 
-func (db *Database) newCollection(name string) error {
+func (db *Database) NewCollection(name string) error {
 
 	coll := &Collection{name: name}
-	log, err := wal.Open(db.path+"/"+name, nil)
+	log, err := wal.Open(db.path+slash+name, nil)
 	if err != nil {
 		return err
 	}
@@ -90,6 +127,10 @@ func (db *Database) newCollection(name string) error {
 
 	coll.lastIndex = lastIndex
 	coll.id = lastIndex
+	if lastIndex == 0 {
+		lastIndex++
+	}
+	coll.indexs = make([]uint64, lastIndex)
 
 	db.Collections[name] = coll
 	return nil
