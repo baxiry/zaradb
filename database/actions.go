@@ -52,14 +52,6 @@ func HandleQueries(query string) string {
 	case "show_collection":
 		//return showCollections(db.path)
 		return "ont emplements yet"
-
-	// key value query actions not emplement yet
-	case "set":
-		return kv.Set(query)
-
-	case "get":
-		return kv.Get(query)
-
 	default:
 		return "unknowen action"
 	}
