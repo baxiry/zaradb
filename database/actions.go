@@ -1,8 +1,6 @@
-package db
+package database
 
 import (
-	"zaradb/kv"
-
 	"github.com/tidwall/gjson"
 )
 
@@ -52,7 +50,8 @@ func HandleQueries(query string) string {
 		return deleteCollection(query)
 
 	case "show_collection":
-		return showCollections(db.path)
+		//return showCollections(db.path)
+		return "ont emplements yet"
 
 	// key value query actions not emplement yet
 	case "set":

@@ -1,4 +1,4 @@
-package db
+package database
 
 import (
 	"errors"
@@ -45,7 +45,7 @@ func Test_Get_Put(t *testing.T) {
 
 	db.Insert(coll, value)
 
-	if db.Get(0) != value {
+	if db.Get(0, "") != value {
 		t.Errorf("value shold be %s\n", value)
 	}
 

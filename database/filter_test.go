@@ -1,4 +1,4 @@
-package db
+package database
 
 import "fmt"
 
@@ -13,7 +13,7 @@ func test() {
 	result := make([]string, 0)
 	for _, v := range data {
 
-		if isMatch(query, v) {
+		if match(query, v) {
 
 			result = append(result, v)
 		}

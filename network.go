@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"zaradb/db"
+	"zaradb/database"
 
 	"github.com/gorilla/websocket"
 )
@@ -19,7 +19,7 @@ type Notify struct {
 
 var Channel = make(chan Notify, 100)
 
-// Resever listens incoming queries form ws & send result
+// Resever listens incoming queries form clients
 func Resever(w http.ResponseWriter, r *http.Request) {
 
 	var upgrader = websocket.Upgrader{} // default options
@@ -48,14 +48,14 @@ func Resever(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Hande all of Queries
-		note.message = db.HandleQueries(string(message))
+		note.message = database.HandleQueries(string(message))
 
 		Channel <- note
 
 	}
 }
 
-// DemonNet listens incoming queries form ws & send result
+// Sender  sends results to clients
 func Sender(w http.ResponseWriter, r *http.Request) {
 
 	var upgrader = websocket.Upgrader{} // default options
@@ -88,7 +88,7 @@ func Sender(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// ws listens incoming queries form ws & send result
+// Ws listens incoming queries form ws & send result
 func Ws(w http.ResponseWriter, r *http.Request) {
 
 	var upgrader = websocket.Upgrader{} // default options
@@ -110,7 +110,7 @@ func Ws(w http.ResponseWriter, r *http.Request) {
 
 		// Hande all of Queries
 		//start := time.Now()
-		result := db.HandleQueries(string(message)) // + "\n" + time.Since(start).String()
+		result := database.HandleQueries(string(message)) // + "\n" + time.Since(start).String()
 
 		// send result to client
 		err = c.WriteMessage(messageType, []byte(result))
