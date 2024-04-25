@@ -14,10 +14,8 @@ var content embed.FS
 func main() {
 	// TODO close programe greatfully.
 
-	db, err := database.NewDB("test.db")
-	if err != nil {
-		fmt.Println(err)
-	}
+	db := database.NewDB("test.db") // my be need return err
+
 	defer db.Close()
 
 	fmt.Printf("zaradb run on %s:%s\n", Host, Port)

@@ -1,7 +1,7 @@
 package main
 
-const Port = "1111"
-const Host = "localhost"
+const Host = "1111"
+const Port = "localhost"
 
 type config struct {
 	// TODO

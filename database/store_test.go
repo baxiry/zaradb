@@ -9,11 +9,11 @@ import (
 func Test_Open(t *testing.T) {
 
 	// test default dir db
-	db := Open("")
+	db := Open("tmp")
 	defer db.Close()
 
-	if _, err := os.Stat("mok/"); errors.Is(err, os.ErrNotExist) {
-		t.Errorf("err! %s should be exist", "mok/")
+	if _, err := os.Stat("tmp/"); errors.Is(err, os.ErrNotExist) {
+		t.Errorf("err! %s should be exist", "tmp/")
 	}
 
 	err := os.RemoveAll("mok/")
@@ -43,7 +43,8 @@ func Test_Get_Put(t *testing.T) {
 	coll := "users"
 	value := "hello world"
 
-	db.Insert(coll, value)
+	//db.insert(coll, value)
+	_, _ = coll, value
 
 	if db.Get(0, "") != value {
 		t.Errorf("value shold be %s\n", value)
