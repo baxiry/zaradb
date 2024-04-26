@@ -2,9 +2,17 @@
 // queryID is a identity of entir saved queries
 var queryID = 0
 
+var maxTry = 0
+
 // WebSocket
 var ws;
 function Connection() {
+maxTry++
+if (maxTry > 60) {
+    console.log('time: ', maxTry);
+    ws.close()
+    return
+}
 ws = new WebSocket('ws://localhost:1111/ws');
 ws.onopen = function(){
     console.log('Connection established');
