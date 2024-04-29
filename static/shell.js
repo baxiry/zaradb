@@ -1,31 +1,30 @@
-// hestory queriers
-// queryID is a identity of entir saved queries
-var queryID = 0
-
-var maxTry = 0
 
 // WebSocket
-var ws;
+var ws = new ReconnectingWebSocket('ws://localhost:1111/ws', null, {debug: true, reconnectInterval: 2000});
+
 function Connection() {
-maxTry++
-if (maxTry > 60) {
-    console.log('time: ', maxTry);
-    ws.close()
-    return
-}
-ws = new WebSocket('ws://localhost:1111/ws');
+
 ws.onopen = function(){
     console.log('Connection established');
-
     $('#reconnecte').fadeOut(500);
 }
 
+//  when ws closed reconnect after 2 second
+ws.onclose = function(e) {
+    console.log('WebSocket connection closed'), e.error;
+    //ws.close()
 
-ws.onerror = function(){
-    console.log('Connection error');
-    setTimeout(function() {
-        Connection();
-    }, 3000) // 3 second
+    $('#reconnecte').show();
+    console.log("reload page to reconnect")
+  };
+
+ws.onerror = function(e){
+    console.log('Connection error', e.error);
+//    ws.close()
+
+    $('#reconnecte').show();
+//    console.log("reload page to reconnect")
+
 }
 
 
@@ -36,17 +35,6 @@ ws.onmessage = function(event) {
     $('#data').fadeIn(500);
 
 };
-
-//  when ws closed reconnect after 2 second
-ws.onclose = function() {
-    console.log('WebSocket connection closed');
-    $('#reconnecte').show();
-    console.log("reconnet after 4 second")
-    setTimeout(function() {
-        Connection()
-    }, 4000) // 3 second
-};
-
 
 const queryInput = document.getElementById('query-input');
 queryInput.addEventListener('keydown', function(event) {
@@ -90,11 +78,4 @@ function prettyJSON(jsonString) {
 }
 
 Connection()
-
-function saveQuery() {
-            // save query-val in localstor for history
-            console.log($('textarea').val())
-            localStorage.setItem("{queryID}", textareaValue);
-            queryID++
-}
 

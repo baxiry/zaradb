@@ -1,4 +1,8 @@
-package database
+package main
+
+import (
+	"github.com/tidwall/gjson"
+)
 
 // Finds first obj match creteria.
 func findOne(query string) (res string) {
@@ -18,6 +22,14 @@ func findById(query string) string {
 
 // Insert
 func insert(query string) (res string) {
+	coll := gjson.Get(query, "collection").String()
+	data := gjson.Get(query, "data").String()
+
+	err := db.Insert(coll, data)
+	if err != nil {
+		println("network problem") // network problem
+		return err.Error()
+	}
 
 	return "not implemented yet"
 }

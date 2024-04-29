@@ -1,6 +1,7 @@
-package database
+package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
@@ -10,6 +11,28 @@ import (
 	"path/filepath"
 	"runtime"
 )
+
+func getLastId(db *sql.DB, table string) (int64, error) {
+	stmt := fmt.Sprintf(`SELECT rowid FROM %s ORDER BY ROWID DESC LIMIT 1`, table)
+	res, err := db.Query(stmt)
+	if err != nil {
+		return 0, err
+	}
+	defer res.Close()
+
+	var lastid int64
+
+	if !res.Next() {
+		return 0, nil
+	}
+
+	err = res.Scan(&lastid)
+	if err != nil {
+		return 0, err
+	}
+
+	return lastid, err
+}
 
 func rootPath() string {
 	usr, err := user.Current()
