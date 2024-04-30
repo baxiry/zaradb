@@ -9,12 +9,13 @@ import (
 
 //go:embed  static
 var content embed.FS
+
 var db = NewDB("test.db")
 
 func main() {
 	// TODO close programe greatfully.
-	//db.CreateCollection("test")
 
+	db.CreateCollection("test")
 	defer db.Close()
 
 	fmt.Printf("zaradb run on %s:%s\n", Host, Port)

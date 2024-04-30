@@ -16,15 +16,13 @@ type DB struct {
 var lastid = make(map[string]int64, 0)
 
 // insert new record
-func (db *DB) Insert(collection, obj string) error {
+func (db *DB) insert(collection, obj string) error {
 	lastid[collection]++
 
 	d := strings.TrimLeft(obj, " ")
 	if len(d) == 0 {
 		return fmt.Errorf("len data is 0 %s\n", d)
-
 	}
-	println("obj", obj)
 
 	data := `{"_id":` + fmt.Sprint(lastid[collection]) + ", " + d[1:]
 
@@ -32,14 +30,14 @@ func (db *DB) Insert(collection, obj string) error {
 
 	println(lastid[collection], data)
 
-	_, err := db.db.Exec(`insert into ` + collection + `(obj) values('` + data + `');`) // fast
+	_, err := db.db.Exec(`insert into ` + collection + `(record) values('` + data + `');`) // fast
 	if err != nil {
 		println(err)
 		lastid[collection]--
 		return err
 	}
 
-	return err
+	return nil
 }
 
 func NewDB(dbName string) *DB {
