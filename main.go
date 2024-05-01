@@ -5,16 +5,16 @@ import (
 	"embed"
 	"fmt"
 	"net/http"
+	"zaradb/store"
 )
 
 //go:embed  static
 var content embed.FS
 
-var db = NewDB("test.db")
-
 func main() {
 	// TODO close programe greatfully.
 
+	db := store.NewDB("test.db")
 	db.CreateCollection("test")
 	defer db.Close()
 

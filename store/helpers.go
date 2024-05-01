@@ -1,4 +1,4 @@
-package main
+package store
 
 import (
 	"database/sql"
@@ -39,7 +39,7 @@ func rootPath() string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return filepath.Join(usr.HomeDir, ".dbs") + slash
+	return filepath.Join(usr.HomeDir, ".dbs") + "/" // slash
 }
 
 func ClearScreen() {

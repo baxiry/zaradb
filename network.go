@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"zaradb/store"
 
 	"github.com/gorilla/websocket"
 )
@@ -46,7 +47,7 @@ func Resever(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Hande all of Queries
-		note.message = HandleQueries(string(message))
+		note.message = store.HandleQueries(string(message))
 
 		Channel <- note
 
@@ -108,7 +109,7 @@ func Ws(w http.ResponseWriter, r *http.Request) {
 
 		// Hande all of Queries
 		//start := time.Now()
-		result := HandleQueries(string(message)) // + "\n" + time.Since(start).String()
+		result := store.HandleQueries(string(message)) // + "\n" + time.Since(start).String()
 
 		// send result to client
 		err = c.WriteMessage(messageType, []byte(result))

@@ -1,4 +1,4 @@
-package main
+package store
 
 import (
 	"github.com/tidwall/gjson"
@@ -10,34 +10,34 @@ func HandleQueries(query string) string {
 
 	// database actions
 	case "insert":
-		return insert(query)
+		return db.insertOne(query)
 
 	case "findOne":
-		return findOne(query)
+		return db.findOne(query)
 
 	case "findMany":
-		return findMany(query)
+		return db.findMany(query)
 
 	case "findById":
-		return findById(query)
+		return db.findById(query)
 		// update
 	case "updateById":
-		return updateById(query)
+		return db.updateById(query)
 
 	case "updateOne":
-		return updateOne(query)
+		return db.updateOne(query)
 
 	case "updateMany":
-		return updateMany(query)
+		return db.updateMany(query)
 
 	case "deleteById":
-		return deleteById(query)
+		return db.deleteById(query)
 
 	case "deleteOne":
-		return deleteOne(query)
+		return db.deleteOne(query)
 
 	case "deleteMany":
-		return deleteMany(query)
+		return db.deleteMany(query)
 
 	case "transaction":
 		return transaction(query)

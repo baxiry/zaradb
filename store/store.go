@@ -1,4 +1,4 @@
-package main
+package store
 
 import (
 	"database/sql"
@@ -12,6 +12,8 @@ import (
 type DB struct {
 	db *sql.DB
 }
+
+var db *DB
 
 var lastid = make(map[string]int64, 0)
 
@@ -69,8 +71,9 @@ func NewDB(dbName string) *DB {
 
 		fmt.Println("Table Name:", tableName)
 	}
+	db = &DB{db: newdb}
 
-	return &DB{db: newdb}
+	return db
 }
 
 func (db *DB) CreateCollection(collection string) error {

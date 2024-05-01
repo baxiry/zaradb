@@ -1,4 +1,4 @@
-package main
+package store
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 
 // delete
 // TODO database is locked
-func deleteOne(query string) string {
+func (db *DB) deleteOne(query string) string {
 
 	coll := gjson.Get(query, "collection").String()
 	filter := gjson.Get(query, "filter").String()
@@ -52,7 +52,7 @@ func deleteOne(query string) string {
 }
 
 // Finds first obj match creteria.
-func findById(query string) (res string) {
+func (db *DB) findById(query string) (res string) {
 	coll := gjson.Get(query, "collection").String()
 	id := gjson.Get(query, "_id").String()
 
@@ -77,7 +77,7 @@ func findById(query string) (res string) {
 }
 
 // Finds first obj match creteria.
-func findOne(query string) (res string) {
+func (db *DB) findOne(query string) (res string) {
 	coll := gjson.Get(query, "collection").String()
 	filter := gjson.Get(query, "filter").String()
 
@@ -104,7 +104,7 @@ func findOne(query string) (res string) {
 }
 
 // Find finds any obs match creteria.
-func findMany(query string) (res string) {
+func (db *DB) findMany(query string) (res string) {
 	coll := gjson.Get(query, "collection").String()
 	filter := gjson.Get(query, "filter").String()
 
@@ -133,7 +133,7 @@ func findMany(query string) (res string) {
 }
 
 // Insert
-func insert(query string) (res string) {
+func (db *DB) insertOne(query string) (res string) {
 	coll := gjson.Get(query, "collection").String()
 	data := gjson.Get(query, "data").String()
 
@@ -146,7 +146,7 @@ func insert(query string) (res string) {
 }
 
 // Insert
-func insertMany(query string) (res string) {
+func (db *DB) insertMany(query string) (res string) {
 	coll := gjson.Get(query, "collection").String()
 	data := gjson.Get(query, "data").String()
 
@@ -159,7 +159,7 @@ func insertMany(query string) (res string) {
 }
 
 // delete
-func deleteMany(query string) string {
+func (db *DB) deleteMany(query string) string {
 
 	coll := gjson.Get(query, "collection").String()
 	filter := gjson.Get(query, "filter").String()
@@ -190,22 +190,22 @@ func deleteMany(query string) string {
 }
 
 // delete by id
-func deleteById(query string) string {
+func (db *DB) deleteById(query string) string {
 	return "not implemented yet"
 }
 
 // Update update document data
-func updateById(query string) (result string) {
+func (db *DB) updateById(query string) (result string) {
 	return "not implemented yet"
 }
 
 // TODO updateOne one update document data
-func updateOne(query string) (result string) {
+func (db *DB) updateOne(query string) (result string) {
 	return "not implemented yet"
 }
 
 // TODO updateMany update document data
-func updateMany(query string) (result string) {
+func (db *DB) updateMany(query string) (result string) {
 	return "not implemented yet"
 }
 
