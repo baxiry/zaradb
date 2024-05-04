@@ -148,19 +148,6 @@ func (db *DB) insertOne(query string) (res string) {
 	return "inser done"
 }
 
-// Insert
-func (db *DB) insertMany(query string) (res string) {
-	coll := gjson.Get(query, "collection").String()
-	data := gjson.Get(query, "data").String()
-
-	err := db.insert(coll, data)
-	if err != nil {
-		return err.Error()
-	}
-
-	return "inser done"
-}
-
 // delete
 func (db *DB) deleteMany(query string) string {
 

@@ -21,6 +21,9 @@ func HandleQueries(query string) string {
 	case "insert":
 		return db.insertOne(query)
 
+	case "insertMany":
+		return db.insertMany(query)
+
 	// update
 	case "updateById":
 		return db.updateById(query)
