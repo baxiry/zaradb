@@ -60,7 +60,10 @@ func (db *DB) findById(query string) (res string) {
 
 	rows, err := db.db.Query(stmt)
 	if err != nil {
-		return err.Error()
+		if id == "" {
+			return `{Error:"Parameter not found: _id"}`
+		}
+		return fmt.Sprintf(`{Error:"%s"}`, err)
 	}
 	defer rows.Close()
 

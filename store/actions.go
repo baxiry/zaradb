@@ -9,9 +9,6 @@ func HandleQueries(query string) string {
 	switch gjson.Get(query, "action").String() {
 
 	// database actions
-	case "insert":
-		return db.insertOne(query)
-
 	case "findOne":
 		return db.findOne(query)
 
@@ -20,7 +17,11 @@ func HandleQueries(query string) string {
 
 	case "findById":
 		return db.findById(query)
-		// update
+
+	case "insert":
+		return db.insertOne(query)
+
+	// update
 	case "updateById":
 		return db.updateById(query)
 
