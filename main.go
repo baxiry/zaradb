@@ -5,7 +5,7 @@ import (
 	"embed"
 	"fmt"
 	"net/http"
-	"zaradb/store"
+	"zaradb/engine"
 )
 
 //go:embed  static
@@ -14,24 +14,31 @@ var content embed.FS
 func main() {
 	// TODO close programe greatfully.
 
-	db := store.NewDB("test.db")
+	db := engine.NewDB("test.db")
 	db.CreateCollection("test")
 	defer db.Close()
 
 	fmt.Printf("zaradb run on %s:%s\n", Host, Port)
 
-	http.Handle("/", http.FileServer(http.FS(content)))
+	http.Handle("/static/", http.FileServer(http.FS(content)))
 
 	http.HandleFunc("/shell", shell)
+	http.HandleFunc("/", index)
 
 	// standard endpoint
-	http.HandleFunc("/ws", Ws)
+	http.HandleFunc("/ws", engine.Ws)
 
 	// endpoints for speed network
-	http.HandleFunc("/query", Resever)
-	http.HandleFunc("/result", Sender)
+	http.HandleFunc("/query", engine.Resever)
+	http.HandleFunc("/result", engine.Sender)
 
 	http.ListenAndServe(":1111", nil)
+}
+
+// redirect to shell page temporary
+func index(w http.ResponseWriter, r *http.Request) {
+	// TODO create index page
+	http.Redirect(w, r, "http://localhost:1111/shell", http.StatusSeeOther)
 }
 
 // render static shell.html file
