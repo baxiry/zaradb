@@ -181,11 +181,30 @@ func (db *DB) deleteMany(query string) string {
 
 // delete by id
 func (db *DB) deleteById(query string) string {
-	return "not implemented yet"
+	id := gjson.Get(query, "_id").String()
+	if id == "" {
+		return `{"error": "there is no _id"}`
+	}
+	coll := gjson.Get(query, "collection").String()
+	if coll == "" {
+		return `{"error": "there is no collection"}`
+	}
+
+	sql := `delete from ` + coll + ` where rowid = ` + id
+	fmt.Println(sql)
+
+	_, err := db.db.Exec(sql)
+	if err != nil {
+		return `{"error": "internal error"}` // + err.Error()
+	}
+	return `{"aknowlge": "row ` + id + ` deleted"}`
 }
 
 // Update update document data
 func (db *DB) updateById(query string) (result string) {
+	data := db.findById(query)
+	println("data: ", data)
+
 	return "not implemented yet"
 }
 
