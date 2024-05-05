@@ -30,6 +30,8 @@
              <h4>examples</h4>
              <p> insert</p>
              {action:"insert", collection:"users", data:{name:"adam", age:12}}
+             <p>insertMany</p>
+             {action:"insertMany", collection:"test", data:[{name:"jalal", age:23},{name:"akram", age:30},{name:"hasna", age:35}]}
              <p>  select one object</p>
              {action:"findOne", collection:"users", filter:{name:"adam"}}
              <p>  select firs 20 objects</p>
@@ -44,6 +46,9 @@
              {action:"deleteMany", collection:"users", filter:{name:"adam", age:{$gt:12}}, skip: 3}
              <p>Limited to a number of matching objects</p>
              {action:"deleteMany", collection:"users", filter:{name:"adam", age:{$gt:12}}, skip: 3, limit:3}
+             <p>deleteMany</p>
+             {action:"deleteMany", collection:"users", filter:{name:"adam", age:{$gt:12}}, skip: 3, limit:3}
+
 
              <p>filter numeric data by $eq $nq $lt $gt $ge $le</p>
              <p>filter text data by $eq $nq </p>

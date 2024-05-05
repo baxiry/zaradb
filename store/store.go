@@ -11,18 +11,14 @@ import (
 )
 
 type DB struct {
-	db *sql.DB
+	db     *sql.DB
+	lastid map[string]int64
 }
 
+// var lastid = make(map[string]int64, 0)
 var db *DB
 
-var lastid = make(map[string]int64, 0)
-
-/*
-INSERT INTO your_table_name (column)
-VALUES (value1), (value2), (value3);
-*/
-// Insert
+// InsertMany inserts list of object at one time
 func (db *DB) insertMany(query string) (res string) {
 	coll := gjson.Get(query, "collection").String()
 	data := gjson.Get(query, "data").Array()
@@ -30,18 +26,18 @@ func (db *DB) insertMany(query string) (res string) {
 	//d := strings.TrimLeft(obj, " ")
 	// if len(d) == 0 {return fmt.Sprintf("len data is 0 %s\n", d)}
 
-	lid := lastid[coll]
+	lid := db.lastid[coll]
 	strData := ""
 	for _, obj := range data {
-		lastid[coll]++
-		strData += `('{"_id":` + fmt.Sprint(lastid[coll]) + ", " + obj.String()[1:] + `'),`
+		db.lastid[coll]++
+		strData += `('{"_id":` + fmt.Sprint(db.lastid[coll]) + ", " + obj.String()[1:] + `'),`
 	}
 
 	fmt.Println("bulk data:  ", strData[:len(strData)-1])
 
 	_, err := db.db.Exec(`insert into ` + coll + `(record) values` + strData[:len(strData)-1]) // fast
 	if err != nil {
-		lastid[coll] = lid
+		db.lastid[coll] = lid
 		return err.Error()
 	}
 
@@ -55,12 +51,12 @@ func (db *DB) insert(collection, obj string) error {
 		return fmt.Errorf("len data is 0 %s\n", d)
 	}
 
-	lastid[collection]++
-	data := `{"_id":` + fmt.Sprint(lastid[collection]) + ", " + d[1:]
+	db.lastid[collection]++
+	data := `{"_id":` + fmt.Sprint(db.lastid[collection]) + ", " + d[1:]
 	_, err := db.db.Exec(`insert into ` + collection + `(record) values('` + data + `');`) // fast
 	if err != nil {
-		println(err)
-		lastid[collection]--
+		//println(err)
+		db.lastid[collection]--
 		return err
 	}
 
@@ -69,12 +65,13 @@ func (db *DB) insert(collection, obj string) error {
 
 func NewDB(dbName string) *DB {
 
-	lastid = make(map[string]int64, 0)
-
 	newdb, err := sql.Open("sqlite3", dbName)
 	if err != nil {
 		panic(err)
 	}
+
+	db = &DB{db: newdb}
+	db.lastid = make(map[string]int64, 0)
 
 	// Query the sqlite_master table to get table names
 	rows, err := newdb.Query("SELECT name FROM sqlite_master WHERE type='table'")
@@ -92,12 +89,10 @@ func NewDB(dbName string) *DB {
 		}
 		lid, _ := getLastId(newdb, tableName)
 
-		lastid[tableName] = lid
+		db.lastid[tableName] = lid
 
 		fmt.Println("Table Name:", tableName)
 	}
-	db = &DB{db: newdb}
-
 	return db
 }
 
@@ -111,7 +106,7 @@ func (db *DB) CreateCollection(collection string) error {
 	if err != nil {
 		return err
 	}
-	lastid[collection] = lid
+	db.lastid[collection] = lid
 	return nil
 }
 
