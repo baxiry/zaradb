@@ -6,8 +6,80 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+// Finds first obj match creteria.
+func (db *DB) findOne(query string) (res string) {
+	coll := gjson.Get(query, "collection").String()
+	filter := gjson.Get(query, "filter").String()
+
+	// TODO are skyp useful here ?
+
+	stmt := `select record from ` + coll
+
+	rows, err := db.db.Query(stmt)
+	if err != nil {
+		return err.Error()
+	}
+	defer rows.Close()
+
+	record := ""
+	for rows.Next() {
+		err := rows.Scan(&record)
+		if err != nil {
+			return err.Error()
+		}
+		if match(filter, record) {
+			return record
+		}
+	}
+
+	return `{"result":0}`
+}
+
+// Find finds any obs match creteria.
+func (db *DB) findMany(query string) (res string) {
+
+	// TODO parse hol qury one time
+	coll := gjson.Get(query, "collection").String()
+	filter := gjson.Get(query, "filter").String()
+
+	skip := gjson.Get(query, "skip").Int()
+	limit := gjson.Get(query, "limit").Int()
+	if limit == 0 {
+		limit = db.lastid[coll]
+	}
+
+	stmt := `select record from ` + coll
+
+	rows, err := db.db.Query(stmt)
+	if err != nil {
+		return err.Error()
+	}
+	defer rows.Close()
+
+	records := "["
+	record := ""
+
+	for rows.Next() {
+		record = ""
+		err := rows.Scan(&record)
+		if err != nil {
+			return err.Error()
+		}
+		if match(filter, record) {
+			if skip < 1 {
+				records += record + `,`
+				limit--
+			}
+			skip--
+			if limit < 1 {
+				break
+			}
+		}
+	}
+	return records[:len(records)-1] + "]"
+}
+
 // delete
-// TODO database is locked
 func (db *DB) deleteOne(query string) string {
 
 	coll := gjson.Get(query, "collection").String()
@@ -35,7 +107,7 @@ func (db *DB) deleteOne(query string) string {
 			break
 		}
 	}
-
+	// should close here
 	rows.Close()
 
 	res, err := db.db.Exec(`delete from ` + coll + ` where rowid = ` + rowid) // fast
@@ -79,62 +151,6 @@ func (db *DB) findById(query string) (res string) {
 	return `{"result":0}`
 }
 
-// Finds first obj match creteria.
-func (db *DB) findOne(query string) (res string) {
-	coll := gjson.Get(query, "collection").String()
-	filter := gjson.Get(query, "filter").String()
-
-	stmt := `select record from ` + coll
-
-	rows, err := db.db.Query(stmt)
-	if err != nil {
-		return err.Error()
-	}
-	defer rows.Close()
-
-	record := ""
-	for rows.Next() {
-		err := rows.Scan(&record)
-		if err != nil {
-			return err.Error()
-		}
-		if match(filter, record) {
-			return record
-		}
-	}
-
-	return `{"result":0}`
-}
-
-// Find finds any obs match creteria.
-func (db *DB) findMany(query string) (res string) {
-	coll := gjson.Get(query, "collection").String()
-	filter := gjson.Get(query, "filter").String()
-
-	stmt := `select record from ` + coll
-
-	rows, err := db.db.Query(stmt)
-	if err != nil {
-		return err.Error()
-	}
-	defer rows.Close()
-
-	records := "["
-	record := ""
-
-	for rows.Next() {
-		record = ""
-		err := rows.Scan(&record)
-		if err != nil {
-			return err.Error()
-		}
-		if match(filter, record) {
-			records += record + `,`
-		}
-	}
-	return records[:len(records)-1] + "]"
-}
-
 // Insert
 func (db *DB) insertOne(query string) (res string) {
 	coll := gjson.Get(query, "collection").String()
@@ -148,7 +164,7 @@ func (db *DB) insertOne(query string) (res string) {
 	return "inser done"
 }
 
-// delete
+// deleteMany
 func (db *DB) deleteMany(query string) string {
 
 	coll := gjson.Get(query, "collection").String()
