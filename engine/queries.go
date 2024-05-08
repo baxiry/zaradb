@@ -45,14 +45,17 @@ func (db *DB) findMany(query string) (res string) {
 	// TODO parse hol qury one time
 	coll := gjson.Get(query, "collection").String()
 	filter := gjson.Get(query, "filter").String()
-
-	skip := gjson.Get(query, "skip").Int()
-	limit := gjson.Get(query, "limit").Int()
-	if limit == 0 {
-		limit = db.lastid[coll]
+	if filter == "" {
+		filter = "{}"
 	}
 
-	stmt := `select record from ` + coll
+	skip := gjson.Get(query, "skip").String()
+	limit := gjson.Get(query, "limit").String()
+	if limit == "" || limit == "0" {
+		limit = fmt.Sprint(db.lastid[coll])
+	}
+
+	stmt := `select record from ` + coll + " limit " + limit + " offset " + skip
 
 	rows, err := db.db.Query(stmt)
 	if err != nil {
@@ -67,17 +70,11 @@ func (db *DB) findMany(query string) (res string) {
 		record = ""
 		err := rows.Scan(&record)
 		if err != nil {
-			return err.Error()
+			return err.Error() // TODO standard errors
 		}
+
 		if match(filter, record) {
-			if skip < 1 {
-				records += record + `,`
-				limit--
-			}
-			skip--
-			if limit < 1 {
-				break
-			}
+			records += record + `,`
 		}
 	}
 	return records[:len(records)-1] + "]"
