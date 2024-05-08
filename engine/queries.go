@@ -16,6 +16,9 @@ func (db *DB) findOne(query string) (res string) {
 
 	stmt := `select record from ` + coll
 	if skip != "0" {
+		if skip == "" {
+			skip = "0"
+		}
 		stmt += " limit 1 offset " + skip // + ";"
 	}
 
@@ -50,6 +53,10 @@ func (db *DB) findMany(query string) (res string) {
 	}
 
 	skip := gjson.Get(query, "skip").String()
+	if skip == "" {
+		skip = "0"
+	}
+
 	limit := gjson.Get(query, "limit").String()
 	if limit == "" || limit == "0" {
 		limit = fmt.Sprint(db.lastid[coll])
