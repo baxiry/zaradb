@@ -10,10 +10,15 @@ import (
 func (db *DB) findOne(query string) (res string) {
 	coll := gjson.Get(query, "collection").String()
 	filter := gjson.Get(query, "filter").String()
+	skip := gjson.Get(query, "skip").Int()
 
 	// TODO are skyp useful here ?
 
 	stmt := `select record from ` + coll
+	if skip > 0 {
+		stmt += ` limit 1 offset ` + fmt.Sprint(skip) + ";"
+		println(stmt)
+	}
 
 	rows, err := db.db.Query(stmt)
 	if err != nil {
