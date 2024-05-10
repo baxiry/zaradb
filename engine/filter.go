@@ -1,11 +1,13 @@
 package engine
 
 import (
+	"fmt"
+
 	"github.com/tidwall/gjson"
 )
 
 // match verifies that data matches the conditions
-func match(filter, data string) (result bool) {
+func match(filter, data string) (result bool, err error) {
 	// TODO sould ber return syntax error if op unknown
 
 	result = true
@@ -64,6 +66,7 @@ func match(filter, data string) (result bool) {
 						return result
 
 					default:
+						err = fmt.Errorf("unknown %s opiration", sqk.String())
 						result = false
 						return result
 					}
@@ -114,6 +117,8 @@ func match(filter, data string) (result bool) {
 					return result
 
 				default:
+
+					err = fmt.Errorf("unknown %s opiration", sqk.String())
 					result = false
 					return result
 				}
@@ -129,5 +134,5 @@ func match(filter, data string) (result bool) {
 		}
 		return result // if true keep iterating
 	})
-	return result
+	return result, err
 }

@@ -40,7 +40,12 @@ func (db *DB) findOne(query string) (res string) {
 		if err != nil {
 			return err.Error()
 		}
-		if match(filter, record) {
+		b, err := match(filter, record)
+		if err != nil {
+			return err.Error()
+
+		}
+		if b {
 			return record
 		}
 	}
@@ -86,7 +91,12 @@ func (db *DB) findMany(query string) (res string) {
 			return err.Error() // TODO standard errors
 		}
 
-		if match(filter, record) {
+		b, err := match(filter, record)
+		if err != nil {
+			return err.Error()
+		}
+
+		if b {
 			// aggrigate here
 			records += record + `,`
 		}
@@ -118,7 +128,12 @@ func (db *DB) deleteOne(query string) string {
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		if match(filter, record) {
+
+		b, err := match(filter, record)
+		if err != nil {
+			return err.Error()
+		}
+		if b {
 			break
 		}
 	}
@@ -202,7 +217,11 @@ func (db *DB) deleteMany(query string) string {
 		if err != nil {
 			return err.Error()
 		}
-		if match(filter, record) {
+		b, err := match(filter, record)
+		if err != nil {
+			return err.Error()
+		}
+		if b {
 			records += record + `,`
 		}
 	}
