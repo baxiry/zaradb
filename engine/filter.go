@@ -17,11 +17,15 @@ func match(filter, data string) (result bool, err error) {
 		dv := gjson.Get(data, qk.String())
 		//fmt.Println("q value type : ", qv.Type)
 
-		if qv.Type == 5 {
-			//fmt.Println("inter ", qv.Type)
+		if qv.Type == 5 { //  5:json,
+
 			qv.ForEach(func(sqk, sqv gjson.Result) bool {
 
-				if sqv.Type == 3 {
+				if sqv.Type == 3 { // 3:string,
+
+					if sqv.Type == 5 { // 3:string,
+						fmt.Println("query type: ", sqv.Type)
+					}
 
 					switch sqk.String() {
 					case "$gt":
