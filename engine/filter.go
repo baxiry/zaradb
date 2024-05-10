@@ -66,7 +66,7 @@ func match(filter, data string) (result bool, err error) {
 						return result
 
 					default:
-						err = fmt.Errorf("unknown %s opiration", sqk.String())
+						err = fmt.Errorf("unknown %s operation", sqk.String())
 						result = false
 						return result
 					}
@@ -118,7 +118,7 @@ func match(filter, data string) (result bool, err error) {
 
 				default:
 
-					err = fmt.Errorf("unknown %s opiration", sqk.String())
+					err = fmt.Errorf("unknown %s operation", sqk.String())
 					result = false
 					return result
 				}
