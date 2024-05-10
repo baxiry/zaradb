@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"strings"
 
-	_ "github.com/mattn/go-sqlite3"
+	//_ "github.com/mattn/go-sqlite3"
 	"github.com/tidwall/gjson"
+	_ "modernc.org/sqlite"
 )
 
 type DB struct {
@@ -17,6 +18,39 @@ type DB struct {
 
 // var lastid = make(map[string]int64, 0)
 var db *DB
+
+func NewDB(dbName string) *DB {
+
+	newdb, err := sql.Open("sqlite", dbName) // sqlite3 whith mattn lib
+	if err != nil {
+		panic(err)
+	}
+
+	db = &DB{db: newdb}
+	db.lastid = make(map[string]int64, 0)
+
+	// Query the sqlite_master table to get table names
+	rows, err := newdb.Query("SELECT name FROM sqlite_master WHERE type='table'")
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+
+	// Iterate through rows and print table names
+	for rows.Next() {
+		var tableName string
+		err := rows.Scan(&tableName)
+		if err != nil {
+			panic(err)
+		}
+		lid, _ := getLastId(newdb, tableName)
+
+		db.lastid[tableName] = lid
+
+		fmt.Println("Table Name:", tableName)
+	}
+	return db
+}
 
 // InsertMany inserts list of object at one time
 func (db *DB) insertMany(query string) (res string) {
@@ -61,39 +95,6 @@ func (db *DB) insert(collection, obj string) error {
 	}
 
 	return nil
-}
-
-func NewDB(dbName string) *DB {
-
-	newdb, err := sql.Open("sqlite3", dbName)
-	if err != nil {
-		panic(err)
-	}
-
-	db = &DB{db: newdb}
-	db.lastid = make(map[string]int64, 0)
-
-	// Query the sqlite_master table to get table names
-	rows, err := newdb.Query("SELECT name FROM sqlite_master WHERE type='table'")
-	if err != nil {
-		panic(err)
-	}
-	defer rows.Close()
-
-	// Iterate through rows and print table names
-	for rows.Next() {
-		var tableName string
-		err := rows.Scan(&tableName)
-		if err != nil {
-			panic(err)
-		}
-		lid, _ := getLastId(newdb, tableName)
-
-		db.lastid[tableName] = lid
-
-		fmt.Println("Table Name:", tableName)
-	}
-	return db
 }
 
 func (db *DB) CreateCollection(collection string) error {

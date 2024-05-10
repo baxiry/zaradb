@@ -18,7 +18,58 @@ func match(filter, data string) (result bool) {
 		if qv.Type == 5 {
 			//fmt.Println("inter ", qv.Type)
 			qv.ForEach(func(sqk, sqv gjson.Result) bool {
-				//	fmt.Println("    sqv type : ", sqv.Type)
+
+				if sqv.Type == 3 {
+
+					switch sqk.String() {
+					case "$gt":
+						if !(dv.String() > sqv.String()) {
+							result = false
+							return false
+						}
+						return result
+
+					case "$lt":
+						if !(dv.String() < sqv.String()) {
+							result = false
+							return false
+						}
+						return result
+
+					case "$gte":
+						if !(dv.String() >= sqv.String()) {
+							result = false
+							return false
+						}
+						return result
+
+					case "$lte":
+						if !(dv.String() <= sqv.String()) {
+							result = false
+							return false
+						}
+						return result
+
+					case "$eq":
+						if dv.String() != sqv.String() {
+							result = false
+							return false
+						}
+						return result
+					case "$ne":
+						if dv.String() == sqv.String() {
+							result = false
+							return false
+						}
+						return result
+
+					default:
+						result = false
+						return result
+					}
+
+				}
+
 				switch sqk.String() {
 				case "$gt":
 					if !(dv.Int() > sqv.Int()) {
@@ -54,6 +105,14 @@ func match(filter, data string) (result bool) {
 						return false
 					}
 					return result
+
+				case "$ne":
+					if dv.Int() == sqv.Int() {
+						result = false
+						return false
+					}
+					return result
+
 				default:
 					result = false
 					return result

@@ -11,10 +11,16 @@ func (db *DB) findOne(query string) (res string) {
 	coll := gjson.Get(query, "collection").String()
 	filter := gjson.Get(query, "filter").String()
 	skip := gjson.Get(query, "skip").String()
+	sort := gjson.Get(query, "sortBy").String()
 
 	// TODO are skyp useful here ?
 
 	stmt := `select record from ` + coll
+
+	if sort != "" {
+		stmt += "order by " + sort
+	}
+
 	if skip != "0" {
 		if skip == "" {
 			skip = "0"
@@ -81,6 +87,7 @@ func (db *DB) findMany(query string) (res string) {
 		}
 
 		if match(filter, record) {
+			// aggrigate here
 			records += record + `,`
 		}
 	}
