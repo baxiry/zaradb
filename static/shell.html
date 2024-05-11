@@ -30,25 +30,45 @@
              <h4>examples</h4>
              <p> insert</p>
              {action:"insert", collection:"users", data:{name:"adam", age:12}}
+
              <p>insertMany</p>
              {action:"insertMany", collection:"test", data:[{name:"jalal", age:23},{name:"akram", age:30},{name:"hasna", age:35}]}
+
              <p>  select one object</p>
              {action:"findOne", collection:"users", filter:{name:"adam"}}
-             <p>  select firs 20 objects</p>
+
+             <p>  select objects match conditions</p>
              {action:"findMany", collection:"users", filter:{name:"adam"}}
-             <p>select firs 20 objects that match the conditions</p>
+
+             <p>select objects that match the conditions</p>
              {action:"findMany", collection:"users", filter:{name:"adam", age:{$gt:12}}}
+
+             <p>select objects that match the conditions</p>
+             {action:"findMany", collection:"users", filter:{ age:{$in:[12, 23, 34]}}}
+
+             <p>select objects that match the conditions</p>
+             {action:"findMany", collection:"users", filter:{ age:{$in:[12, 23, 34]}}}
+
+             <p>select objects that match the conditions</p>
+             {action:"findMany", collection:"users", filter:{ name:{$in:["akram", "zaid"]}}}
+
+             <p>select objects that match the conditions</p>
+             {action:"findMany", collection:"users", filter:{ name:{$nin:["akram", "zaid"]}}}
+
              <p>delete first objects that match the conditions</p>
              {action:"deleteOne", collection:"users", filter:{name:"adam", age:{$gt:12}}}
+
              <p>delete all objects that match the conditions </p>
              {action:"deleteMany", collection:"users", filter:{name:"adam", age:{$gt:12}}}
+
              <p>skip or ignor some matching objects</p>
              {action:"deleteMany", collection:"users", filter:{name:"adam", age:{$gt:12}}, skip: 3}
+
              <p>Limited to a number of matching objects</p>
              {action:"deleteMany", collection:"users", filter:{name:"adam", age:{$gt:12}}, skip: 3, limit:3}
+
              <p>deleteMany</p>
              {action:"deleteMany", collection:"users", filter:{name:"adam", age:{$gt:12}}, skip: 3, limit:3}
-
 
              <p>filter numeric data by $eq $nq $lt $gt $ge $le</p>
              <p>filter text data by $eq $nq </p>
