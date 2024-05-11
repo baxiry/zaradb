@@ -1,11 +1,15 @@
 
-// WebSocket
-var ws = new ReconnectingWebSocket('ws://localhost:1111/ws', null, {debug: true, reconnectInterval: 2000});
+//
+// This configuration is suitable for development situation
+const configs = {debug: false, reconnectInterval: 500, reconnectDecay:1, maxReconnectInterval:10000}
 
-function Connection() {
+// WebSocket
+var ws = new ReconnectingWebSocket('ws://localhost:1111/ws', null, configs );
+
+function connection() {
 
 ws.onopen = function(){
-    console.log('Connection established');
+    //console.log('Connection established');
     $('#reconnecte').fadeOut(500);
 }
 
@@ -15,25 +19,23 @@ ws.onclose = function(e) {
     //ws.close()
 
     $('#reconnecte').show();
-    console.log("reload page to reconnect")
+    //console.log("reload page to reconnect")
   };
 
-ws.onerror = function(e){
-    console.log('Connection error', e.error);
-//    ws.close()
+ws.onerror = function(){
+    // console.log('Connection error', e.error);
+    // ws.close()
 
     $('#reconnecte').show();
-//    console.log("reload page to reconnect")
-
+    // console.log("reload page to reconnect")
 }
 
-
+//
 ws.onmessage = function(event) {
     const Data = prettyJSON(event.data)
     $('#examples').hide();
     $('#data').html(`<pre><span>${Data}</span></pre>`);
     $('#data').fadeIn(500);
-
 };
 
 const queryInput = document.getElementById('query-input');
@@ -59,7 +61,6 @@ queryInput.addEventListener('keydown', function(event) {
             eval("obj = "+ queryInput.value)
             let query = JSON.stringify(obj)
             ws.send(query);
-
             return;
         } 
     }
@@ -93,9 +94,9 @@ function calcHeight(value) {
 let textarea = document.querySelector("textarea");
 textarea.addEventListener("keyup", () => {
   textarea.style.height = calcHeight(textarea.value) + "px";
-    console.log("height",calcHeight(textarea.value))
+    //console.log("height",calcHeight(textarea.value))
 });
 	
 
-Connection()
+connection()
 
