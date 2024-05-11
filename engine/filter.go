@@ -6,6 +6,9 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+// gjson.Type :
+// json-array:5, int:2, string:3
+
 // match verifies that data matches the conditions
 func match(filter, data string) (result bool, err error) {
 	// TODO sould ber return syntax error if op unknown
@@ -17,13 +20,18 @@ func match(filter, data string) (result bool, err error) {
 		dv := gjson.Get(data, qk.String())
 		//fmt.Println("q value type : ", qv.Type)
 
-		if qv.Type == 5 { //  5:json,
+		if qk.String() == "$and" {
+			//			fmt.Println("query key is $and")
+		}
+		if qk.String() == "$or" {
+			//			fmt.Println("query key is $or")
+		}
+
+		if qv.Type == 5 { // 5:json, int:2, string:3
 
 			qv.ForEach(func(sqk, sqv gjson.Result) bool {
 
 				if sqv.Type == 3 { // 3:string,
-
-					//if sqv.Type == 5 { // 3:string,fmt.Println("query type: ", sqv.Type)	}
 
 					switch sqk.String() {
 					case "$gt":
@@ -62,7 +70,8 @@ func match(filter, data string) (result bool, err error) {
 						return result
 
 					default:
-						err = fmt.Errorf("unknown %s operation", sqk.String())
+						err = fmt.Errorf("unknown %s operation", sqk.Value())
+						//fmt.Println("..wher here", sqk.Value(), sqk.Type)
 						result = false
 						return result
 					}
@@ -105,9 +114,29 @@ func match(filter, data string) (result bool, err error) {
 						result = false
 					}
 					return result
+				case "$in":
+					if sqv.IsArray() {
+						for _, v := range sqv.Array() {
+							if dv.String() == v.String() {
+								return result
+							}
+						}
+						result = false
+					}
+					return result
+
+				case "$nin":
+					if sqv.IsArray() {
+						for _, v := range sqv.Array() {
+							if dv.String() == v.String() {
+								result = false
+								return result
+							}
+						}
+					}
+					return result
 
 				default:
-
 					err = fmt.Errorf("unknown %s operation", sqk.String())
 					result = false
 					return result
