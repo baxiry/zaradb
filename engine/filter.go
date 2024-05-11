@@ -23,49 +23,41 @@ func match(filter, data string) (result bool, err error) {
 
 				if sqv.Type == 3 { // 3:string,
 
-					if sqv.Type == 5 { // 3:string,
-						fmt.Println("query type: ", sqv.Type)
-					}
+					//if sqv.Type == 5 { // 3:string,fmt.Println("query type: ", sqv.Type)	}
 
 					switch sqk.String() {
 					case "$gt":
 						if !(dv.String() > sqv.String()) {
 							result = false
-							return false
 						}
 						return result
 
 					case "$lt":
 						if !(dv.String() < sqv.String()) {
 							result = false
-							return false
 						}
 						return result
 
 					case "$gte":
 						if !(dv.String() >= sqv.String()) {
 							result = false
-							return false
 						}
 						return result
 
 					case "$lte":
 						if !(dv.String() <= sqv.String()) {
 							result = false
-							return false
 						}
 						return result
 
 					case "$eq":
 						if dv.String() != sqv.String() {
 							result = false
-							return false
 						}
 						return result
 					case "$ne":
 						if dv.String() == sqv.String() {
 							result = false
-							return false
 						}
 						return result
 
@@ -81,42 +73,36 @@ func match(filter, data string) (result bool, err error) {
 				case "$gt":
 					if !(dv.Int() > sqv.Int()) {
 						result = false
-						return false
 					}
 					return result
 
 				case "$lt":
 					if !(dv.Int() < sqv.Int()) {
 						result = false
-						return false
 					}
 					return result
 
 				case "$gte":
 					if !(dv.Int() >= sqv.Int()) {
 						result = false
-						return false
 					}
 					return result
 
 				case "$lte":
 					if !(dv.Int() <= sqv.Int()) {
 						result = false
-						return false
 					}
 					return result
 
 				case "$eq":
 					if dv.Int() != sqv.Int() {
 						result = false
-						return false
 					}
 					return result
 
 				case "$ne":
 					if dv.Int() == sqv.Int() {
 						result = false
-						return false
 					}
 					return result
 
