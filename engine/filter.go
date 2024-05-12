@@ -114,24 +114,21 @@ func match(filter, data string) (result bool, err error) {
 						result = false
 					}
 					return result
-				case "$in":
-					if sqv.IsArray() {
-						for _, v := range sqv.Array() {
-							if dv.String() == v.String() {
-								return result
-							}
+				case "$in": // in array
+					//if sqv.IsArray() {}
+					for _, v := range sqv.Array() {
+						if dv.String() == v.String() {
+							return result
 						}
-						result = false
 					}
+					result = false
 					return result
 
-				case "$nin":
-					if sqv.IsArray() {
-						for _, v := range sqv.Array() {
-							if dv.String() == v.String() {
-								result = false
-								return result
-							}
+				case "$nin": // not in
+					for _, v := range sqv.Array() {
+						if dv.String() == v.String() {
+							result = false
+							return result
 						}
 					}
 					return result
