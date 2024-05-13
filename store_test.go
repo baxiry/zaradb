@@ -21,7 +21,7 @@ func Test_NewDatabase(t *testing.T) {
 	_, err := os.Stat(filepath.Join(db.path, "test", "00000000000000000001"))
 	if err != nil {
 		if !os.IsExist(err) {
-			t.Errorf("%s  should be exists", db.path+"/00000000000000000001")
+			t.Errorf("%s  should be exists", filepath.Join(db.path, "00000000000000000001"))
 		}
 	}
 }
@@ -32,11 +32,39 @@ func Test_NewCollection(t *testing.T) {
 	}
 }
 
-func Test_reIndex(t *testing.T) {
-	l := len(db.reIndex())
+func Test_BuildIndex(t *testing.T) {
+	l := len(db.buildIndexs())
 	if l != 2 {
 		t.Error("lenght coll should be 2")
 	}
+}
+
+func Test_update(t *testing.T) {
+
+	data := "hello"
+
+	l, _ := coll.log.LastIndex()
+	data, err := coll.getData(l)
+	if err != nil {
+		t.Error(data, err)
+	}
+
+	coll.update(l, "hello")
+
+	data, _ = coll.getData(l)
+	if err != nil {
+		t.Log(err.Error())
+	}
+
+	if data != "hellohello" {
+		t.Errorf("shoul be: %s, not %s", "hellohello", data)
+	}
+
+	err = coll.insert(data)
+	if err != nil {
+		t.Log("normal error:", err)
+	}
+
 }
 
 func Test_insert(t *testing.T) {
@@ -88,8 +116,10 @@ func Test_Close(t *testing.T) {
 		t.Error("len of indexs should be great then 0")
 	}
 
-	if len(db.Collections)%maxItems-1 != 0 { // first item is 1 not 0
-		t.Errorf("remain of 13 should be 0, not %d\n", len(db.Collections)%maxItems)
+	// why this ??
+	remain := len(db.Collections)%maxItems - 1
+	if remain != 0 { // first item is 1 not 0
+		t.Errorf("remain of 13 should be 0, not %d\n", remain)
 	}
 
 	t.Log("indexs len: ", len(indexs))

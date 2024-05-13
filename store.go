@@ -3,6 +3,7 @@ package store
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/tidwall/wal"
@@ -23,7 +24,8 @@ type Collection struct {
 	id        uint64
 }
 
-func (db *Database) reIndex() (indexs []uint64) {
+// read index from data & build indexs
+func (db *Database) buildIndexs() (indexs []uint64) {
 	indexs = make([]uint64, 1)
 
 	indexs = append(indexs, 1)
@@ -36,7 +38,7 @@ func (db *Database) reIndex() (indexs []uint64) {
 
 			d, err := coll.getData(k)
 			if err != nil {
-				println("k is :", k, err.Error())
+				println("key is :", k, err.Error())
 				return indexs
 			}
 			fmt.Printf("key %d data: %s \n", k, d)
@@ -46,6 +48,18 @@ func (db *Database) reIndex() (indexs []uint64) {
 	return indexs
 }
 
+func (coll *Collection) markDelete(id uint64) error {
+	coll.lastIndex++
+	err := coll.log.Write(coll.lastIndex, []byte("0"+strings.Repeat(" ", 19)))
+	if err != nil {
+		coll.lastIndex--
+		return err
+	}
+	coll.indexs[id] = 0
+	return err
+}
+
+// insert appends data
 func (coll *Collection) insert(data string) error {
 	coll.lastIndex++
 	coll.id++
@@ -62,16 +76,22 @@ func (coll *Collection) insert(data string) error {
 	return nil
 }
 
-func (coll *Collection) getIndex(id uint64) (string, error) {
-	//println(len(coll.indexs), "id: ", id)
-	//coll.indexs[id]
+// getIndex get parse and return index or err
+func (coll *Collection) getIndex(id uint64) (uint64, error) {
 	bdata, err := coll.log.Read(id)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
-	return string(bdata)[:20], nil
+	index := strings.Split(string(bdata)[:20], " ")[0]
+	i, err := strconv.Atoi(index)
+	if err != nil {
+		return 0, err
+	}
+
+	return uint64(i), nil
 }
 
+// getData reads data from wall file
 func (coll *Collection) getData(id uint64) (string, error) {
 	//println(len(coll.indexs), "id: ", id)
 	//coll.indexs[id]
