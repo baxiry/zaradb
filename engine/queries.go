@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/tidwall/gjson"
 )
@@ -16,13 +17,16 @@ func (db *DB) findMany(query string) (res string) {
 	}
 
 	filter := gjson.Get(query, "filter").String()
+
 	if filter == "" {
 		filter = "{}"
 	}
 
 	skip := gjson.Get(query, "skip").Int()
 	limit := gjson.Get(query, "limit").Int()
-
+	if limit == 0 {
+		limit = 100 // what is default setting ?
+	}
 	fmt.Println(limit, skip)
 
 	stmt := `select record from ` + coll
@@ -70,28 +74,27 @@ func (db *DB) findOne(query string) (res string) {
 	coll := gjson.Get(query, "collection").String()
 
 	filter := gjson.Get(query, "filter").String()
-	skip := gjson.Get(query, "skip").String()
-	println("skip", skip)
+	skip := gjson.Get(query, "skip").Int()
 
 	// TODO are skyp useful here ?
 
 	stmt := `select record from ` + coll
 
-	if skip != "0" {
-		if skip == "" {
-			skip = "0"
-		}
-		stmt += " limit 1 offset " + skip // + ";"
-	}
-
 	rows, err := db.db.Query(stmt)
 	if err != nil {
+		if strings.HasPrefix(err.Error(), "SQL logic error: no such column:") {
+			return `{"error":"skip should be number not string"}`
+		}
 		return err.Error()
 	}
 	defer rows.Close()
 
 	record := ""
 	for rows.Next() {
+		if skip != 0 {
+			skip--
+			continue
+		}
 
 		err := rows.Scan(&record)
 		if err != nil {
