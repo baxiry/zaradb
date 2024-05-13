@@ -146,7 +146,6 @@ func match(filter, data string) (result bool, err error) {
 
 		if dv.String() != qv.String() {
 			result = false
-			return result
 		}
 		return result // if true keep iterating
 	})
