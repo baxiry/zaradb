@@ -21,17 +21,16 @@ func match(filter, data string) (result bool, err error) {
 		//fmt.Println("q value type : ", qv.Type)
 
 		if qk.String() == "$and" {
-			//			fmt.Println("query key is $and")
+			// fmt.Println("query key is $and")
 		}
 		if qk.String() == "$or" {
-			//			fmt.Println("query key is $or")
+			// fmt.Println("query key is $or")
 		}
 
 		if qv.Type == 5 { // 5:json, int:2, string:3
-
 			qv.ForEach(func(sqk, sqv gjson.Result) bool {
-
 				if sqv.Type == 3 { // 3:string,
+					fmt.Println("here with: ", sqk.String())
 
 					switch sqk.String() {
 					case "$gt":
@@ -134,6 +133,7 @@ func match(filter, data string) (result bool, err error) {
 					return result
 
 				default:
+					fmt.Println("why iam here ?", sqk.String())
 					err = fmt.Errorf("unknown %s operation", sqk.String())
 					result = false
 					return result

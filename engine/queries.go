@@ -6,20 +6,76 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+// Find finds any obs match creteria.
+func (db *DB) findMany(query string) (res string) {
+
+	// TODO parse hol qury one time
+	coll := gjson.Get(query, "collection").String()
+	if coll == "" {
+		return `{"error":"forgot collection name "}`
+	}
+
+	filter := gjson.Get(query, "filter").String()
+	if filter == "" {
+		filter = "{}"
+	}
+
+	skip := gjson.Get(query, "skip").Int()
+	limit := gjson.Get(query, "limit").Int()
+
+	fmt.Println(limit, skip)
+
+	stmt := `select record from ` + coll
+
+	rows, err := db.db.Query(stmt)
+	if err != nil {
+		return err.Error()
+	}
+	defer rows.Close()
+
+	records := "["
+	record := ""
+
+	for rows.Next() {
+		if limit == 0 {
+			break
+		}
+		if skip != 0 {
+			skip--
+			continue
+		}
+
+		record = ""
+		err := rows.Scan(&record)
+		if err != nil {
+			return err.Error() // TODO standard errors
+		}
+
+		ok, err := match(filter, record)
+		if err != nil {
+			return err.Error()
+		}
+
+		if ok {
+			// aggrigate here
+			records += record + `,`
+			limit--
+		}
+	}
+	return records[:len(records)-1] + "]"
+}
+
 // Finds first obj match creteria.
 func (db *DB) findOne(query string) (res string) {
 	coll := gjson.Get(query, "collection").String()
+
 	filter := gjson.Get(query, "filter").String()
 	skip := gjson.Get(query, "skip").String()
-	sort := gjson.Get(query, "sortBy").String()
+	println("skip", skip)
 
 	// TODO are skyp useful here ?
 
 	stmt := `select record from ` + coll
-
-	if sort != "" {
-		stmt += "order by " + sort
-	}
 
 	if skip != "0" {
 		if skip == "" {
@@ -36,6 +92,7 @@ func (db *DB) findOne(query string) (res string) {
 
 	record := ""
 	for rows.Next() {
+
 		err := rows.Scan(&record)
 		if err != nil {
 			return err.Error()
@@ -43,7 +100,6 @@ func (db *DB) findOne(query string) (res string) {
 		b, err := match(filter, record)
 		if err != nil {
 			return err.Error()
-
 		}
 		if b {
 			return record
@@ -51,57 +107,6 @@ func (db *DB) findOne(query string) (res string) {
 	}
 
 	return `{"result":0}`
-}
-
-// Find finds any obs match creteria.
-func (db *DB) findMany(query string) (res string) {
-
-	// TODO parse hol qury one time
-	coll := gjson.Get(query, "collection").String()
-	filter := gjson.Get(query, "filter").String()
-	if filter == "" {
-		filter = "{}"
-	}
-
-	skip := gjson.Get(query, "skip").String()
-	if skip == "" {
-		skip = "0"
-	}
-
-	limit := gjson.Get(query, "limit").String()
-	if limit == "" || limit == "0" {
-		limit = fmt.Sprint(db.lastid[coll])
-	}
-
-	stmt := `select record from ` + coll + " limit " + limit + " offset " + skip
-
-	rows, err := db.db.Query(stmt)
-	if err != nil {
-		return err.Error()
-	}
-	defer rows.Close()
-
-	records := "["
-	record := ""
-
-	for rows.Next() {
-		record = ""
-		err := rows.Scan(&record)
-		if err != nil {
-			return err.Error() // TODO standard errors
-		}
-
-		b, err := match(filter, record)
-		if err != nil {
-			return err.Error()
-		}
-
-		if b {
-			// aggrigate here
-			records += record + `,`
-		}
-	}
-	return records[:len(records)-1] + "]"
 }
 
 // delete
