@@ -2,7 +2,6 @@ package engine
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/tidwall/gjson"
 )
@@ -82,9 +81,6 @@ func (db *DB) findOne(query string) (res string) {
 
 	rows, err := db.db.Query(stmt)
 	if err != nil {
-		if strings.HasPrefix(err.Error(), "SQL logic error: no such column:") {
-			return `{"error":"skip should be number not string"}`
-		}
 		return err.Error()
 	}
 	defer rows.Close()
