@@ -7,17 +7,12 @@ import (
 )
 
 // gjson.Type :
-// json-array:5, int:2, string:3
-
-// {$and:[{name:{$eq:"adam"}},{name:{$eq:"jawad"}}]}
-
-// {$or: [{name:{$eq:"adam"}}, {name:{$eq:"jawad"}}] }
+// json:5, array:5, int:2, string:3
 
 // match verifies that data matches the conditions
 func match(filter, data string) (result bool, err error) {
-	// TODO sould ber return syntax error if op unknown
+	// TODO should return syntax error if op unknown
 
-	fmt.Println("Data is  : ", data)
 	result = true
 
 	gjson.Parse(filter).ForEach(func(qk, qv gjson.Result) bool {
@@ -67,8 +62,6 @@ func match(filter, data string) (result bool, err error) {
 						return result
 
 					case "$or": // not in
-
-						fmt.Println("my be we here, sqk: ", sqk.String())
 
 						result = false
 						return result
@@ -137,12 +130,12 @@ func match(filter, data string) (result bool, err error) {
 					return result
 
 				default:
+					// {$and:[{name:{$eq:"adam"}},{name:{$eq:"jawad"}}]}
+					// {$or: [{name:{$eq:"adam"}}, {name:{$eq:"jawad"}}]}
 
 					if qk.Str == "$and" {
 
 						for _, v := range qv.Array() {
-							fmt.Print("value : ", v)
-							fmt.Print("data : ", data)
 							res, _ := match(v.String(), data)
 							if !res {
 								result = false

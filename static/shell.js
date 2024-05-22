@@ -1,10 +1,13 @@
 
 //
 // This configuration is suitable for development situation
-const configs = {debug: false, reconnectInterval: 500, reconnectDecay:1, maxReconnectInterval:10000}
+//const configs = {debug: false, reconnectInterval: 200, reconnectDecay:1.1, maxReconnectInterval:10000}
+
+
+
 
 // WebSocket
-var ws = new ReconnectingWebSocket('ws://localhost:1111/ws', null, configs );
+var ws = new ReconnectingWebSocket('ws://localhost:1111/ws');
 
 function connection() {
 
@@ -66,6 +69,7 @@ queryInput.addEventListener('keydown', function(event) {
     }
 });
 
+
 function prettyJSON(jsonString) {
     try {
         const jsonObject = JSON.parse(jsonString);
@@ -99,4 +103,14 @@ textarea.addEventListener("keyup", () => {
 	
 
 connection()
+
+$(document).on("keypress", function (e) {
+   console.log("event : ", e) 
+   console.log("input : ", $("#query-input").val()) 
+
+   // TODO some hilit for js object 
+});
+
+// var queryShow = ""
+
 

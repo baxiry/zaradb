@@ -4,7 +4,29 @@ import (
 	"fmt"
 
 	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 )
+
+// fields remove or rename fields
+func fields(data []string, fields gjson.Result) []string {
+
+	fmt.Println("fields: ")
+	toRemove := make([]string, 0)
+	for k, v := range fields.Map() {
+		fmt.Println(k, v)
+		if v.String() == "0" {
+			toRemove = append(toRemove, k)
+		}
+	}
+	println("toRemove")
+	for i := 0; i < len(data); i++ {
+		for _, k := range toRemove {
+			data[i], _ = sjson.Delete(data[i], k)
+		}
+	}
+
+	return data
+}
 
 // Find finds any obs match creteria.
 func (db *DB) findMany(query string) (res string) {
@@ -36,9 +58,8 @@ func (db *DB) findMany(query string) (res string) {
 	}
 	defer rows.Close()
 
-	records := "["
 	record := ""
-
+	listData := make([]string, 0)
 	for rows.Next() {
 		if limit == 0 {
 			break
@@ -51,7 +72,7 @@ func (db *DB) findMany(query string) (res string) {
 		record = ""
 		err := rows.Scan(&record)
 		if err != nil {
-			return err.Error() // TODO standard errors
+			return err.Error() // TODO standaring errors
 		}
 
 		ok, err := match(filter, record)
@@ -61,10 +82,27 @@ func (db *DB) findMany(query string) (res string) {
 
 		if ok {
 			// aggrigate here
-			records += record + `,`
+			listData = append(listData, record)
 			limit--
 		}
 	}
+
+	// TODO aggrigate here
+
+	// remove|rename some fields
+	flds := gjson.Get(query, "fields")
+	listData = fields(listData, flds)
+
+	records := "["
+
+	for i := 0; i < len(listData); i++ {
+		records += listData[i] + ","
+	}
+
+	if len(records) == 1 {
+		return records + "]"
+	}
+
 	return records[:len(records)-1] + "]"
 }
 
