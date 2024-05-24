@@ -1,6 +1,6 @@
- -- Speedtest1 for SQLite 3.41.2 2023-03-22 11:56:21 0d1fc92f94cb6b76bffe3ec34d69	ffe3ec34d69
+ Speedtest1 for SQLite 3.41.2 2023-03-22 11:56:21 0d1fc92f94cb6b76bffe3ec34d69	ffe3ec34d69
 
- Go			                                                                     C
+                                                                       Go          C
 
   100 - 50000 INSERTs into table with no index......................    0.071s    0.077s
   110 - 50000 ordered INSERTS with one index/PK.....................    0.114s    0.082s

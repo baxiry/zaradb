@@ -123,11 +123,6 @@ func (db *DB) Delete(id int, coll string) string {
 	return "not implement yet!"
 }
 
-// updates exist value
-func (db *DB) Update(id int, coll, value string) string {
-	return "not implemented yet"
-}
-
 // Get data by id
 func (db *DB) Get(id int, coll string) string {
 	return "get not emplement yet"

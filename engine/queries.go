@@ -7,6 +7,85 @@ import (
 	"github.com/tidwall/sjson"
 )
 
+// Update update document data
+func (db *DB) updateById(query string) (result string) {
+	oldObj := db.findById(query)
+
+	id := gjson.Get(query, "_id").String()
+	newObj := gjson.Get(query, "data").String()
+	coll := gjson.Get(query, "collection").String()
+
+	newData := gjson.Get(`[`+oldObj+`,`+newObj+`]`, `@join`).Raw
+
+	// updates exist value
+
+	_ = `update test set record = '{"_id":12,"name":"joha","age":13}' where rowid = 39;`
+	stmt := `UPDATE ` + coll + ` SET record  = '` + newData + `' WHERE rowid = ` + id + ";"
+	_, err := db.db.Exec(stmt)
+
+	fmt.Println(err)
+	println(newData)
+
+	return "updateOne , err : "
+}
+
+// TODO updateOne one update document data
+func (db *DB) updateOne(query string) (result string) {
+	return "not implemented yet"
+}
+
+// TODO updateMany update document data
+func (db *DB) updateMany(query string) (result string) {
+	return "not implemented yet"
+}
+
+// deleteMany
+func (db *DB) deleteMany(query string) string {
+
+	coll := gjson.Get(query, "collection").String()
+	filter := gjson.Get(query, "filter").String()
+
+	stmt := `select record from ` + coll
+
+	rows, err := db.db.Query(stmt)
+	if err != nil {
+		return err.Error()
+	}
+	defer rows.Close()
+
+	records := "["
+	record := ""
+
+	for rows.Next() {
+		record = ""
+		err := rows.Scan(&record)
+		if err != nil {
+			return err.Error()
+		}
+		b, err := match(filter, record)
+		if err != nil {
+			return err.Error()
+		}
+		if b {
+			records += record + `,`
+		}
+	}
+	return "not implemented yet"
+
+}
+
+/*
+// ReplaceKeys replaces json keys in data using the values in keymap
+func ReplaceKeys(data []byte, keymap map[string]string) []byte {
+  for kafkaKey, esKey := range keymap {
+    old := fmt.Sprintf("\"%s\":", kafkaKey)
+    new := fmt.Sprintf("\"%s\":", esKey)
+    data = bytes.Replace(data, old, new, 1)
+  }
+  return data
+}
+*/
+
 // fields remove or rename fields
 func fields(data []string, fields gjson.Result) []string {
 
@@ -236,41 +315,6 @@ func (db *DB) insertOne(query string) (res string) {
 	return "inser done"
 }
 
-// deleteMany
-func (db *DB) deleteMany(query string) string {
-
-	coll := gjson.Get(query, "collection").String()
-	filter := gjson.Get(query, "filter").String()
-
-	stmt := `select record from ` + coll
-
-	rows, err := db.db.Query(stmt)
-	if err != nil {
-		return err.Error()
-	}
-	defer rows.Close()
-
-	records := "["
-	record := ""
-
-	for rows.Next() {
-		record = ""
-		err := rows.Scan(&record)
-		if err != nil {
-			return err.Error()
-		}
-		b, err := match(filter, record)
-		if err != nil {
-			return err.Error()
-		}
-		if b {
-			records += record + `,`
-		}
-	}
-	return "not implemented yet"
-
-}
-
 // delete by id
 func (db *DB) deleteById(query string) string {
 	id := gjson.Get(query, "_id").String()
@@ -290,24 +334,6 @@ func (db *DB) deleteById(query string) string {
 		return `{"error": "internal error"}` // + err.Error()
 	}
 	return `{"aknowlge": "row ` + id + ` deleted"}`
-}
-
-// Update update document data
-func (db *DB) updateById(query string) (result string) {
-	data := db.findById(query)
-	println("data: ", data)
-
-	return "not implemented yet"
-}
-
-// TODO updateOne one update document data
-func (db *DB) updateOne(query string) (result string) {
-	return "not implemented yet"
-}
-
-// TODO updateMany update document data
-func (db *DB) updateMany(query string) (result string) {
-	return "not implemented yet"
 }
 
 // end
