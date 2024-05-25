@@ -4,8 +4,97 @@ import (
 	"fmt"
 
 	"github.com/tidwall/gjson"
-	"github.com/tidwall/sjson"
 )
+
+// TODO updateOne one update document data
+func (db *DB) updateOne(query string) (result string) {
+
+	mtch := gjson.Get(query, "match").String()
+
+	newObj := gjson.Get(query, "data").String()
+
+	coll := gjson.Get(query, "collection").String()
+
+	// updates exist value
+
+	stmt := `select rowid, record from ` + coll
+
+	rows, err := db.db.Query(stmt)
+	if err != nil {
+		return err.Error()
+	}
+
+	record := ""
+	id := "1"
+	for rows.Next() {
+		err := rows.Scan(&id, &record)
+		if err != nil {
+			return err.Error() // TODO standaring errors
+		}
+
+		ok, err := match(mtch, record)
+		if err != nil {
+			return err.Error()
+		}
+		if ok {
+			break
+		}
+
+	}
+	rows.Close()
+
+	newData := gjson.Get(`[`+record+`,`+newObj+`]`, `@join`).Raw
+	// update test set record = '{"_id":12,"name":"joha","age":13}' where rowid = 39;
+	stmt = `UPDATE ` + coll + ` SET record  = '` + newData + `' WHERE rowid = ` + id + ";"
+	_, err = db.db.Exec(stmt)
+	if err != nil {
+		fmt.Println(err.Error())
+		// TODO
+		return `{"error": "` + err.Error() + `"}`
+	}
+
+	return `{"update:": "done"}`
+}
+
+// TODO updateMany update document data
+func (db *DB) updateMany(query string) (result string) {
+	return "not implemented yet"
+}
+
+// deleteMany
+func (db *DB) deleteMany(query string) string {
+
+	coll := gjson.Get(query, "collection").String()
+	mtch := gjson.Get(query, "match").String()
+
+	stmt := `select record from ` + coll
+
+	rows, err := db.db.Query(stmt)
+	if err != nil {
+		return err.Error()
+	}
+	defer rows.Close()
+
+	records := "["
+	record := ""
+
+	for rows.Next() {
+		record = ""
+		err := rows.Scan(&record)
+		if err != nil {
+			return err.Error()
+		}
+		b, err := match(mtch, record)
+		if err != nil {
+			return err.Error()
+		}
+		if b {
+			records += record + `,`
+		}
+	}
+	return "not implemented yet"
+
+}
 
 // Update update document data
 func (db *DB) updateById(query string) (result string) {
@@ -26,85 +115,7 @@ func (db *DB) updateById(query string) (result string) {
 	fmt.Println(err)
 	println(newData)
 
-	return "updateOne , err : "
-}
-
-// TODO updateOne one update document data
-func (db *DB) updateOne(query string) (result string) {
-	return "not implemented yet"
-}
-
-// TODO updateMany update document data
-func (db *DB) updateMany(query string) (result string) {
-	return "not implemented yet"
-}
-
-// deleteMany
-func (db *DB) deleteMany(query string) string {
-
-	coll := gjson.Get(query, "collection").String()
-	filter := gjson.Get(query, "filter").String()
-
-	stmt := `select record from ` + coll
-
-	rows, err := db.db.Query(stmt)
-	if err != nil {
-		return err.Error()
-	}
-	defer rows.Close()
-
-	records := "["
-	record := ""
-
-	for rows.Next() {
-		record = ""
-		err := rows.Scan(&record)
-		if err != nil {
-			return err.Error()
-		}
-		b, err := match(filter, record)
-		if err != nil {
-			return err.Error()
-		}
-		if b {
-			records += record + `,`
-		}
-	}
-	return "not implemented yet"
-
-}
-
-/*
-// ReplaceKeys replaces json keys in data using the values in keymap
-func ReplaceKeys(data []byte, keymap map[string]string) []byte {
-  for kafkaKey, esKey := range keymap {
-    old := fmt.Sprintf("\"%s\":", kafkaKey)
-    new := fmt.Sprintf("\"%s\":", esKey)
-    data = bytes.Replace(data, old, new, 1)
-  }
-  return data
-}
-*/
-
-// fields remove or rename fields
-func fields(data []string, fields gjson.Result) []string {
-
-	fmt.Println("fields: ")
-	toRemove := make([]string, 0)
-	for k, v := range fields.Map() {
-		fmt.Println(k, v)
-		if v.String() == "0" {
-			toRemove = append(toRemove, k)
-		}
-	}
-	println("toRemove")
-	for i := 0; i < len(data); i++ {
-		for _, k := range toRemove {
-			data[i], _ = sjson.Delete(data[i], k)
-		}
-	}
-
-	return data
+	return "update done"
 }
 
 // Find finds any obs match creteria.
@@ -116,10 +127,10 @@ func (db *DB) findMany(query string) (res string) {
 		return `{"error":"forgot collection name "}`
 	}
 
-	filter := gjson.Get(query, "filter").String()
+	mtch := gjson.Get(query, "match").String()
 
-	if filter == "" {
-		filter = "{}"
+	if mtch == "" {
+		mtch = "{}"
 	}
 
 	skip := gjson.Get(query, "skip").Int()
@@ -154,7 +165,7 @@ func (db *DB) findMany(query string) (res string) {
 			return err.Error() // TODO standaring errors
 		}
 
-		ok, err := match(filter, record)
+		ok, err := match(mtch, record)
 		if err != nil {
 			return err.Error()
 		}
@@ -189,7 +200,7 @@ func (db *DB) findMany(query string) (res string) {
 func (db *DB) findOne(query string) (res string) {
 	coll := gjson.Get(query, "collection").String()
 
-	filter := gjson.Get(query, "filter").String()
+	mtch := gjson.Get(query, "match").String()
 	skip := gjson.Get(query, "skip").Int()
 
 	// TODO are skyp useful here ?
@@ -213,7 +224,7 @@ func (db *DB) findOne(query string) (res string) {
 		if err != nil {
 			return err.Error()
 		}
-		b, err := match(filter, record)
+		b, err := match(mtch, record)
 		if err != nil {
 			return err.Error()
 		}
@@ -229,7 +240,7 @@ func (db *DB) findOne(query string) (res string) {
 func (db *DB) deleteOne(query string) string {
 
 	coll := gjson.Get(query, "collection").String()
-	filter := gjson.Get(query, "filter").String()
+	mtch := gjson.Get(query, "match").String()
 
 	stmt := `select rowid, record from ` + coll
 
@@ -250,7 +261,7 @@ func (db *DB) deleteOne(query string) string {
 			fmt.Println(err.Error())
 		}
 
-		b, err := match(filter, record)
+		b, err := match(mtch, record)
 		if err != nil {
 			return err.Error()
 		}
