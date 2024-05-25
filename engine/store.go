@@ -111,24 +111,9 @@ func (db *DB) CreateCollection(collection string) error {
 	return nil
 }
 
-// =====================================================
-
 // Close db
 func (db *DB) Close() {
 	db.db.Close()
-}
-
-// deletes exist value
-func (db *DB) Delete(id int, coll string) string {
-	return "not implement yet!"
-}
-
-// Get data by id
-func (db *DB) Get(id int, coll string) string {
-	return "get not emplement yet"
-}
-
-func Run(path string) {
 }
 
 // error
