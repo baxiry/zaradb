@@ -6,6 +6,68 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+type matchData struct {
+	id   string
+	data string
+}
+
+// TODO updateMany update document data
+func (db *DB) updateMany(query string) (result string) {
+
+	mtch := gjson.Get(query, "match").String()
+
+	newObj := gjson.Get(query, "data").String()
+
+	coll := gjson.Get(query, "collection").String()
+
+	// updates exist value
+
+	stmt := `select rowid, record from ` + coll
+
+	rows, err := db.db.Query(stmt)
+	if err != nil {
+		return err.Error()
+	}
+
+	record := ""
+	id := "1"
+
+	listMatch := []matchData{}
+
+	for rows.Next() {
+		err := rows.Scan(&id, &record)
+		if err != nil {
+			return err.Error() // TODO standaring errors
+		}
+
+		ok, err := match(mtch, record)
+		if err != nil {
+			return err.Error()
+		}
+		if ok {
+			println("id: ", id)
+			listMatch = append(listMatch, matchData{id: id, data: record})
+		}
+	}
+	rows.Close()
+
+	for _, rec := range listMatch {
+
+		newData := gjson.Get(`[`+rec.data+`,`+newObj+`]`, `@join`).Raw
+		// update test set record = '{"_id":38}' where rowid in (36, 37,38,39,40);
+
+		stmt = `UPDATE ` + coll + ` SET record  = '` + newData + `' WHERE rowid = ` + rec.id + ";"
+		_, err = db.db.Exec(stmt)
+		if err != nil {
+			fmt.Println(err.Error())
+			// TODO
+			return `{"error": "` + err.Error() + `"}`
+		}
+	}
+
+	return fmt.Sprint(len(listMatch)) + " items updated"
+}
+
 // TODO updateOne one update document data
 func (db *DB) updateOne(query string) (result string) {
 
@@ -54,11 +116,6 @@ func (db *DB) updateOne(query string) (result string) {
 	}
 
 	return `{"update:": "done"}`
-}
-
-// TODO updateMany update document data
-func (db *DB) updateMany(query string) (result string) {
-	return "not implemented yet"
 }
 
 // deleteMany
@@ -112,9 +169,6 @@ func (db *DB) updateById(query string) (result string) {
 	stmt := `UPDATE ` + coll + ` SET record  = '` + newData + `' WHERE rowid = ` + id + ";"
 	_, err := db.db.Exec(stmt)
 
-	fmt.Println(err)
-	println(newData)
-
 	return "update done"
 }
 
@@ -138,7 +192,6 @@ func (db *DB) findMany(query string) (res string) {
 	if limit == 0 {
 		limit = 100 // what is default setting ?
 	}
-	fmt.Println(limit, skip)
 
 	stmt := `select record from ` + coll
 
@@ -246,7 +299,6 @@ func (db *DB) deleteOne(query string) string {
 
 	rows, err := db.db.Query(stmt)
 	if err != nil {
-		fmt.Println(err.Error())
 		return err.Error()
 	}
 
@@ -272,17 +324,13 @@ func (db *DB) deleteOne(query string) string {
 	// should close here
 	rows.Close()
 
-	res, err := db.db.Exec(`delete from ` + coll + ` where rowid = ` + rowid) // fast
+	_, err = db.db.Exec(`delete from ` + coll + ` where rowid = ` + rowid) // fast
 	if err != nil {
 		fmt.Println(err.Error())
 		return err.Error()
 	}
-
-	println("res: ", res)
-
 	return `{"result":"` + rowid + ` removed"}`
 
-	//return `{"result":"no match to removed"}`
 }
 
 // Finds first obj match creteria.
@@ -338,7 +386,6 @@ func (db *DB) deleteById(query string) string {
 	}
 
 	sql := `delete from ` + coll + ` where rowid = ` + id
-	fmt.Println(sql)
 
 	_, err := db.db.Exec(sql)
 	if err != nil {
