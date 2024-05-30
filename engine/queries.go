@@ -6,9 +6,58 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-type matchData struct {
+// data that matched
+type matched struct {
 	id   string
 	data string
+}
+
+// deletes Many items
+func (db *DB) deleteMany(query string) string {
+
+	mtch := gjson.Get(query, "match").String()
+
+	coll := gjson.Get(query, "collection").String()
+
+	stmt := `select rowid, record from ` + coll
+
+	rows, err := db.db.Query(stmt)
+	if err != nil {
+		return err.Error()
+	}
+
+	record := ""
+	id := "1"
+
+	listMatch := []string{}
+
+	for rows.Next() {
+		err := rows.Scan(&id, &record)
+		if err != nil {
+			return err.Error() // TODO standaring errors
+		}
+
+		ok, err := match(mtch, record)
+		if err != nil {
+			return err.Error()
+		}
+		if ok {
+			println("id: ", id)
+			listMatch = append(listMatch, id)
+		}
+	}
+	rows.Close()
+
+	for _, id := range listMatch {
+		// TODO use where in (1,2,3) for speedup query
+		stmt := `DELETE FROM ` + coll + ` WHERE rowid = ` + id + `;`
+		_, err = db.db.Exec(stmt)
+		if err != nil {
+			fmt.Println("delete erroo", err.Error())
+			return `{"error": "` + err.Error() + `"}`
+		}
+	}
+	return "ok"
 }
 
 // TODO updateMany update document data
@@ -32,7 +81,7 @@ func (db *DB) updateMany(query string) (result string) {
 	record := ""
 	id := "1"
 
-	listMatch := []matchData{}
+	listMatch := []matched{}
 
 	for rows.Next() {
 		err := rows.Scan(&id, &record)
@@ -46,7 +95,7 @@ func (db *DB) updateMany(query string) (result string) {
 		}
 		if ok {
 			println("id: ", id)
-			listMatch = append(listMatch, matchData{id: id, data: record})
+			listMatch = append(listMatch, matched{id: id, data: record})
 		}
 	}
 	rows.Close()
@@ -116,41 +165,6 @@ func (db *DB) updateOne(query string) (result string) {
 	}
 
 	return `{"update:": "done"}`
-}
-
-// deleteMany
-func (db *DB) deleteMany(query string) string {
-
-	coll := gjson.Get(query, "collection").String()
-	mtch := gjson.Get(query, "match").String()
-
-	stmt := `select record from ` + coll
-
-	rows, err := db.db.Query(stmt)
-	if err != nil {
-		return err.Error()
-	}
-	defer rows.Close()
-
-	records := "["
-	record := ""
-
-	for rows.Next() {
-		record = ""
-		err := rows.Scan(&record)
-		if err != nil {
-			return err.Error()
-		}
-		b, err := match(mtch, record)
-		if err != nil {
-			return err.Error()
-		}
-		if b {
-			records += record + `,`
-		}
-	}
-	return "not implemented yet"
-
 }
 
 // Update update document data
