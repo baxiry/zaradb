@@ -7,5 +7,3 @@ Zara is currently under intensive development.
 I will start documenting after the stabilization stage has arrived.
 
 More description later.
-
-## license: BSD-3
