@@ -168,6 +168,9 @@ func (db *DB) updateById(query string) (result string) {
 	_ = `update test set record = '{"_id":12,"name":"joha","age":13}' where rowid = 39;`
 	stmt := `UPDATE ` + coll + ` SET record  = '` + newData + `' WHERE rowid = ` + id + ";"
 	_, err := db.db.Exec(stmt)
+	if err != nil {
+		return err.Error()
+	}
 
 	return "update done"
 }
