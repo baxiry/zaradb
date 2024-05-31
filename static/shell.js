@@ -1,13 +1,16 @@
+/*
+// to fix sub field like "contact.phon",
+for (let [key, value] of Object.entries(yourobject)) {
+    console.log(key, value);
+}
+*/
 
-//
+
 // This configuration is suitable for development situation
-//const configs = {debug: false, reconnectInterval: 200, reconnectDecay:1.1, maxReconnectInterval:10000}
-
-
-
+const configs = {debug: false, reconnectInterval: 200, reconnectDecay:1, maxReconnectInterval:1000}
 
 // WebSocket
-var ws = new ReconnectingWebSocket('ws://localhost:1111/ws');
+var ws = new ReconnectingWebSocket('ws://localhost:1111/ws', configs);
 
 function connection() {
 
