@@ -5,8 +5,8 @@ import (
 	"os"
 )
 
-const Host = "1111"
-const Port = "localhost"
+const Host = "localhost"
+const Port = "1111"
 
 type config struct {
 	// TODO

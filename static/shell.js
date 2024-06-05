@@ -7,10 +7,10 @@ for (let [key, value] of Object.entries(yourobject)) {
 
 
 // This configuration is suitable for development situation
-const configs = {debug: false, reconnectInterval: 200, reconnectDecay:1, maxReconnectInterval:1000}
+//const configs = {debug: false, reconnectInterval: 200, reconnectDecay:1, maxReconnectInterval:1000}
 
 // WebSocket
-var ws = new ReconnectingWebSocket('ws://localhost:1111/ws', configs);
+var ws = new ReconnectingWebSocket('ws://localhost:1111/ws');
 
 function connection() {
 

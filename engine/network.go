@@ -24,7 +24,7 @@ func Resever(w http.ResponseWriter, r *http.Request) {
 
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Print("when upgrade ", err)
+		log.Print("ERROR! upgrade connection ", err)
 		return
 	}
 	defer c.Close()
@@ -39,7 +39,7 @@ func Resever(w http.ResponseWriter, r *http.Request) {
 		}
 		note.messageType, message, err = c.ReadMessage()
 		if err != nil {
-			log.Println("ReadMessage ", err)
+			log.Println("ERROR! ReadMessage: ", err)
 			note.err = true
 			Channel <- note
 			return
@@ -60,7 +60,7 @@ func Sender(w http.ResponseWriter, r *http.Request) {
 
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Print("upgrade:", err)
+		log.Print("ERROR! upgrade connection: ", err)
 
 		return
 	}
@@ -77,7 +77,7 @@ func Sender(w http.ResponseWriter, r *http.Request) {
 		// send result to client
 		err = c.WriteMessage(note.messageType, []byte(note.message))
 		if err != nil {
-			log.Println("ERROR! :Panic WriteMessage ", err)
+			log.Println("ERROR! WriteMessage: ", err)
 
 			note.err = true
 			Channel <- note
@@ -101,7 +101,8 @@ func Ws(w http.ResponseWriter, r *http.Request) {
 	for {
 		messageType, message, err := c.ReadMessage()
 		if err != nil {
-			log.Println("ERROR! :Panic ReadMessage ", err)
+			log.Println("ERROR! ReadMessage: ", err)
+			print("ok")
 
 			break
 		}
@@ -112,7 +113,7 @@ func Ws(w http.ResponseWriter, r *http.Request) {
 		// send result to client
 		err = c.WriteMessage(messageType, []byte(result))
 		if err != nil {
-			log.Println("ERROR! :Panic WriteMessage ", err)
+			log.Println("ERROR! WriteMessage: ", err)
 			break
 		}
 	}

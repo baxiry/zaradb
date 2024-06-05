@@ -48,16 +48,17 @@ func (db *DB) deleteMany(query string) string {
 	}
 	rows.Close()
 
-	for _, id := range listMatch {
+	llist := len(listMatch)
+	for i := 0; i < llist; i++ {
 		// TODO use where in (1,2,3) for speedup query
-		stmt := `DELETE FROM ` + coll + ` WHERE rowid = ` + id + `;`
+		stmt := `DELETE FROM ` + coll + ` WHERE rowid = ` + listMatch[i] + `;`
 		_, err = db.db.Exec(stmt)
 		if err != nil {
-			fmt.Println("delete erroo", err.Error())
+			fmt.Println("delete erro", err.Error())
 			return `{"error": "` + err.Error() + `"}`
 		}
 	}
-	return "ok"
+	return fmt.Sprint(llist) + "items has removed"
 }
 
 // TODO updateMany update document data
@@ -346,7 +347,7 @@ func (db *DB) deleteOne(query string) string {
 		fmt.Println(err.Error())
 		return err.Error()
 	}
-	return `{"result":"` + rowid + ` removed"}`
+	return `{"result":"_id:` + rowid + ` removed"}`
 
 }
 

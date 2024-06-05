@@ -18,7 +18,7 @@ func main() {
 	db.CreateCollection("test")
 	defer db.Close()
 
-	fmt.Printf("zaradb run on %s:%s\n", Host, Port)
+	fmt.Printf("interacte with zaradb from %s:%s\n", Host, Port)
 
 	http.Handle("/static/", http.FileServer(http.FS(content)))
 
