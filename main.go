@@ -15,7 +15,7 @@ func main() {
 	// TODO close programe greatfully.
 
 	db := engine.NewDB("test.db")
-	db.CreateCollection("test")
+	db.CreateCollection("users")
 	defer db.Close()
 
 	fmt.Printf("interacte with zaradb from %s:%s\n", Host, Port)
