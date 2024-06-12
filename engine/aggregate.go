@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 
@@ -32,7 +31,12 @@ func reKey(oldkey, newkey, json string) string {
 
 	res := "{"
 	for _, v := range list {
+		if string(v[len(v)-1]) == "}" {
+			continue
+		}
+
 		slice = strings.Split(v, siparator)
+
 		res += `"` + slice[0] + `":"` + slice[1] + `",`
 	}
 
@@ -42,12 +46,17 @@ func reKey(oldkey, newkey, json string) string {
 // fields remove or rename fields
 func fields(data []string, fields gjson.Result) []string {
 
-	fmt.Println("fields: ")
+	newKey := ""
+	oldKey := ""
+
 	toRemove := make([]string, 0)
 	for k, v := range fields.Map() {
 		fmt.Println(k, v)
 		if v.String() == "0" {
 			toRemove = append(toRemove, k)
+		} else {
+			newKey = v.String()
+			oldKey = k
 		}
 	}
 	println("toRemove")
@@ -56,18 +65,9 @@ func fields(data []string, fields gjson.Result) []string {
 			data[i], _ = sjson.Delete(data[i], k)
 		}
 	}
-
-	return data
-}
-
-// TODO this func for studing
-// ReplaceKeys replaces json keys in data using the values in keymap
-func ReplaceKeys(data []byte, keymap map[string]string) []byte {
-	for kafkaKey, esKey := range keymap {
-		old := fmt.Sprintf("\"%s\":", kafkaKey)
-		newd := fmt.Sprintf("\"%s\":", esKey)
-		data = bytes.Replace(data, []byte(old), []byte(newd), 1)
+	for i := 0; i < len(data); i++ {
+		data[i] = reKey(oldKey, newKey, data[i])
 	}
-	// note emplemeted yet
+
 	return data
 }

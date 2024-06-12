@@ -4,6 +4,7 @@ package main
 import (
 	"embed"
 	"fmt"
+	"log"
 	"net/http"
 	"zaradb/engine"
 )
@@ -32,7 +33,7 @@ func main() {
 	http.HandleFunc("/query", engine.Resever)
 	http.HandleFunc("/result", engine.Sender)
 
-	http.ListenAndServe(":1111", nil)
+	log.Println(http.ListenAndServe(":1111", nil))
 }
 
 // redirect to shell page temporary

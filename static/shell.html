@@ -89,7 +89,11 @@
 
 
              <p>exclode fields</p>
-            {action:"findMany", collection:"test", fields:{_id:0, age:0}}
+            {action:"findMany", collection:"test", fields:{_id:0, name:0}}
+
+
+             <p>rename fields</p>
+              {action:"findMany", collection:"test", fields:{_id:0, name:"full_name"}}
 
              <br/>
              <br/>
