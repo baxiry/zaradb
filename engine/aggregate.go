@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/tidwall/gjson"
@@ -16,17 +15,19 @@ const siparator = "_:_"
 func reKey(oldkey, newkey, json string) string {
 
 	list := []string{}
+
 	gjson.Parse(json).ForEach(func(key, value gjson.Result) bool {
 
 		if key.String() == oldkey {
 			list = append(list, newkey+siparator+value.String())
-		} else {
 
+		} else {
 			list = append(list, key.String()+siparator+value.String())
 		}
 
 		return true
 	})
+
 	slice := []string{}
 
 	res := "{"
@@ -37,6 +38,10 @@ func reKey(oldkey, newkey, json string) string {
 
 		slice = strings.Split(v, siparator)
 
+		if gjson.Parse(slice[1]).Type == 2 {
+			res += `"` + slice[0] + `":` + slice[1] + `,`
+			continue
+		}
 		res += `"` + slice[0] + `":"` + slice[1] + `",`
 	}
 
@@ -46,27 +51,32 @@ func reKey(oldkey, newkey, json string) string {
 // fields remove or rename fields
 func fields(data []string, fields gjson.Result) []string {
 
-	newKey := ""
-	oldKey := ""
+	newKey := []string{}
+	oldKey := []string{}
 
 	toRemove := make([]string, 0)
+
 	for k, v := range fields.Map() {
-		fmt.Println(k, v)
 		if v.String() == "0" {
 			toRemove = append(toRemove, k)
 		} else {
-			newKey = v.String()
-			oldKey = k
+			newKey = append(newKey, v.String())
+			oldKey = append(oldKey, k)
 		}
 	}
-	println("toRemove")
+
+	//remove fields
 	for i := 0; i < len(data); i++ {
 		for _, k := range toRemove {
 			data[i], _ = sjson.Delete(data[i], k)
 		}
 	}
+
+	//reName fields
 	for i := 0; i < len(data); i++ {
-		data[i] = reKey(oldKey, newKey, data[i])
+		for j := 0; j < len(newKey); j++ {
+			data[i] = reKey(oldKey[j], newKey[j], data[i])
+		}
 	}
 
 	return data
