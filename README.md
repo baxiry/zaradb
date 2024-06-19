@@ -9,8 +9,6 @@ ZaraDB is a lightweight, simple, and fast document database currently under inte
 ## Note
 Zara receives queries in JSON format. But you can use JavaScript objects through the web interface provided by Zara via: ` localhost:1111 `
 
-## Examples
->>>>>>> c42fcaf (update README.md)
 
 **Insert**
 
