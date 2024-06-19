@@ -6,78 +6,74 @@ ZaraDB is a lightweight, simple, and fast document database currently under inte
 
 **Features:**
 
-* **Effortless Data Storage:** Store and manage flexible data structures similar to JSON objects (documents) within collections.
-* **Efficient Data Manipulation:**
-    * `insert`: Insert single or multiple documents into a collection.
-    * `find`: Retrieve documents based on various criteria, including:
-        * Equality (`$eq`) and inequality (`$nq`) comparisons.
-        * Comparisons for numeric data (`$lt`, `$gt`, `$ge`, `$le`).
-        * Matching or excluding specific values (`$in`, `$nin`).
-        * Combining conditions with logical operators (`$or`, `$and`).
-    * `update`: Modify documents by ID or matching criteria.
-    * `delete`: Remove documents from a collection, either the first matching one or all that meet the criteria. Options include skipping and limiting deletions.
-    * `fields`: Specify which document fields to include or exclude during retrieval.
-    * `rename`: Rename fields during retrieval for clarity.
-* **Intuitive API (Examples):**
 
-  ```js
-  // Insert a document
-  {
-      action: "insert",
-      collection: "users",
-      data: {
-          name: "adam",
-          age: 12
-      }
-  }
+**examples:**
 
-  // Insert multiple documents
-  {
-      action: "insertMany",
-      collection: "test",
-      data: [
-          { name: "jalal", age: 23 },
-          { name: "akram", age: 30 },
-          { name: "hasna", age: 35 }
-      ]
-  }
+             <p>insert one data object </p>
+             {action:"insert", collection:"users", data:{name:"adam", age:12}}
 
-  // Find one document
-  {
-      action: "findOne",
-      collection: "users",
-      match: {
-          name: "adam"
-      }
-  }
+             <p>insertMany inserts many data objects at one time 'bulk'</p>
+             {action:"insertMany", collection:"test", data:[{name:"jalal", age:23},{name:"akram", age:30},{name:"hasna", age:35}]}
 
-  // Find documents with conditions
-  {
-      action: "findMany",
-      collection: "users",
-      match: {
-          age: { $gt: 12 } // Find users older than 12
-      }
-  }
+             <p>  select one object</p>
+             {action:"findOne", collection:"users", match:{name:"adam"}}
 
-  // Additional examples provided in the codebase.
-  ```
+             <p>  select objects match conditions</p>
+             {action:"findMany", collection:"users", match:{name:"adam"}}
 
-**Getting Started (Once Available):**
+             <p>select objects that match the conditions</p>
+             {action:"findMany", collection:"users", match:{name:"adam", age:{$gt:12}}}
+             <p>match numeric data by $eq $nq $lt $gt $ge $le</p>
+             <p>match text data by $eq $nq $lt $gt $ge $le </p>
 
-Detailed instructions on installation, usage, and contributing will be provided upon ZaraDB's official release.
+             <p>select objects that match any value </p>
+             {action:"findMany", collection:"users", match:{ age:{$in:[12, 23, 34]}}}
+             {action:"findMany", collection:"users", match:{ name:{$in:["akram", "zaid"]}}}
 
-**License:**
+             <p>select objects that do not match any value</p>
+             {action:"findMany", collection:"users", match:{ age:{$in:[12, 23, 34]}}}
+             {action:"findMany", collection:"users", match:{ name:{$nin:["akram", "zaid"]}}}
 
-[Enter the license used by ZaraDB here (e.g., MIT, Apache 2.0)]. You can find the license information in the project's codebase or from the developers.
+             <p>select objects that match any conditions</p>
+             {action:"findMany", collection:"users", match:{ $or:[name:{$eq:"akram", age:$gt:13}]}}
 
-**Contributing (Once Available):**
+             <p>select objects that match all conditions</p>
+             {action:"findMany", collection:"users", match:{ $and:[name:{$eq:"akram", age:$gt:13}]}}
 
-[If applicable, outline the contribution process here. Consider mentioning a code of conduct or contribution guidelines.]
 
-**Community:**
+             <p>updateById </p>
+             {action:"updateById", collection:"test", _id:3, data:{name:"hosam", age:10}}
 
-[Provide links to communication channels (e.g., forums, chat) if available to foster a growing community around ZaraDB.]
+             <p>updateOne </p>
+             {action:"updateById", collection:"test", match:{_id{$gt:33}}, data:{name:"hosam", age:10}}
 
+             <p>updateMany </p>
+             {action:"updateById", collection:"test",  match:{_id{$gt:33}}, data:{name:"hosam", age:10}}
+
+
+
+             <p>delete first objects that match the conditions</p>
+             {action:"deleteOne", collection:"users", match:{name:"adam", age:{$gt:12}}}
+
+             <p>delete all objects that match the conditions </p>
+             {action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}}
+
+             <p>skip or ignor some matching objects</p>
+             {action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}, skip: 3}
+
+             <p>Limited to a number of matching objects</p>
+             {action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}, skip: 3, limit:3}
+
+             <p>deleteMany</p>
+             {action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}, skip: 3, limit:3}
+
+
+
+             <p>exclode fields</p>
+            {action:"findMany", collection:"test", fields:{_id:0, name:0}}
+
+
+             <p>rename fields</p>
+              {action:"findMany", collection:"test", fields:{_id:0, name:"full_name"}}
 
 
