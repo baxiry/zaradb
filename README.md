@@ -8,9 +8,6 @@ ZaraDB is a lightweight, simple, and fast document database currently under inte
 
 
 **examples:**
-Here's the converted markdown from the provided HTML:
-
-## Examples
 
 **Insert**
 
@@ -26,7 +23,7 @@ Here's the converted markdown from the provided HTML:
 {action:"insertMany", collection:"test", data:[{name:"jalal", age:23},{name:"akram", age:30},{name:"hasna", age:35}]}
 ```
 
-**Select**
+**Selecte**
 
 * **Select one object:**
 
@@ -40,7 +37,7 @@ Here's the converted markdown from the provided HTML:
 {action:"findMany", collection:"users", match:{name:"adam"}}
 ```
 
-* **Select objects matching specific conditions (numeric data):**
+* **Select objects matching specific conditions:**
 
 ```js
 {action:"findMany", collection:"users", match:{name:"adam", age:{$gt:12}}}
@@ -48,27 +45,35 @@ Here's the converted markdown from the provided HTML:
 Supported comparison operators: $eq (equal), $nq (not equal), $lt (less than), $gt (greater than), $ge (greater than or equal to), $le (less than or equal to)
 ```
 
-* **Select objects matching any value:**
+* **Select objects matching any value in list:**
 
 ```js
+// number
 {action:"findMany", collection:"users", match:{ age:{$in:[12, 23, 34]}}}
+```
+```js
+// setring
 {action:"findMany", collection:"users", match:{ name:{$in:["akram", "zaid"]}}}
 ```
 
-* **Select objects that do not match any value:**
+* **Select objects that do not match any value in list:**
 
 ```js
+// number list
 {action:"findMany", collection:"users", match:{ age:{$nin:[12, 23, 34]}}}
+```
+```js
+// string list
 {action:"findMany", collection:"users", match:{ name:{$nin:["akram", "zaid"]}}}
 ```
 
-* **Select objects matching any conditions (OR operator):**
+* **Select objects matching any conditions  this $or operator:**
 
 ```js
 {action:"findMany", collection:"users", match:{ $or:[name:{$eq:"akram", age:$gt:13}]}}
 ```
 
-* **Select objects matching all conditions (AND operator):**
+* **Select objects matching all conditions by $and operator:**
 
 ```js
 {action:"findMany", collection:"users", match:{ $and:[name:{$eq:"akram", age:$gt:13}]}}
@@ -102,7 +107,7 @@ Supported comparison operators: $eq (equal), $nq (not equal), $lt (less than), $
 {action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}}
 ```
 
-* **Skip or ignore some matching objects:**
+* **Skip or ignore some first N matching objects:**
 
 ```js
 {action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}, skip: 3}
