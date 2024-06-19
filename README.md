@@ -8,72 +8,121 @@ ZaraDB is a lightweight, simple, and fast document database currently under inte
 
 
 **examples:**
+Here's the converted markdown from the provided HTML:
 
-             <p>insert one data object </p>
-             {action:"insert", collection:"users", data:{name:"adam", age:12}}
+## Examples
 
-             <p>insertMany inserts many data objects at one time 'bulk'</p>
-             {action:"insertMany", collection:"test", data:[{name:"jalal", age:23},{name:"akram", age:30},{name:"hasna", age:35}]}
+**Insert**
 
-             <p>  select one object</p>
-             {action:"findOne", collection:"users", match:{name:"adam"}}
+* **Insert one data object:**
 
-             <p>  select objects match conditions</p>
-             {action:"findMany", collection:"users", match:{name:"adam"}}
+```js
+{action:"insert", collection:"users", data:{name:"adam", age:12}}
+```
 
-             <p>select objects that match the conditions</p>
-             {action:"findMany", collection:"users", match:{name:"adam", age:{$gt:12}}}
-             <p>match numeric data by $eq $nq $lt $gt $ge $le</p>
-             <p>match text data by $eq $nq $lt $gt $ge $le </p>
+* **Insert many data objects (bulk):**
 
-             <p>select objects that match any value </p>
-             {action:"findMany", collection:"users", match:{ age:{$in:[12, 23, 34]}}}
-             {action:"findMany", collection:"users", match:{ name:{$in:["akram", "zaid"]}}}
+```js
+{action:"insertMany", collection:"test", data:[{name:"jalal", age:23},{name:"akram", age:30},{name:"hasna", age:35}]}
+```
 
-             <p>select objects that do not match any value</p>
-             {action:"findMany", collection:"users", match:{ age:{$in:[12, 23, 34]}}}
-             {action:"findMany", collection:"users", match:{ name:{$nin:["akram", "zaid"]}}}
+**Select**
 
-             <p>select objects that match any conditions</p>
-             {action:"findMany", collection:"users", match:{ $or:[name:{$eq:"akram", age:$gt:13}]}}
+* **Select one object:**
 
-             <p>select objects that match all conditions</p>
-             {action:"findMany", collection:"users", match:{ $and:[name:{$eq:"akram", age:$gt:13}]}}
+```js
+{action:"findOne", collection:"users", match:{name:"adam"}}
+```
 
+* **Select objects matching conditions:**
 
-             <p>updateById </p>
-             {action:"updateById", collection:"test", _id:3, data:{name:"hosam", age:10}}
+```js
+{action:"findMany", collection:"users", match:{name:"adam"}}
+```
 
-             <p>updateOne </p>
-             {action:"updateById", collection:"test", match:{_id{$gt:33}}, data:{name:"hosam", age:10}}
+* **Select objects matching specific conditions (numeric data):**
 
-             <p>updateMany </p>
-             {action:"updateById", collection:"test",  match:{_id{$gt:33}}, data:{name:"hosam", age:10}}
+```js
+{action:"findMany", collection:"users", match:{name:"adam", age:{$gt:12}}}
 
+Supported comparison operators: $eq (equal), $nq (not equal), $lt (less than), $gt (greater than), $ge (greater than or equal to), $le (less than or equal to)
+```
 
+* **Select objects matching any value:**
 
-             <p>delete first objects that match the conditions</p>
-             {action:"deleteOne", collection:"users", match:{name:"adam", age:{$gt:12}}}
+```js
+{action:"findMany", collection:"users", match:{ age:{$in:[12, 23, 34]}}}
+{action:"findMany", collection:"users", match:{ name:{$in:["akram", "zaid"]}}}
+```
 
-             <p>delete all objects that match the conditions </p>
-             {action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}}
+* **Select objects that do not match any value:**
 
-             <p>skip or ignor some matching objects</p>
-             {action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}, skip: 3}
+```js
+{action:"findMany", collection:"users", match:{ age:{$nin:[12, 23, 34]}}}
+{action:"findMany", collection:"users", match:{ name:{$nin:["akram", "zaid"]}}}
+```
 
-             <p>Limited to a number of matching objects</p>
-             {action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}, skip: 3, limit:3}
+* **Select objects matching any conditions (OR operator):**
 
-             <p>deleteMany</p>
-             {action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}, skip: 3, limit:3}
+```js
+{action:"findMany", collection:"users", match:{ $or:[name:{$eq:"akram", age:$gt:13}]}}
+```
 
+* **Select objects matching all conditions (AND operator):**
 
+```js
+{action:"findMany", collection:"users", match:{ $and:[name:{$eq:"akram", age:$gt:13}]}}
+```
 
-             <p>exclode fields</p>
-            {action:"findMany", collection:"test", fields:{_id:0, name:0}}
+**Update**
 
+* **Update by ID:**
 
-             <p>rename fields</p>
-              {action:"findMany", collection:"test", fields:{_id:0, name:"full_name"}}
+```js
+{action:"updateById", collection:"test", _id:3, data:{name:"hosam", age:10}}
+```
 
+* **Update one or more documents matching criteria:**
+
+```js
+{action:"updateOne", collection:"test", match:{_id{$gt:33}}, data:{name:"hosam", age:10}}
+```
+
+**Delete**
+
+* **Delete the first document matching conditions:**
+
+```js
+{action:"deleteOne", collection:"users", match:{name:"adam", age:{$gt:12}}}
+```
+
+* **Delete all objects matching conditions:**
+
+```js
+{action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}}
+```
+
+* **Skip or ignore some matching objects:**
+
+```js
+{action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}, skip: 3}
+```
+
+* **Delete a limited number of matching objects:**
+
+```js
+{action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}, skip: 3, limit:3}
+```
+
+* **Exclude fields during retrieval:**
+
+```js
+{action:"findMany", collection:"test", fields:{_id:0, name:0}}
+```
+
+* **Rename fields during retrieval:**
+
+```js
+{action:"findMany", collection:"test", fields:{_id:0, name:"full_name"}}
+```
 
