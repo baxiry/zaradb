@@ -20,43 +20,43 @@ ZaraDB is a lightweight, simple, and fast document database currently under inte
     * `rename`: Rename fields during retrieval for clarity.
 * **Intuitive API (Examples):**
 
-  ```json
+  ```js
   // Insert a document
   {
-      "action": "insert",
-      "collection": "users",
-      "data": {
-          "name": "adam",
-          "age": 12
+      action: "insert",
+      collection: "users",
+      data: {
+          name: "adam",
+          age: 12
       }
   }
 
   // Insert multiple documents
   {
-      "action": "insertMany",
-      "collection": "test",
-      "data": [
-          { "name": "jalal", "age": 23 },
-          { "name": "akram", "age": 30 },
-          { "name": "hasna", "age": 35 }
+      action: "insertMany",
+      collection: "test",
+      data: [
+          { name: "jalal", age: 23 },
+          { name: "akram", age: 30 },
+          { name: "hasna", age: 35 }
       ]
   }
 
   // Find one document
   {
-      "action": "findOne",
-      "collection": "users",
-      "match": {
-          "name": "adam"
+      action: "findOne",
+      collection: "users",
+      match: {
+          name: "adam"
       }
   }
 
   // Find documents with conditions
   {
-      "action": "findMany",
-      "collection": "users",
-      "match": {
-          "age": { "$gt": 12 } // Find users older than 12
+      action: "findMany",
+      collection: "users",
+      match: {
+          age: { $gt: 12 } // Find users older than 12
       }
   }
 
