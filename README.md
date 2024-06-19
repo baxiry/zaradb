@@ -41,9 +41,10 @@ ZaraDB is a lightweight, simple, and fast document database currently under inte
 
 ```js
 {action:"findMany", collection:"users", match:{name:"adam", age:{$gt:12}}}
+```
 
 Supported comparison operators: $eq (equal), $nq (not equal), $lt (less than), $gt (greater than), $ge (greater than or equal to), $le (less than or equal to)
-```
+
 
 * **Select objects matching any value in list:**
 
