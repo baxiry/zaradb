@@ -22,7 +22,7 @@ Zara receives queries in JSON format. But you can use JavaScript objects through
 * **Insert many data objects (bulk):**
 
 ```js
-{action:"insertMany", collection:"test", data:[{name:"jalal", age:23},{name:"akram", age:30},{name:"hasna", age:35}]}
+{action:"insertMany", collection:"users", data:[{name:"jalal", age:23},{name:"akram", age:30},{name:"hasna", age:35}]}
 ```
 
 **Selecte**
@@ -70,7 +70,7 @@ Supported comparison operators: $eq (equal), $nq (not equal), $lt (less than), $
 {action:"findMany", collection:"users", match:{ name:{$nin:["akram", "zaid"]}}}
 ```
 
-* **Select objects matching any conditions  this $or operator:**
+* **Select objects matching any conditions by $or operator:**
 
 ```js
 {action:"findMany", collection:"users", match:{ $or:[name:{$eq:"akram", age:$gt:13}]}}
@@ -87,13 +87,13 @@ Supported comparison operators: $eq (equal), $nq (not equal), $lt (less than), $
 * **Update by ID:**
 
 ```js
-{action:"updateById", collection:"test", _id:3, data:{name:"hosam", age:10}}
+{action:"updateById", collection:"users", _id:3, data:{name:"hosam", age:10}}
 ```
 
 * **Update one or more documents matching criteria:**
 
 ```js
-{action:"updateOne", collection:"test", match:{_id{$gt:33}}, data:{name:"hosam", age:10}}
+{action:"updateOne", collection:"users", match:{_id{$gt:33}}, data:{name:"hosam", age:10}}
 ```
 
 **Delete**
@@ -125,12 +125,12 @@ Supported comparison operators: $eq (equal), $nq (not equal), $lt (less than), $
 * **Exclude fields during retrieval:**
 
 ```js
-{action:"findMany", collection:"test", fields:{_id:0, name:0}}
+{action:"findMany", collection:"users", fields:{_id:0, name:0}}
 ```
 
 * **Rename fields during retrieval:**
 
 ```js
-{action:"findMany", collection:"test", fields:{_id:0, name:"full_name"}}
+{action:"findMany", collection:"users", fields:{_id:0, name:"full_name"}}
 ```
 
