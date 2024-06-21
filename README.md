@@ -1,6 +1,5 @@
-**Title:** ZaraDB: A Lightweight and Fast Document Database
+**ZaraDB:**  A Lightweight and Fast Document Database
 
-**Description:**
 ZaraDB is a lightweight, fast, open-licensed document database with no hidden restrictions.
 Its goal is to be a lightweight alternative to common documentary databases.
 It can also provide superior performance compared to Mongo in many common use cases.
@@ -10,9 +9,18 @@ Horizontal scale and achieving ACID are two things that do not go together, so Z
 It is a missing feature in documentary databases.
 
 
+***Installation***
+download zara pre-compiled from [here](https://github.com/baxiry/zaradb/releases), extract it, and run it as any program.
+
+Or compile it from soure:
+
+```bash
+go get github.com/baxiry/zaradb && cd zaradb && go build .
+```
 
 
-***Document***:
+
+***API Documentation***:
 
 ## Note
 Zara receives queries in JSON format. But you can use JavaScript objects through the web interface provided by Zara via: ` localhost:1111 `
@@ -24,7 +32,7 @@ Zara receives queries in JSON format. But you can use JavaScript objects through
 
 
 ```js
-{action:"insert", collection:"users", data:{name:"adam", age:12}}
+{action:"insert", collection:"users", data:{name:"adam", age:23}}
 ```
 
 * **Insert many data objects (bulk):**
@@ -59,11 +67,12 @@ Supported comparison operators: $eq (equal), $nq (not equal), $lt (less than), $
 * **Select objects matching any value in list:**
 
 ```js
-// number
+// number list
 {action:"findMany", collection:"users", match:{ age:{$in:[12, 23, 34]}}}
 ```
+
 ```js
-// setring
+// setring list
 {action:"findMany", collection:"users", match:{ name:{$in:["akram", "zaid"]}}}
 ```
 
@@ -73,6 +82,7 @@ Supported comparison operators: $eq (equal), $nq (not equal), $lt (less than), $
 // number list
 {action:"findMany", collection:"users", match:{ age:{$nin:[12, 23, 34]}}}
 ```
+
 ```js
 // string list
 {action:"findMany", collection:"users", match:{ name:{$nin:["akram", "zaid"]}}}
