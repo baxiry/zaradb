@@ -1,10 +1,18 @@
 **Title:** ZaraDB: A Lightweight and Fast Document Database
 
 **Description:**
+ZaraDB is a lightweight, fast, open-licensed document database with no hidden restrictions.
+Its goal is to be a lightweight alternative to common documentary databases.
+It can also provide superior performance compared to Mongo in many common use cases.
 
-ZaraDB is a lightweight, simple, and fast document database currently under intensive development. It aims to be a user-friendly alternative to MongoDB, offering a streamlined API for interacting with your data. While official documentation is forthcoming upon stabilization, this README provides a foundational overview.
+***Limitations***:
+Horizontal scale and achieving ACID are two things that do not go together, so Zara chooses to achieve ACID.
+It is a missing feature in documentary databases.
 
-**Features:**
+
+
+
+***Document***:
 
 ## Note
 Zara receives queries in JSON format. But you can use JavaScript objects through the web interface provided by Zara via: ` localhost:1111 `
