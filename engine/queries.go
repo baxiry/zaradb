@@ -15,7 +15,7 @@ type matched struct {
 // deletes Many items
 func (db *DB) deleteMany(query string) string {
 
-	mtch := gjson.Get(query, "match").String()
+	mtch := gjson.Get(query, "match")
 
 	coll := gjson.Get(query, "collection").String()
 
@@ -64,7 +64,7 @@ func (db *DB) deleteMany(query string) string {
 // TODO updateMany update document data
 func (db *DB) updateMany(query string) (result string) {
 
-	mtch := gjson.Get(query, "match").String()
+	mtch := gjson.Get(query, "match")
 
 	newObj := gjson.Get(query, "data").String()
 
@@ -121,7 +121,7 @@ func (db *DB) updateMany(query string) (result string) {
 // TODO updateOne one update document data
 func (db *DB) updateOne(query string) (result string) {
 
-	mtch := gjson.Get(query, "match").String()
+	mtch := gjson.Get(query, "match")
 
 	newObj := gjson.Get(query, "data").String()
 
@@ -199,10 +199,10 @@ func (db *DB) findMany(query string) (res string) {
 		return `{"error":"forgot collection name "}`
 	}
 
-	mtch := gjson.Get(query, "match").String()
+	mtch := gjson.Get(query, "match")
 
-	if mtch == "" {
-		mtch = "{}"
+	if mtch.String() == "" {
+
 	}
 
 	skip := gjson.Get(query, "skip").Int()
@@ -271,7 +271,7 @@ func (db *DB) findMany(query string) (res string) {
 func (db *DB) findOne(query string) (res string) {
 	coll := gjson.Get(query, "collection").String()
 
-	mtch := gjson.Get(query, "match").String()
+	mtch := gjson.Get(query, "match")
 	skip := gjson.Get(query, "skip").Int()
 
 	// TODO are skyp useful here ?
@@ -311,7 +311,7 @@ func (db *DB) findOne(query string) (res string) {
 func (db *DB) deleteOne(query string) string {
 
 	coll := gjson.Get(query, "collection").String()
-	mtch := gjson.Get(query, "match").String()
+	mtch := gjson.Get(query, "match")
 
 	stmt := `select rowid, record from ` + coll
 

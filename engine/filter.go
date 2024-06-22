@@ -10,12 +10,12 @@ import (
 // json:5, array:5, int:2, string:3
 
 // match verifies that data matches the conditions
-func match(filter, data string) (result bool, err error) {
+func match(filter gjson.Result, data string) (result bool, err error) {
 	// TODO should return syntax error if op unknown
 
 	result = true
 
-	gjson.Parse(filter).ForEach(func(qk, qv gjson.Result) bool {
+	filter.ForEach(func(qk, qv gjson.Result) bool {
 
 		dv := gjson.Get(data, qk.String())
 
@@ -136,7 +136,7 @@ func match(filter, data string) (result bool, err error) {
 					if qk.Str == "$and" {
 
 						for _, v := range qv.Array() {
-							res, _ := match(v.String(), data)
+							res, _ := match(v, data)
 							if !res {
 								result = false
 								return result
@@ -149,7 +149,7 @@ func match(filter, data string) (result bool, err error) {
 
 						for _, v := range qv.Array() {
 
-							res, _ := match(v.String(), data)
+							res, _ := match(v, data)
 							if res {
 								return result
 							}
@@ -164,7 +164,7 @@ func match(filter, data string) (result bool, err error) {
 				}
 			})
 
-			match(qv.String(), dv.String())
+			match(qv, dv.String())
 			return result
 		}
 

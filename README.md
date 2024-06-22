@@ -1,8 +1,8 @@
 
 
-**ZaraDB:**  A Lightweight and Fast Document Database
+**ZaraDB:**  A Lightweight fast document database
 
-ZaraDB is a lightweight, fast, open-licensed document database with no hidden restrictions.
+ZaraDB is a lightweight fast open-licensed document database with no hidden restrictions.
 Its goal is to be a lightweight alternative to common documentary databases.
 It can also provide superior performance compared to Mongo in many common use cases.
 
