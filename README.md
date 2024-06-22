@@ -1,6 +1,7 @@
 
 
-**ZaraDB:**  A Lightweight fast document database
+**ZaraDB:**
+A Lightweight fast document database
 
 ZaraDB is a lightweight fast open-licensed document database with no hidden restrictions.
 Its goal is to be a lightweight alternative to common documentary databases.
@@ -20,42 +21,40 @@ go get github.com/baxiry/zaradb && cd zaradb && go build .
 ```
 
 
-***API Documentation***:
+**API Documentation**:
 
 ## Note
 Zara receives queries in JSON format. But you can use JavaScript objects through the web interface provided by Zara via: ` localhost:1111 `
 
 
-**Insert**
 
-* **Insert one data object:**
+**Insert one data object:**
 
 
 ```js
 {action:"insert", collection:"users", data:{name:"adam", age:23}}
 ```
 
-* **Insert many data objects (bulk):**
+**Insert many data objects (bulk):**
 
 ```js
 {action:"insertMany", collection:"users", data:[{name:"jalal", age:23},{name:"akram", age:30},{name:"hasna", age:35}]}
 ```
 
-**Selecte**
 
-* **Select one object:**
+***Select one object:***
 
 ```js
 {action:"findOne", collection:"users", match:{name:"adam"}}
 ```
 
-* **Select objects matching conditions:**
+**Select objects matching conditions:**
 
 ```js
 {action:"findMany", collection:"users", match:{name:"adam"}}
 ```
 
-* **Select objects matching specific conditions:**
+**Select objects matching specific conditions:**
 
 ```js
 {action:"findMany", collection:"users", match:{name:"adam", age:{$gt:12}}}
@@ -64,7 +63,7 @@ Zara receives queries in JSON format. But you can use JavaScript objects through
 Supported comparison operators: $eq (equal), $nq (not equal), $lt (less than), $gt (greater than), $ge (greater than or equal to), $le (less than or equal to)
 
 
-* **Select objects matching any value in list:**
+**Select objects matching any value in list:**
 
 ```js
 // number list
@@ -76,7 +75,7 @@ Supported comparison operators: $eq (equal), $nq (not equal), $lt (less than), $
 {action:"findMany", collection:"users", match:{ name:{$in:["akram", "zaid"]}}}
 ```
 
-* **Select objects that do not match any value in list:**
+**Select objects that do not match any value in list:**
 
 ```js
 // number list
@@ -88,27 +87,26 @@ Supported comparison operators: $eq (equal), $nq (not equal), $lt (less than), $
 {action:"findMany", collection:"users", match:{ name:{$nin:["akram", "zaid"]}}}
 ```
 
-* **Select objects matching any conditions by $or operator:**
+**Select objects matching any conditions by $or operator:**
 
 ```js
 {action:"findMany", collection:"users", match:{ $or:[name:{$eq:"akram", age:$gt:13}]}}
 ```
 
-* **Select objects matching all conditions by $and operator:**
+**Select objects matching all conditions by $and operator:**
 
 ```js
 {action:"findMany", collection:"users", match:{ $and:[name:{$eq:"akram", age:$gt:13}]}}
 ```
 
-**Update**
 
-* **Update by ID:**
+**Update by ID:**
 
 ```js
 {action:"updateById", collection:"users", _id:3, data:{name:"hosam", age:10}}
 ```
 
-* **Update one or more documents matching criteria:**
+**Update one or more documents matching criteria:**
 
 ```js
 {action:"updateOne", collection:"users", match:{_id{$gt:33}}, data:{name:"hosam", age:10}}
@@ -116,39 +114,55 @@ Supported comparison operators: $eq (equal), $nq (not equal), $lt (less than), $
 
 **Delete**
 
-* **Delete the first document matching conditions:**
+**Delete the first document matching conditions:**
 
 ```js
 {action:"deleteOne", collection:"users", match:{name:"adam", age:{$gt:12}}}
 ```
 
-* **Delete all objects matching conditions:**
+**Delete all objects matching conditions:**
 
 ```js
 {action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}}
 ```
 
-* **Skip or ignore some first N matching objects:**
+**Skip or ignore some first N matching objects:**
 
 ```js
 {action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}, skip: 3}
 ```
 
-* **Delete a limited number of matching objects:**
+**Delete a limited number of matching objects:**
 
 ```js
 {action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}, skip: 3, limit:3}
 ```
 
-* **Exclude fields during retrieval:**
+**Exclude fields during retrieval:**
 
 ```js
 {action:"findMany", collection:"users", fields:{_id:0, name:0}}
 ```
 
-* **Rename fields during retrieval:**
+**Rename fields during retrieval:**
 
 ```js
 {action:"findMany", collection:"users", fields:{_id:0, name:"full_name"}}
 ```
 
+**String matching, by `$st` `$en` `$c` :**
+
+is str starts with 'ad': 
+```js
+ {action:"findMany", collection:"test", match:{name:{$st:"ad"}}}
+```
+
+is str ends with 'ad': 
+```js
+ {action:"findMany", collection:"test", match:{name:{$en:"ad"}}}
+```
+
+is str contains 'ad': 
+```js
+ {action:"findMany", collection:"test", match:{name:{$c:"ad"}}}
+```

@@ -95,6 +95,18 @@
              <p>rename fields</p>
               {action:"findMany", collection:"test", fields:{_id:0, name:"full_name"}}
 
+
+             <p>String matching, by `$st` `$en` `$c` :</p>
+
+             <p>is str starts with 'ad' ? :</p> 
+             {action:"findMany", collection:"test", match:{name:{$st:"ad"}}}
+
+             <p>is str ends with 'ad' ? :</p>  
+             {action:"findMany", collection:"test", match:{name:{$en:"ad"}}}
+
+             <p>is str contains 'ad' ? :</p>
+             {action:"findMany", collection:"test", match:{name:{$c:"ad"}}}
+
              <br/>
              <br/>
              <br/>
