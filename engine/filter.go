@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/tidwall/gjson"
 )
@@ -64,6 +65,24 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 					case "$or": // not in
 
 						result = false
+						return result
+
+					case "$st": // is start with
+						if !strings.HasPrefix(dv.String(), sqv.String()) {
+							result = false
+						}
+						return result
+
+					case "$en": // is end with
+						if !strings.HasSuffix(dv.String(), sqv.String()) {
+							result = false
+						}
+						return result
+
+					case "$c": // is contains
+						if !strings.Contains(dv.String(), sqv.String()) {
+							result = false
+						}
 						return result
 
 					default:
