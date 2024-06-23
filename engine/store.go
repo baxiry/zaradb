@@ -53,9 +53,9 @@ func NewDB(dbName string) *DB {
 }
 
 // InsertMany inserts list of object at one time
-func (db *DB) insertMany(query string) (res string) {
-	coll := gjson.Get(query, "collection").String()
-	data := gjson.Get(query, "data").Array()
+func (db *DB) insertMany(query gjson.Result) (res string) {
+	coll := query.Get("collection").String()
+	data := query.Get("data").Array()
 
 	//d := strings.TrimLeft(obj, " ")
 	// if len(d) == 0 {return fmt.Sprintf("len data is 0 %s\n", d)}

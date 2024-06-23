@@ -34,10 +34,10 @@
              <p>insertMany inserts many data objects at one time 'bulk'</p>
              {action:"insertMany", collection:"test", data:[{name:"jalal", age:23},{name:"akram", age:30},{name:"hasna", age:35}]}
 
-             <p>  select one object</p>
+             <p>select one object</p>
              {action:"findOne", collection:"users", match:{name:"adam"}}
 
-             <p>  select objects match conditions</p>
+             <p>select objects match conditions</p>
              {action:"findMany", collection:"users", match:{name:"adam"}}
 
              <p>select objects that match the conditions</p>
@@ -47,10 +47,12 @@
 
              <p>select objects that match any value </p>
              {action:"findMany", collection:"users", match:{ age:{$in:[12, 23, 34]}}}
+             </br>
              {action:"findMany", collection:"users", match:{ name:{$in:["akram", "zaid"]}}}
 
              <p>select objects that do not match any value</p>
-             {action:"findMany", collection:"users", match:{ age:{$in:[12, 23, 34]}}}
+             {action:"findMany", collection:"users", match:{ age:{$nin:[12, 23, 34]}}}
+             </br>
              {action:"findMany", collection:"users", match:{ name:{$nin:["akram", "zaid"]}}}
 
              <p>select objects that match any conditions</p>
