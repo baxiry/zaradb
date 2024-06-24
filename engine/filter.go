@@ -16,48 +16,48 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 
 	result = true
 
-	filter.ForEach(func(qk, qv gjson.Result) bool {
+	filter.ForEach(func(queryKey, queryVal gjson.Result) bool {
 
-		dv := gjson.Get(data, qk.String())
+		dataVal := gjson.Get(data, queryKey.String())
 
-		if qv.Type == 5 { // 5:json, int:2, string:3
-			qv.ForEach(func(sqk, sqv gjson.Result) bool {
+		if queryVal.Type == 5 { // 5:json, int:2, string:3
+			queryVal.ForEach(func(subQueryKey, subQueryVal gjson.Result) bool {
 
-				if sqv.Type == 3 { // 3:string,
-					//fmt.Println("here with: ", sqk.String())
+				if subQueryVal.Type == 3 { // 3:string,
+					//fmt.Println("here with: ", subQueryKey.String())
 
-					switch sqk.String() {
+					switch subQueryKey.String() {
 					case "$gt":
-						if !(dv.String() > sqv.String()) {
+						if !(dataVal.String() > subQueryVal.String()) {
 							result = false
 						}
 						return result
 
 					case "$lt":
-						if !(dv.String() < sqv.String()) {
+						if !(dataVal.String() < subQueryVal.String()) {
 							result = false
 						}
 						return result
 
 					case "$gte":
-						if !(dv.String() >= sqv.String()) {
+						if !(dataVal.String() >= subQueryVal.String()) {
 							result = false
 						}
 						return result
 
 					case "$lte":
-						if !(dv.String() <= sqv.String()) {
+						if !(dataVal.String() <= subQueryVal.String()) {
 							result = false
 						}
 						return result
 
 					case "$eq":
-						if dv.String() != sqv.String() {
+						if dataVal.String() != subQueryVal.String() {
 							result = false
 						}
 						return result
 					case "$ne":
-						if dv.String() == sqv.String() {
+						if dataVal.String() == subQueryVal.String() {
 							result = false
 						}
 						return result
@@ -68,71 +68,71 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 						return result
 
 					case "$st": // is start with
-						if !strings.HasPrefix(dv.String(), sqv.String()) {
+						if !strings.HasPrefix(dataVal.String(), subQueryVal.String()) {
 							result = false
 						}
 						return result
 
 					case "$en": // is end with
-						if !strings.HasSuffix(dv.String(), sqv.String()) {
+						if !strings.HasSuffix(dataVal.String(), subQueryVal.String()) {
 							result = false
 						}
 						return result
 
 					case "$c": // is contains
-						if !strings.Contains(dv.String(), sqv.String()) {
+						if !strings.Contains(dataVal.String(), subQueryVal.String()) {
 							result = false
 						}
 						return result
 
 					default:
-						err = fmt.Errorf("unknown %s operation", sqk.Value())
-						//fmt.Println("..wher here", sqk.Value(), sqk.Type)
+						err = fmt.Errorf("unknown %s operation", subQueryKey.Value())
+						//fmt.Println("..wher here", subQueryKey.Value(), subQueryKey.Type)
 						result = false
 						return result
 					}
 
 				}
 
-				switch sqk.String() {
+				switch subQueryKey.String() {
 				case "$gt":
-					if !(dv.Int() > sqv.Int()) {
+					if !(dataVal.Int() > subQueryVal.Int()) {
 						result = false
 					}
 					return result
 
 				case "$lt":
-					if !(dv.Int() < sqv.Int()) {
+					if !(dataVal.Int() < subQueryVal.Int()) {
 						result = false
 					}
 					return result
 
 				case "$gte":
-					if !(dv.Int() >= sqv.Int()) {
+					if !(dataVal.Int() >= subQueryVal.Int()) {
 						result = false
 					}
 					return result
 
 				case "$lte":
-					if !(dv.Int() <= sqv.Int()) {
+					if !(dataVal.Int() <= subQueryVal.Int()) {
 						result = false
 					}
 					return result
 
 				case "$eq":
-					if dv.Int() != sqv.Int() {
+					if dataVal.Int() != subQueryVal.Int() {
 						result = false
 					}
 					return result
 
 				case "$ne":
-					if dv.Int() == sqv.Int() {
+					if dataVal.Int() == subQueryVal.Int() {
 						result = false
 					}
 					return result
 				case "$in": // in array
-					for _, v := range sqv.Array() {
-						if dv.String() == v.String() {
+					for _, v := range subQueryVal.Array() {
+						if dataVal.String() == v.String() {
 							return result
 						}
 					}
@@ -140,8 +140,8 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 					return result
 
 				case "$nin": // not in
-					for _, v := range sqv.Array() {
-						if dv.String() == v.String() {
+					for _, v := range subQueryVal.Array() {
+						if dataVal.String() == v.String() {
 							result = false
 							return result
 						}
@@ -152,9 +152,9 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 					// {$and:[{name:{$eq:"adam"}},{name:{$eq:"jawad"}}]}
 					// {$or: [{name:{$eq:"adam"}}, {name:{$eq:"jawad"}}]}
 
-					if qk.Str == "$and" {
+					if queryKey.Str == "$and" {
 
-						for _, v := range qv.Array() {
+						for _, v := range queryVal.Array() {
 							res, _ := match(v, data)
 							if !res {
 								result = false
@@ -164,9 +164,9 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 						return result
 					}
 
-					if qk.Str == "$or" {
+					if queryKey.Str == "$or" {
 
-						for _, v := range qv.Array() {
+						for _, v := range queryVal.Array() {
 
 							res, _ := match(v, data)
 							if res {
@@ -177,17 +177,17 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 						return result
 					}
 
-					err = fmt.Errorf("unknown %s operation", sqk.String())
+					err = fmt.Errorf("unknown %s operation", subQueryKey.String())
 					result = false
 					return result
 				}
 			})
 
-			match(qv, dv.String())
+			match(queryVal, queryVal.String())
 			return result
 		}
 
-		if dv.String() != qv.String() {
+		if dataVal.String() != queryVal.String() {
 			result = false
 		}
 		return result // if true keep iterating
