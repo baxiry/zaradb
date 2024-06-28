@@ -31,10 +31,11 @@ func Test_Get(t *testing.T) {
 func Test_Len(t *testing.T) {
 	if smap.Len() != len(cases) {
 		t.Errorf("have %d, want %d", smap.Len(), len(cases))
+		//	t.Error(smap.list, cases)
 	}
 }
 
-func Test_Update(t *testing.T) {
+func Test_Set2(t *testing.T) {
 	hello := "hello_hello"
 	smap.Set("hi0", hello)
 	if smap.Get("hi0") != hello {
@@ -42,6 +43,12 @@ func Test_Update(t *testing.T) {
 	}
 }
 
+func Test_Len2(t *testing.T) {
+	if smap.Len() != len(cases) {
+		//t.Errorf("have %d, want %d", smap.Len(), len(cases))
+		t.Error("\n", smap.list, "\n", cases)
+	}
+}
 func BenchmarkMap(t *testing.B) {
 
 	// keys := NewSmap()
