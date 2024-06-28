@@ -21,5 +21,8 @@ jobs:
       with:
         go-version: '1.22'
 
+   - name: Test 
+      run: go test -v ./smap/...
+
     - name: Build
       run: go build -v ./...
