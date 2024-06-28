@@ -1,52 +1,48 @@
 package smap
 
 import (
-	"fmt"
 	"testing"
-	"time"
 )
 
-func TestHelloWorld(t *testing.T) {
-	// t.Fatal("not implemented")
+type cse struct {
+	key string
+	val string
+}
+
+var cases = []cse{{"hi0", "hello0"}, {"hi1", "hello1"}, {"hi2", "hello2"}, {"hi3", "hello3"}, {"hi4", "hello4"}}
+
+var smap = NewSmap()
+
+func Test_Set(t *testing.T) {
+	for i := 0; i < len(cases); i++ {
+		smap.Set(cases[i].key, cases[i].val)
+	}
+}
+
+func Test_Get(t *testing.T) {
+	for i := 0; i < len(cases); i++ {
+		v := smap.Get(cases[i].key)
+		if v != cases[i].val {
+			t.Errorf("have %s, want %s", v, cases[i].val)
+		}
+	}
+}
+
+func Test_Len(t *testing.T) {
+	if smap.Len() != len(cases) {
+		t.Errorf("have %d, want %d", smap.Len(), len(cases))
+	}
+}
+
+func Test_Update(t *testing.T) {
+	hello := "hello_hello"
+	smap.Set("hi0", hello)
+	if smap.Get("hi0") != hello {
+		t.Errorf("have %s, want %s", smap.Get("hi"), hello)
+	}
 }
 
 func BenchmarkMap(t *testing.B) {
 
-	keys := list{}
-
-	mkeys := map[string]string{}
-
-	for i := 0; i < 20; i++ {
-		v := "hello_" + fmt.Sprint(i)
-		//fmt.Println("v is : ", v)
-		keys.set(v, v)
-		mkeys[v] = v
-	}
-
-	s := time.Now()
-	tot := 0
-
-	for i := 0; i < max; i++ {
-		if keys.get("hello_0") == "hello_0" {
-			tot++
-		}
-	}
-
-	fmt.Println(tot)
-	fmt.Println(time.Since(s))
-	fmt.Println("my len: ", keys.len())
-
-	s = time.Now()
-	tot = 0
-
-	for i := 0; i < max; i++ {
-		if mkeys["hello_0"] == "hello_0" {
-			tot++
-		}
-	}
-
-	fmt.Println(tot)
-	fmt.Println(time.Since(s))
-
-	fmt.Println("map len: ", len(mkeys))
+	// keys := NewSmap()
 }

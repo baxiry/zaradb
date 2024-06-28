@@ -9,6 +9,12 @@ type List struct {
 	list []Map
 }
 
+func NewSmap() *List {
+	return &List{
+		list: []Map{},
+	}
+}
+
 func (l *List) Set(k, v string) {
 	kv := Map{k, v}
 	if len(l.list) < 1 {
