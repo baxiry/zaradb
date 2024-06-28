@@ -49,6 +49,22 @@ func Test_Len2(t *testing.T) {
 		t.Error("\n", smap.list, "\n", cases)
 	}
 }
+
+func Test_Delete(t *testing.T) {
+	hh := "hello_hello"
+	smap.Delete("hi0")
+	if smap.Get("hi0") == hh {
+		t.Errorf("have %s, want %s", smap.Get("hi0"), hh)
+	}
+}
+
+func Test_Len3(t *testing.T) {
+	if smap.Len() >= len(cases) {
+		t.Errorf("have %d, want %d", smap.Len(), len(cases)-1)
+		//	t.Error("\n", smap.list, "\n", cases)
+	}
+}
+
 func BenchmarkMap(t *testing.B) {
 
 	// keys := NewSmap()
