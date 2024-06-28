@@ -7,8 +7,6 @@ import (
 	"github.com/tidwall/sjson"
 )
 
-// TODO implemente replace keys
-
 const siparator = "_:_"
 
 // reKey renames json feild
