@@ -1,24 +1,50 @@
 package smap
 
-type List struct {
+func NewSmap() *list {
+	return &list{
+		list: []kv{},
+	}
 }
 
-func NewSmap() *List {
-	return &List{}
+type kv struct {
+	key string
+	val interface{}
 }
 
-func (l *List) Set(k, v string) {
-
+type list struct {
+	list []kv
 }
 
-func (l *List) Get(k string) string {
+func (l *list) Set(k, v string) {
+	found := false
+	for i := range l.list {
+		if l.list[i].key == k {
+			l.list[i].val = v
+			found = true
+			break
+		}
+	}
+	if !found {
+		l.list = append(l.list, kv{k, v})
+	}
+}
 
+func (l *list) Get(k string) string {
+
+	for i := 0; i < len(l.list); i++ {
+		if l.list[i].key == k {
+			return l.list[i].val.(string)
+		}
+	}
 	return ""
 }
-
-func (l *List) Delete(k string) {
+func (l *list) Delete(k string) {
+	for i := 0; i < len(l.list); i++ {
+		if l.list[i].key == k {
+			l.list[i].val = ""
+		}
+	}
 }
-
-func (l *List) Len() int {
-	return 0
+func (l *list) Len() int {
+	return len(l.list)
 }

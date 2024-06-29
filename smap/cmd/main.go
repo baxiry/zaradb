@@ -6,41 +6,38 @@ import (
 	"zaradb/smap"
 )
 
-var sm = smap.NewSmap()
+var max = 1000000
+
+var keys = smap.NewSmap()
 var m = map[string]string{}
 
 func main() {
-	for i := 0; i <= 100; i++ {
-		id := fmt.Sprint(i)
 
-		k := "hi_" + id
-		v := "hello_" + id
+	m := make(map[string]string)
 
-		sm.Set(k, v)
+	for i := 0; i <= 20; i++ {
+		k := "hi_" + fmt.Sprint(i)
+		v := "hello_" + fmt.Sprint(i)
+		keys.Set(k, v)
 		m[k] = v
 	}
 
-	fmt.Println("\nsmap")
 	s := time.Now()
-	for j := 0; j < 1000000; j++ {
-
-		v := sm.Get("hi_20")
-		if v != "hello_20" {
-			panic("what")
-		}
-
-	}
-
-	fmt.Println(time.Since(s))
-	fmt.Println("\nmap")
-	s = time.Now()
-
-	for j := 0; j < 1000000; j++ {
-
-		v, _ := m["hi_20"]
-		if v != "hello_20" {
-			panic("what")
+	for i := 0; i < max; i++ {
+		if keys.Get("hi_10") != "hello_10" {
+			panic("hat")
 		}
 	}
-	fmt.Println(time.Since(s))
+
+	fmt.Println("smap", time.Since(s))
+
+	st := time.Now()
+	for i := 0; i < max; i++ {
+		if m["hi_20"] != "hello_20" {
+			panic("hat")
+		}
+	}
+
+	fmt.Println("map", time.Since(st))
+
 }
