@@ -1,6 +1,7 @@
 package smap
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -11,17 +12,17 @@ type cse struct {
 
 var cases = []cse{{"hi0", "hello0"}, {"hi1", "hello1"}, {"hi2", "hello2"}, {"hi3", "hello3"}, {"hi4", "hello4"}}
 
-var smap = NewSmap()
+var smp = NewSmap()
 
 func Test_Set(t *testing.T) {
 	for i := 0; i < len(cases); i++ {
-		smap.Set(cases[i].key, cases[i].val)
+		smp.Set(cases[i].key, cases[i].val)
 	}
 }
 
 func Test_Get(t *testing.T) {
 	for i := 0; i < len(cases); i++ {
-		v := smap.Get(cases[i].key)
+		v := smp.Get(cases[i].key)
 		if v != cases[i].val {
 			t.Errorf("have %s, want %s", v, cases[i].val)
 		}
@@ -29,43 +30,100 @@ func Test_Get(t *testing.T) {
 }
 
 func Test_Len(t *testing.T) {
-	if smap.Len() != len(cases) {
-		t.Errorf("have %d, want %d", smap.Len(), len(cases))
-		//	t.Error(smap.list, cases)
+	if smp.Len() != len(cases) {
+		t.Errorf("have %d, want %d", smp.Len(), len(cases))
+		//	t.Error(smp.list, cases)
 	}
 }
 
 func Test_Set2(t *testing.T) {
 	hello := "hello_hello"
-	smap.Set("hi0", hello)
-	if smap.Get("hi0") != hello {
-		t.Errorf("have %s, want %s", smap.Get("hi"), hello)
+	smp.Set("hi0", hello)
+	v := smp.Get("hi0")
+	if v != hello {
+		t.Errorf("have %s, want %s", v, hello)
 	}
 }
 
 func Test_Len2(t *testing.T) {
-	if smap.Len() != len(cases) {
-		//t.Errorf("have %d, want %d", smap.Len(), len(cases))
-		t.Error("\n", smap.list, "\n", cases)
+	if smp.Len() != len(cases) {
+		//t.Errorf("have %d, want %d", smp.Len(), len(cases))
+		t.Error("\n", smp.list, "\n", cases)
 	}
 }
 
 func Test_Delete(t *testing.T) {
 	hh := "hello_hello"
-	smap.Delete("hi0")
-	if smap.Get("hi0") == hh {
-		t.Errorf("have %s, want %s", smap.Get("hi0"), hh)
+	smp.Delete("hi0")
+	v := smp.Get("hi0")
+	if v == hh {
+		t.Errorf("have %s, want %s", v, hh)
 	}
 }
 
 func Test_Len3(t *testing.T) {
-	if smap.Len() >= len(cases) {
-		t.Errorf("have %d, want %d", smap.Len(), len(cases)-1)
-		//	t.Error("\n", smap.list, "\n", cases)
+	if smp.Len() >= len(cases) {
+		t.Errorf("have %d, want %d", smp.Len(), len(cases)-1)
+		//	t.Error("\n", smp.list, "\n", cases)
 	}
 }
 
-func BenchmarkMap(t *testing.B) {
+// ---------------------- benchmark --------------------------------
 
-	// keys := NewSmap()
+var sm = NewSmap()
+var m = map[string]string{}
+
+func Benchmark_SMapSet(b *testing.B) {
+
+	for i := 0; i < b.N; i++ {
+		for j := 0; j < 20; j++ {
+			key := "key-" + fmt.Sprint(j)
+			value := "value-" + fmt.Sprint(j)
+			sm.Set(key, value)
+		}
+	}
 }
+
+func Benchmark_MapSet(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		for j := 0; j < 20; j++ {
+			key := "key-" + fmt.Sprint(j)
+			value := "value-" + fmt.Sprint(j)
+			m[key] = value
+		}
+	}
+}
+
+func Benchmark_SMapGet(b *testing.B) {
+
+	var val string
+
+	for i := 0; i < b.N; i++ {
+		for j := 0; j < 20; j++ {
+			key := "key-" + fmt.Sprint(j)
+			val = sm.Get(key)
+		}
+	}
+	_ = val
+}
+
+func Benchmark_MapGet(b *testing.B) {
+
+	var val string
+	for i := 0; i < b.N; i++ {
+		for j := 0; j < 10; j++ {
+			key := "key-" + fmt.Sprint(j)
+			val = m[key]
+		}
+	}
+	_ = val
+}
+
+/*
+func main() {
+	testing.Benchmark(BenchmarkSMapSet)
+	testing.Benchmark(BenchmarkMapSet)
+	testing.Benchmark(BenchmarkSMapGet)
+	testing.Benchmark(BenchmarkMapGet)
+}
+*/
