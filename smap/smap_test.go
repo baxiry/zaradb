@@ -33,7 +33,7 @@ func Test_Get(t *testing.T) {
 func Test_Len(t *testing.T) {
 	if smp.Len() != len(cases) {
 		t.Errorf("have %d, want %d", smp.Len(), len(cases))
-		//	t.Error(smp.list, cases)
+		//t.Error(smp.list, cases)
 	}
 }
 
@@ -64,7 +64,7 @@ func Test_Delete(t *testing.T) {
 
 func Test_Len3(t *testing.T) {
 	if smp.Len() >= len(cases) {
-		//t.Errorf("have %d, want %d", smp.Len(), len(cases)-1)
+		t.Errorf("have %d, want %d", smp.Len(), len(cases)-1)
 		//	t.Error("\n", smp.list, "\n", cases)
 	}
 }

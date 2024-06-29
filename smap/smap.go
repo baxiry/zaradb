@@ -39,12 +39,16 @@ func (l *list) Get(k string) string {
 	return ""
 }
 func (l *list) Delete(k string) {
+	list := []kv{}
+
 	for i := 0; i < len(l.list); i++ {
-		if l.list[i].key == k {
-			l.list[i].val = ""
+		if l.list[i].key != k {
+			list = append(list, l.list[i])
 		}
 	}
+	l.list = list
 }
+
 func (l *list) Len() int {
 	return len(l.list)
 }
