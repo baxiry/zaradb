@@ -15,9 +15,9 @@ type matched struct {
 // deletes Many items
 func (db *DB) deleteMany(query gjson.Result) string {
 
-	mtch := query.Get("match")
+	mtch := query.Get("m")
 
-	coll := query.Get("collection").String()
+	coll := query.Get("c").String()
 
 	stmt := `select rowid, record from ` + coll
 
@@ -64,11 +64,11 @@ func (db *DB) deleteMany(query gjson.Result) string {
 // TODO updateMany update document data
 func (db *DB) updateMany(query gjson.Result) (result string) {
 
-	mtch := query.Get("match")
+	mtch := query.Get("m")
 
 	newObj := query.Get("data").String()
 
-	coll := query.Get("collection").String()
+	coll := query.Get("c").String()
 
 	// updates exist value
 
@@ -121,11 +121,11 @@ func (db *DB) updateMany(query gjson.Result) (result string) {
 // TODO updateOne one update document data
 func (db *DB) updateOne(query gjson.Result) (result string) {
 
-	mtch := query.Get("match")
+	mtch := query.Get("m")
 
 	newObj := query.Get("data").String()
 
-	coll := query.Get("collection").String()
+	coll := query.Get("c").String()
 
 	// updates exist value
 
@@ -175,7 +175,7 @@ func (db *DB) updateById(query gjson.Result) (result string) {
 
 	id := query.Get("_id").String()
 	newObj := query.Get("data").String()
-	coll := query.Get("collection").String()
+	coll := query.Get("c").String()
 
 	newData := gjson.Get(`[`+oldObj+`,`+newObj+`]`, `@join`).Raw
 
@@ -195,12 +195,12 @@ func (db *DB) updateById(query gjson.Result) (result string) {
 func (db *DB) findMany(query gjson.Result) (res string) {
 
 	// TODO parse hol qury one time
-	coll := query.Get("collection").String()
+	coll := query.Get("c").String()
 	if coll == "" {
 		return `{"error":"forgot collection name "}`
 	}
 
-	mtch := query.Get("match")
+	mtch := query.Get("m")
 
 	if mtch.String() == "" {
 
@@ -270,7 +270,7 @@ func (db *DB) findMany(query gjson.Result) (res string) {
 
 // Finds first obj match creteria.
 func (db *DB) findOne(query gjson.Result) (res string) {
-	coll := query.Get("collection").String()
+	coll := query.Get("c").String()
 	skip := query.Get("skip").Int()
 
 	// TODO are skyp useful here ?
@@ -283,7 +283,7 @@ func (db *DB) findOne(query gjson.Result) (res string) {
 	}
 	defer rows.Close()
 
-	mtch := query.Get("match")
+	mtch := query.Get("m")
 	record := ""
 	for rows.Next() {
 		if skip != 0 {
@@ -310,7 +310,7 @@ func (db *DB) findOne(query gjson.Result) (res string) {
 // delete
 func (db *DB) deleteOne(query gjson.Result) string {
 
-	coll := query.Get("collection").String()
+	coll := query.Get("c").String()
 
 	stmt := `select rowid, record from ` + coll
 
@@ -321,7 +321,7 @@ func (db *DB) deleteOne(query gjson.Result) string {
 
 	rowid := "0"
 	record := ""
-	mtch := query.Get("match")
+	mtch := query.Get("m")
 	for rows.Next() {
 		record = ""
 		rowid = ""
@@ -352,7 +352,7 @@ func (db *DB) deleteOne(query gjson.Result) string {
 
 // Finds first obj match creteria.
 func (db *DB) findById(query gjson.Result) (res string) {
-	coll := query.Get("collection").String()
+	coll := query.Get("c").String()
 	id := query.Get("_id").String()
 
 	stmt := `select record from ` + coll + ` where rowid = ` + id
@@ -380,7 +380,7 @@ func (db *DB) findById(query gjson.Result) (res string) {
 
 // Insert
 func (db *DB) insertOne(query gjson.Result) (res string) {
-	coll := query.Get("collection").String()
+	coll := query.Get("c").String()
 	data := query.Get("data").String()
 
 	err := db.insert(coll, data)
@@ -397,7 +397,7 @@ func (db *DB) deleteById(query gjson.Result) string {
 	if id == "" {
 		return `{"error": "there is no _id"}`
 	}
-	coll := query.Get("collection").String()
+	coll := query.Get("c").String()
 	if coll == "" {
 		return `{"error": "there is no collection"}`
 	}

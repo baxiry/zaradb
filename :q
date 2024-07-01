@@ -1,0 +1,31 @@
+Updated. Elapsed time: 317.433125 sec.
+[==================x]
+
+- Finishing ... Done!
+- Post-update hook for coc-eslint ... OK
+- Post-update hook for coc-tsserver ... OK
+- Post-update hook for coc-highlight ... OK
+- Post-update hook for coc-prettier ... OK
+- Post-update hook for coc-css ... OK
+- Post-update hook for coc-lists ... OK
+x Post-update hook for coc-tslint ... Exit status: 1
+- Post-update hook for coc-snippets ... OK
+- papercolor-theme: Already installed
+- fzf: Already installed
+- coc-eslint: Resolving deltas: 100% (172/172), done.
+- coc-tslint: Resolving deltas: 100% (55/55), done.
+- coc-highlight: Resolving deltas: 100% (103/103), done.
+- coc.nvim: Already installed
+- tokyonight.nvim: Already installed
+- coc-prettier: Resolving deltas: 100% (221/221), done.
+- onedarkpro.nvim: Already installed
+- gitsigns.nvim: Already installed
+- coc-css: Resolving deltas: 100% (97/97), done.
+- gocode: Already installed
+- vim-airline-themes: Already installed
+- catppuccin: Already installed
+- coc-lists: Resolving deltas: 100% (297/297), done.
+- vim-moonfly-colors: Already installed
+- coc-snippets: Resolving deltas: 100% (750/750), done.
+- coc-tsserver: Resolving deltas: 100% (1311/1311), done.
+- vim-airline: Already installed

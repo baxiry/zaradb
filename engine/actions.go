@@ -7,7 +7,7 @@ import (
 // ok
 func HandleQueries(query string) string {
 	parsedQuery := gjson.Parse(query)
-	switch parsedQuery.Get("action").String() {
+	switch parsedQuery.Get("a").String() { // action
 
 	// database actions
 	case "findOne":

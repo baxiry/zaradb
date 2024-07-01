@@ -9,6 +9,11 @@ import (
 
 const siparator = "_:_"
 
+func orderBy(param string, data []gjson.Result) []gjson.Result {
+
+	return data
+}
+
 // reKey renames json feild
 func reKey(oldkey, newkey, json string) string {
 
@@ -47,7 +52,7 @@ func reKey(oldkey, newkey, json string) string {
 }
 
 // fields remove or rename fields
-func fields(data []string, fields gjson.Result) []string {
+func reFields(data []string, fields gjson.Result) []string {
 
 	newKey := []string{}
 	oldKey := []string{}
