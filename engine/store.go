@@ -2,7 +2,6 @@ package engine
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -123,10 +122,3 @@ func check(hint string, err error) {
 		//return
 	}
 }
-
-var (
-	ErrDuplicate    = errors.New("record already exists")
-	ErrNotExists    = errors.New("row not exists")
-	ErrUpdateFailed = errors.New("update failed")
-	ErrDeleteFailed = errors.New("delete failed")
-)

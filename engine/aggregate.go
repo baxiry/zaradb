@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/tidwall/gjson"
@@ -8,11 +9,6 @@ import (
 )
 
 const siparator = "_:_"
-
-func orderBy(param string, data []gjson.Result) []gjson.Result {
-
-	return data
-}
 
 // reKey renames json feild
 func reKey(oldkey, newkey, json string) string {
@@ -83,4 +79,87 @@ func reFields(data []string, fields gjson.Result) []string {
 	}
 
 	return data
+}
+
+func orderBy(param string, data []string) (list []string) {
+
+	objects := []gjson.Result{}
+	for _, v := range data {
+		objects = append(objects, gjson.Parse(v))
+	}
+	// sort here
+
+	// check type
+	typ := objects[0].Get(param).Type
+	fmt.Println("type is ", typ)
+
+	if typ == 2 {
+		list = sortInt(param, objects)
+	}
+	if typ == 3 {
+		list = sortString(param, objects)
+	}
+
+	return list
+}
+
+func sortInt(key string, list []gjson.Result) []string {
+	max := len(list)
+	var tmp gjson.Result
+
+	element := list[0]
+	for max != 0 {
+		for i := 0; i < max; i++ {
+			if element.Get(key).Int() < list[i].Get(key).Int() {
+				tmp = list[i]
+				list[i] = element
+				element = tmp
+			}
+
+			if i == max-1 {
+				tmp = list[i]
+				list[i] = element
+				element = tmp
+			}
+		}
+		max--
+	}
+
+	list[0] = element
+	res := []string{}
+	for i := 0; i < len(list); i++ {
+		res = append(res, list[i].String())
+	}
+	return res
+}
+
+// TODO  consider specific type.
+func sortString(key string, list []gjson.Result) []string {
+	max := len(list)
+	var tmp gjson.Result
+
+	element := list[0]
+	for max != 0 {
+		for i := 0; i < max; i++ {
+			if element.Get(key).String() < list[i].Get(key).String() {
+				tmp = list[i]
+				list[i] = element
+				element = tmp
+			}
+
+			if i == max-1 {
+				tmp = list[i]
+				list[i] = element
+				element = tmp
+			}
+		}
+		max--
+	}
+
+	list[0] = element
+	res := []string{}
+	for i := 0; i < len(list); i++ {
+		res = append(res, list[i].String())
+	}
+	return res
 }
