@@ -175,7 +175,7 @@ func (db *DB) updateById(query gjson.Result) (result string) {
 
 	id := query.Get("_id").String()
 	newObj := query.Get("data").String()
-	coll := query.Get("c").String()
+	coll := query.Get("collection").String()
 
 	newData := gjson.Get(`[`+oldObj+`,`+newObj+`]`, `@join`).Raw
 
@@ -251,8 +251,9 @@ func (db *DB) findMany(query gjson.Result) (res string) {
 
 	// order :
 	order := query.Get("orderBy").String()
-
-	listData = orderBy(order, listData)
+	if order != "" {
+		listData = orderBy(order, listData)
+	}
 
 	// TODO aggrigate here
 

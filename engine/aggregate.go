@@ -94,7 +94,7 @@ func orderBy(param string, data []string) (list []string) {
 	fmt.Println("type is ", typ)
 
 	if typ == 2 {
-		list = sortInt(param, objects)
+		list = sortNumber(param, objects)
 	}
 	if typ == 3 {
 		list = sortString(param, objects)
@@ -103,14 +103,14 @@ func orderBy(param string, data []string) (list []string) {
 	return list
 }
 
-func sortInt(key string, list []gjson.Result) []string {
+func sortNumber(key string, list []gjson.Result) []string {
 	max := len(list)
 	var tmp gjson.Result
 
 	element := list[0]
 	for max != 0 {
 		for i := 0; i < max; i++ {
-			if element.Get(key).Int() < list[i].Get(key).Int() {
+			if element.Get(key).Num < list[i].Get(key).Num {
 				tmp = list[i]
 				list[i] = element
 				element = tmp
