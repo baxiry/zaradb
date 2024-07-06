@@ -61,6 +61,8 @@
              <p>select objects that match all conditions</p>
              {action:"findMany", collection:"users", match:{ $and:[name:{$eq:"akram", age:$gt:13}]}}
 
+             <p>order by & reverse or DISC :</p>
+             {action:"findMany", collection:"users", orderBy:"name", reverse:1}
 
              <p>updateById </p>
              {action:"updateById", collection:"test", _id:3, data:{name:"hosam", age:10}}
