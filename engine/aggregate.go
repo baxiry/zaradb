@@ -81,7 +81,7 @@ func reFields(data []string, fields gjson.Result) []string {
 	return data
 }
 
-func orderBy(param string, data []string) (list []string) {
+func orderBy(param string, reverse int, data []string) (list []string) {
 
 	objects := []gjson.Result{}
 	for _, v := range data {
@@ -94,23 +94,23 @@ func orderBy(param string, data []string) (list []string) {
 	fmt.Println("type is ", typ)
 
 	if typ == 2 {
-		list = sortNumber(param, objects)
+		list = sortNumber(param, reverse, objects)
 	}
 	if typ == 3 {
-		list = sortString(param, objects)
+		list = sortString(param, reverse, objects)
 	}
 
 	return list
 }
 
-func sortNumber(key string, list []gjson.Result) []string {
+func sortNumber(field string, reverse int, list []gjson.Result) []string {
 	max := len(list)
 	var tmp gjson.Result
 
 	element := list[0]
-	for max != 0 {
-		for i := 0; i < max; i++ {
-			if element.Get(key).Num < list[i].Get(key).Num {
+	for max != 1 {
+		for i := 1; i < max; i++ {
+			if element.Get(field).Num < list[i].Get(field).Num {
 				tmp = list[i]
 				list[i] = element
 				element = tmp
@@ -127,21 +127,31 @@ func sortNumber(key string, list []gjson.Result) []string {
 
 	list[0] = element
 	res := []string{}
-	for i := 0; i < len(list); i++ {
+	if reverse != 1 {
+		for i := 0; i < len(list); i++ {
+			res = append(res, list[i].String())
+			fmt.Println(list[i].String())
+		}
+		return res
+	}
+
+	for i := len(list) - 1; i >= 0; i-- {
+		fmt.Println(list[i].String())
 		res = append(res, list[i].String())
 	}
+
 	return res
 }
 
 // TODO  consider specific type.
-func sortString(key string, list []gjson.Result) []string {
+func sortString(field string, reverse int, list []gjson.Result) []string {
 	max := len(list)
 	var tmp gjson.Result
 
 	element := list[0]
-	for max != 0 {
-		for i := 0; i < max; i++ {
-			if element.Get(key).String() < list[i].Get(key).String() {
+	for max != 1 {
+		for i := 1; i < max; i++ {
+			if element.Get(field).Str < list[i].Get(field).Str {
 				tmp = list[i]
 				list[i] = element
 				element = tmp
@@ -157,9 +167,19 @@ func sortString(key string, list []gjson.Result) []string {
 	}
 
 	list[0] = element
+
 	res := []string{}
-	for i := 0; i < len(list); i++ {
+	if reverse != 1 {
+		for i := 0; i < len(list); i++ {
+			res = append(res, list[i].String())
+			fmt.Println(list[i].String())
+		}
+		return res
+	}
+
+	for i := len(list) - 1; i >= 0; i-- {
 		res = append(res, list[i].String())
+		fmt.Println(list[i].String())
 	}
 	return res
 }

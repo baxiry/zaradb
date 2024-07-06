@@ -252,12 +252,12 @@ func (db *DB) findMany(query gjson.Result) (res string) {
 	}
 
 	// order :
-	order := query.Get("orderBy") //.Str
-	fmt.Println("order.Str: ", order.Str)
-	fmt.Println("order.Strting(): ", order.Str)
-	fmt.Println(order.Get("rev"))
-	if order.Str != "" {
-		listData = orderBy(order.Str, listData)
+	order := query.Get("orderBy").Str
+	reverse := query.Get("reverse").Int()
+
+	fmt.Println("reverse :", reverse)
+	if order != "" {
+		listData = orderBy(order, int(reverse), listData)
 	}
 
 	// TODO aggrigate here
