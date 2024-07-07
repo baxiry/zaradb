@@ -10,7 +10,6 @@ func HandleQueries(query string) string {
 	parsedQuery := gjson.Parse(query)
 
 	switch parsedQuery.Get("action").String() { // action
-
 	// database actions
 	case "findOne":
 		return db.findOne(parsedQuery)
@@ -51,15 +50,33 @@ func HandleQueries(query string) string {
 
 	// manage database
 	case "create_collection":
-		return createCollection(parsedQuery.Get("collection").String())
+		return createCollection(parsedQuery.Get("collection"))
 
 	case "delete_collection":
-		return deleteCollection(parsedQuery.Get("collection").String())
+		return deleteCollection(parsedQuery.Get("collection"))
 
 	case "getCollections":
 		//return showCollections(db.path)
 		return getCollections()
+
+	// trying sqlite query
+	case "sql":
+		return querySql(parsedQuery)
+
 	default:
 		return "unknowen action"
 	}
+}
+
+// hmmmmm sql
+func querySql(query gjson.Result) string {
+	qr := query.Get("query").Str
+	res, _ := db.db.Query(qr)
+	record := ""
+	result := "["
+	for res.Next() {
+		res.Scan(&record)
+		result += record + ","
+	}
+	return result[:len(result)-1] + "]"
 }
