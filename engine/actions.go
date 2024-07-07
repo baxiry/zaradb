@@ -56,9 +56,9 @@ func HandleQueries(query string) string {
 	case "delete_collection":
 		return deleteCollection(parsedQuery.Get("collection").String())
 
-	case "show_collection":
+	case "getCollections":
 		//return showCollections(db.path)
-		return "ont emplements yet"
+		return getCollections()
 	default:
 		return "unknowen action"
 	}

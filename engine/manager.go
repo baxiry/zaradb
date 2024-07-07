@@ -1,46 +1,55 @@
 package engine
 
 import (
-	"os"
+	"fmt"
+
+	"github.com/tidwall/gjson"
 )
 
-func getCollections(dbName string) (collections []string) {
-	return []string{"not implemented yet"}
-}
+func getCollections() string {
+	table, result := "", `["`
+	res, err := db.db.Query("SELECT name FROM sqlite_master WHERE type='table'")
+	if err != nil {
+		fmt.Println(err)
+	}
 
-// shows collections in corrent database
-func showCollections(dbName string) string {
-	return "not implemented yet"
+	for res.Next() {
+		res.Scan(&table)
+		result += table + ", "
+	}
+	result = `{"collections": ` + result[:len(result)-2] + `"], "size": "123mb"}`
+
+	return result
 }
 
 // deletes collection
-func deleteCollection(query string) string {
+func deleteCollection(query gjson.Result) string {
 	// TODO return number of deleted objects
 	return "not implemented yet"
 }
 
 // creates new collection
-func createCollection(query string) string {
+func createCollection(query gjson.Result) string {
 	return "not implemented yet"
 }
 
 // Rename renames db.
-func renameDB(oldPath, newPath string) error {
-	return os.Rename(oldPath, newPath)
+func renameDB(query gjson.Result) error {
+	return nil
 }
 
 // Remove remove db to .Trash dir
-func removeDB(dbName string) (err error) {
-	return renameDB(dbName, ".Trash/"+dbName)
+func removeDB(query gjson.Result) (err error) {
+	return nil
 }
 
 // CreateDB create db. TODO return this directly
-func createDB(dbName string) (string, error) {
+func createDB(query gjson.Result) (string, error) {
 
-	return dbName + "is created", nil
+	return "not yet", nil
 }
 
 // DeleteDB deletes db. (free hard drive).
-func deleteDB(dbName string) string {
-	return dbName + " is deleted!"
+func deleteDB(query gjson.Result) string {
+	return " not yet"
 }
