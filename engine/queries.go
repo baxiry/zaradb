@@ -65,7 +65,7 @@ func (db *DB) deleteMany(query gjson.Result) string {
 // TODO updateMany update document data
 func (db *DB) updateMany(query gjson.Result) (result string) {
 
-	mtch := query.Get("m")
+	mtch := query.Get("match")
 
 	newObj := query.Get("data").Str
 
@@ -122,7 +122,7 @@ func (db *DB) updateMany(query gjson.Result) (result string) {
 // TODO updateOne one update document data
 func (db *DB) updateOne(query gjson.Result) (result string) {
 
-	mtch := query.Get("m")
+	mtch := query.Get("match")
 
 	newObj := query.Get("data").Str
 
@@ -294,7 +294,7 @@ func (db *DB) findOne(query gjson.Result) (res string) {
 	}
 	defer rows.Close()
 
-	mtch := query.Get("m")
+	mtch := query.Get("match")
 	record := ""
 	for rows.Next() {
 		if skip != 0 {
@@ -311,6 +311,7 @@ func (db *DB) findOne(query gjson.Result) (res string) {
 			return err.Error()
 		}
 		if b {
+
 			return record
 		}
 	}
@@ -332,7 +333,7 @@ func (db *DB) deleteOne(query gjson.Result) string {
 
 	rowid := "0"
 	record := ""
-	mtch := query.Get("m")
+	mtch := query.Get("match")
 	for rows.Next() {
 		record = ""
 		rowid = ""
