@@ -15,7 +15,7 @@ download zara pre-compiled from [here](https://github.com/baxiry/zaradb/releases
 Or compile it from soure:
 
 ```bash
-go get github.com/baxiry/zaradb && cd zaradb && go build .
+git clone --depth 1 github.com/baxiry/zaradb && cd zaradb && go build .
 ```
 
 
