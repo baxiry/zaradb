@@ -86,27 +86,15 @@ func (db *DB) insert(collection, obj string) error {
 
 	db.lastid[collection]++
 	data := `{"_id":` + fmt.Sprint(db.lastid[collection]) + ", " + d[1:]
+	fmt.Println("data: ", data)
+	fmt.Println("coll: ", collection)
 	_, err := db.db.Exec(`insert into ` + collection + `(record) values('` + data + `');`) // fast
 	if err != nil {
-		//println(err)
+		fmt.Println(err)
 		db.lastid[collection]--
 		return err
 	}
 
-	return nil
-}
-
-func (db *DB) CreateCollection(collection string) error {
-	query := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (record json);`, collection)
-	_, err := db.db.Exec(query)
-	if err != nil {
-		return err
-	}
-	lid, err := getLastId(db.db, collection)
-	if err != nil {
-		return err
-	}
-	db.lastid[collection] = lid
 	return nil
 }
 

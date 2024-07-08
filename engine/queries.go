@@ -194,6 +194,70 @@ func (db *DB) updateById(query gjson.Result) (result string) {
 	return id + " updated"
 }
 
+func getIds(query gjson.Result) string {
+
+	coll := query.Get("collection").Str
+	if coll == "" {
+		return `{"error":"forgot collection name "}`
+	}
+
+	mtch := query.Get("match")
+
+	if mtch.String() == "" {
+		fmt.Println("match.Str is empty")
+	}
+
+	skip := query.Get("skip").Int()
+	limit := query.Get("limit").Int()
+	if limit == 0 {
+		limit = 100
+	}
+
+	stmt := `select rowid, record from ` + coll
+
+	rows, err := db.db.Query(stmt)
+	if err != nil {
+		return err.Error()
+	}
+	defer rows.Close()
+
+	record := ""
+	rowids := ""
+	rowid := ""
+
+	for rows.Next() {
+		if limit == 0 {
+			break
+		}
+		if skip != 0 {
+			skip--
+			continue
+		}
+
+		record = ""
+		rowid = ""
+		err := rows.Scan(&rowid, &record)
+		if err != nil {
+			return err.Error() // TODO standaring errors
+		}
+
+		ok, err := match(mtch, record)
+		if err != nil {
+			return err.Error()
+		}
+
+		if ok {
+			rowids += rowid + ","
+			limit--
+		}
+	}
+
+	if rowids == "" {
+		return ""
+	}
+	return rowids[:len(rowids)-1]
+}
+
 // Find finds any obs match creteria.
 func (db *DB) findMany(query gjson.Result) (res string) {
 
@@ -255,14 +319,13 @@ func (db *DB) findMany(query gjson.Result) (res string) {
 	order := query.Get("orderBy").Str
 	reverse := query.Get("reverse").Int()
 
-	fmt.Println("reverse :", reverse)
 	if order != "" {
 		listData = orderBy(order, int(reverse), listData)
 	}
 
 	// TODO aggrigate here
 
-	// remove|rename some fields
+	// remove or rename some fields
 	flds := query.Get("fields")
 	listData = reFields(listData, flds)
 
@@ -394,10 +457,12 @@ func (db *DB) findById(query gjson.Result) (res string) {
 // Insert
 func (db *DB) insertOne(query gjson.Result) (res string) {
 	coll := query.Get("collection").Str
-	data := query.Get("data").Str
+	data := query.Get("data").String() // .Str not works with json obj
+	fmt.Println(coll, "\n", data)
 
 	err := db.insert(coll, data)
 	if err != nil {
+		fmt.Println(err)
 		return err.Error()
 	}
 

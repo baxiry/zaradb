@@ -7,10 +7,11 @@ for (let [key, value] of Object.entries(yourobject)) {
 
 
 // This configuration is suitable for development situation
-const configs = {debug: false, reconnectDecay:1 , reconnectInterval: 200, reconnectDecay:1, maxReconnectInterval:200}
+//const configs = {debug: false, reconnectDecay:1 , reconnectInterval: 200, reconnectDecay:1, maxReconnectInterval:200}
 
 // WebSocket
 var ws = new ReconnectingWebSocket('ws://localhost:1111/ws');
+
 
 function connection() {
 
@@ -74,28 +75,28 @@ queryInput.addEventListener('keydown', function(event) {
 
 
 function prettyJSON(jsonString) {
-    try {
+     try {
         const jsonObject = JSON.parse(jsonString);
         let res = JSON.stringify(jsonObject, null, 3);
         return  res
-    } catch (error) {
-        console.log("invalid json")
+     } catch (error) {
+        console.error("invalid json")
         return jsonString;
+    }
   }
-}
 }
 
 // Dealing with Textarea Height
 function calcHeight(value) {
-  let numberOfLineBreaks = (value.match(/\n/g) || []).length;
+    let numberOfLineBreaks = (value.match(/\n/g) || []).length;
     if (numberOfLineBreaks < 3) {
         numberOfLineBreaks = 3
     }
-    console.log("lines:",numberOfLineBreaks)
-  // min-height + lines x line-height + padding + border
-  let newHeight = 20 + numberOfLineBreaks * 20 + 12 + 2;
+    //console.log("lines:",numberOfLineBreaks)
+    // min-height + lines x line-height + padding + border
+    let newHeight = 20 + numberOfLineBreaks * 20 + 12 + 2;
     
-  return newHeight;
+    return newHeight;
 }
 
 let textarea = document.querySelector("textarea");
@@ -108,12 +109,10 @@ textarea.addEventListener("keyup", () => {
 connection()
 
 $(document).on("keypress", function (e) {
-   console.log("event : ", e) 
-   console.log("input : ", $("#query-input").val()) 
-
+   // console.log("event : ", e) 
+   // console.log("input : ", $("#query-input").val()) 
    // TODO some hilit for js object 
 });
 
-// var queryShow = ""
 
 

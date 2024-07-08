@@ -6,6 +6,20 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+func (db *DB) CreateCollection(collection string) error {
+	query := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (record json);`, collection)
+	_, err := db.db.Exec(query)
+	if err != nil {
+		return err
+	}
+	lid, err := getLastId(db.db, collection)
+	if err != nil {
+		return err
+	}
+	db.lastid[collection] = lid
+	return nil
+}
+
 func getCollections() string {
 	table, result := "", `["`
 	res, err := db.db.Query("SELECT name FROM sqlite_master WHERE type='table'")
