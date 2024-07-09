@@ -10,10 +10,11 @@ for (let [key, value] of Object.entries(yourobject)) {
 //const configs = {debug: false, reconnectDecay:1 , reconnectInterval: 200, reconnectDecay:1, maxReconnectInterval:200}
 
 // WebSocket
-var ws = new ReconnectingWebSocket('ws://localhost:1111/ws');
+//var ws = new ReconnectingWebSocket('ws://localhost:1111/ws');
 
 
 function connection() {
+var ws = new WebSocket('ws://localhost:1111/ws');
 
 ws.onopen = function(){
     //console.log('Connection established');
@@ -21,20 +22,15 @@ ws.onopen = function(){
 }
 
 //  when ws closed reconnect after 2 second
-ws.onclose = function(e) {
-    console.log('WebSocket connection closed'), e.error;
-    //ws.close()
-
+ws.onclose = function() {
+   // ws.close()
     $('#reconnecte').show();
-    //console.log("reload page to reconnect")
+    setTimeout(connection(), 500);
   };
 
 ws.onerror = function(){
-    // console.log('Connection error', e.error);
-    // ws.close()
-
-    $('#reconnecte').show();
-    // console.log("reload page to reconnect")
+    ws.close()
+    //$('#reconnecte').show();
 }
 
 //
