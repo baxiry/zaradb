@@ -26,40 +26,40 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 				if subQueryVal.Type == 3 { // 3:string,
 					//fmt.Println("here with: ", subQueryKey.String())
 
-					switch subQueryKey.String() {
+					switch subQueryKey.Str { // .String()
 
 					// comparition
 					case "$gt":
-						if !(dataVal.String() > subQueryVal.String()) {
+						if !(dataVal.Str > subQueryVal.Str) {
 							result = false
 						}
 						return result
 
 					case "$lt":
-						if !(dataVal.String() < subQueryVal.String()) {
+						if !(dataVal.Str < subQueryVal.Str) {
 							result = false
 						}
 						return result
 
 					case "$gte":
-						if !(dataVal.String() >= subQueryVal.String()) {
+						if !(dataVal.Str >= subQueryVal.Str) {
 							result = false
 						}
 						return result
 
 					case "$lte":
-						if !(dataVal.String() <= subQueryVal.String()) {
+						if !(dataVal.Str <= subQueryVal.Str) {
 							result = false
 						}
 						return result
 
 					case "$eq":
-						if dataVal.String() != subQueryVal.String() {
+						if dataVal.Str != subQueryVal.Str {
 							result = false
 						}
 						return result
 					case "$ne":
-						if dataVal.String() == subQueryVal.String() {
+						if dataVal.Str == subQueryVal.Str {
 							result = false
 						}
 						return result
@@ -71,19 +71,19 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 						return result
 
 					case "$st": // is it start with ?
-						if !strings.HasPrefix(dataVal.String(), subQueryVal.String()) {
+						if !strings.HasPrefix(dataVal.Str, subQueryVal.Str) {
 							result = false
 						}
 						return result
 
 					case "$en": // is it end with
-						if !strings.HasSuffix(dataVal.String(), subQueryVal.String()) {
+						if !strings.HasSuffix(dataVal.Str, subQueryVal.Str) {
 							result = false
 						}
 						return result
 
 					case "$c": // is it contains
-						if !strings.Contains(dataVal.String(), subQueryVal.String()) {
+						if !strings.Contains(dataVal.Str, subQueryVal.Str) {
 							result = false
 						}
 						return result
@@ -94,49 +94,48 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 						result = false
 						return result
 					}
-
 				}
 
-				switch subQueryKey.String() {
+				switch subQueryKey.Str {
 				case "$gt":
-					if !(dataVal.Int() > subQueryVal.Int()) {
+					if !(dataVal.Num > subQueryVal.Num) {
 						result = false
 					}
 					return result
 
 				case "$lt":
-					if !(dataVal.Int() < subQueryVal.Int()) {
+					if !(dataVal.Num < subQueryVal.Num) {
 						result = false
 					}
 					return result
 
 				case "$gte":
-					if !(dataVal.Int() >= subQueryVal.Int()) {
+					if !(dataVal.Num >= subQueryVal.Num) {
 						result = false
 					}
 					return result
 
 				case "$lte":
-					if !(dataVal.Int() <= subQueryVal.Int()) {
+					if !(dataVal.Num <= subQueryVal.Num) {
 						result = false
 					}
 					return result
 
 				case "$eq":
-					if dataVal.Int() != subQueryVal.Int() {
+					if dataVal.Num != subQueryVal.Num {
 						result = false
 					}
 					return result
 
 				case "$ne":
-					if dataVal.Int() == subQueryVal.Int() {
+					if dataVal.Num == subQueryVal.Num {
 						result = false
 					}
 					return result
 
 				case "$in": // in array
 					for _, v := range subQueryVal.Array() {
-						if dataVal.String() == v.String() {
+						if dataVal.Str == v.Str {
 							return result
 						}
 					}
@@ -145,7 +144,7 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 
 				case "$nin": // not in
 					for _, v := range subQueryVal.Array() {
-						if dataVal.String() == v.String() {
+						if dataVal.Str == v.Str {
 							result = false
 							return result
 						}
@@ -188,20 +187,22 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 						return result
 					}
 
-					err = fmt.Errorf("unknown %s operation", subQueryKey.String())
+					err = fmt.Errorf("unknown %s operation", subQueryKey.Str)
 					result = false
 					return result
 				}
 			})
 
-			match(queryVal, queryVal.String())
+			match(queryVal, queryVal.Str)
 			return result
 		}
 
-		if dataVal.String() != queryVal.String() {
+		if dataVal.Str != queryVal.Str {
 			result = false
 		}
 		return result // if true keep iterating
 	})
 	return result, err
 }
+
+// end

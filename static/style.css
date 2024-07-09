@@ -1,5 +1,5 @@
 * {
-    font-size: 1.05em; /* Ems */
+    font-size: 1.02em; /* Ems */
 }
 
 body {
@@ -17,7 +17,7 @@ body {
     height: calc(100vh - 100px);
     flex-direction: column;
     overflow: auto; 
-    font-size: 1.2em; 
+    /*font-size: 1.2em;*/ 
 }
 
 #data {
