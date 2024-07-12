@@ -26,7 +26,7 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 				if subQueryVal.Type == 3 { // 3:string,
 					//fmt.Println("here with: ", subQueryKey.String())
 
-					switch subQueryKey.Str { // .String()
+					switch subQueryKey.Str {
 
 					// comparition
 					case "$gt":
@@ -70,19 +70,19 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 						result = false
 						return result
 
-					case "$st": // is it start with ?
+					case "$st": // start with ..
 						if !strings.HasPrefix(dataVal.Str, subQueryVal.Str) {
 							result = false
 						}
 						return result
 
-					case "$en": // is it end with
+					case "$en": // end with ..
 						if !strings.HasSuffix(dataVal.Str, subQueryVal.Str) {
 							result = false
 						}
 						return result
 
-					case "$c": // is it contains
+					case "$c": // contains ..
 						if !strings.Contains(dataVal.Str, subQueryVal.Str) {
 							result = false
 						}
@@ -135,7 +135,8 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 
 				case "$in": // in array
 					for _, v := range subQueryVal.Array() {
-						if dataVal.Str == v.Str {
+						//fmt.Println("subQueryVal", subQueryVal)
+						if dataVal.Num == v.Num {
 							return result
 						}
 					}
@@ -144,20 +145,14 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 
 				case "$nin": // not in
 					for _, v := range subQueryVal.Array() {
-						if dataVal.Str == v.Str {
+						if dataVal.Num == v.Num {
 							result = false
 							return result
 						}
 					}
 					return result
 
-				//case "$ins": // is it is sub query ?
-
 				default:
-					if subQueryKey.Str == "$ins" {
-						fmt.Println("queryVal : ", subQueryVal.Raw)
-						fmt.Println("ids: ", getIds(subQueryVal))
-					}
 
 					// {$and:[{name:{$eq:"adam"}},{name:{$eq:"jawad"}}]}
 					// {$or: [{name:{$eq:"adam"}}, {name:{$eq:"jawad"}}]}

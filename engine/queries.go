@@ -194,11 +194,11 @@ func (db *DB) updateById(query gjson.Result) (result string) {
 	return id + " updated"
 }
 
-func getIds(query gjson.Result) string {
+func getIds(query gjson.Result) (string, error) {
 
 	coll := query.Get("collection").Str
 	if coll == "" {
-		return `{"error":"forgot collection name "}`
+		return "", fmt.Errorf("no collection")
 	}
 
 	mtch := query.Get("match")
@@ -215,9 +215,17 @@ func getIds(query gjson.Result) string {
 
 	stmt := `select rowid, record from ` + coll
 
+	sub := query.Get("subQuery")
+	if sub.Raw != "" {
+		fmt.Println("sub.Row is : ", sub.Raw)
+		ids, _ := getIds(sub)
+		stmt += ` where rowid in (` + ids + `);`
+		fmt.Println(stmt)
+	}
+
 	rows, err := db.db.Query(stmt)
 	if err != nil {
-		return err.Error()
+		return "", fmt.Errorf("db.Query %s", err)
 	}
 	defer rows.Close()
 
@@ -238,12 +246,12 @@ func getIds(query gjson.Result) string {
 		rowid = ""
 		err := rows.Scan(&rowid, &record)
 		if err != nil {
-			return err.Error() // TODO standaring errors
+			return "", fmt.Errorf("row.Scan %s", err)
 		}
 
 		ok, err := match(mtch, record)
 		if err != nil {
-			return err.Error()
+			return "", fmt.Errorf("match %s", err)
 		}
 
 		if ok {
@@ -253,9 +261,10 @@ func getIds(query gjson.Result) string {
 	}
 
 	if rowids == "" {
-		return ""
+		return "", fmt.Errorf("str zero val rowids")
 	}
-	return rowids[:len(rowids)-1]
+
+	return rowids[:len(rowids)-1], nil
 }
 
 // Find finds any obs match creteria.
@@ -269,10 +278,6 @@ func (db *DB) findMany(query gjson.Result) (res string) {
 
 	mtch := query.Get("match")
 
-	if mtch.Str == "" {
-
-	}
-
 	skip := query.Get("skip").Int()
 	limit := query.Get("limit").Int()
 	if limit == 0 {
@@ -280,6 +285,13 @@ func (db *DB) findMany(query gjson.Result) (res string) {
 	}
 
 	stmt := `select record from ` + coll
+
+	sub := query.Get("subQuery")
+	if sub.Raw != "" {
+		ids, _ := getIds(sub)
+		stmt += ` where rowid in (` + ids + `);`
+		//fmt.Println(stmt)
+	}
 
 	rows, err := db.db.Query(stmt)
 	if err != nil {
@@ -289,7 +301,9 @@ func (db *DB) findMany(query gjson.Result) (res string) {
 
 	record := ""
 	listData := make([]string, 0)
+
 	for rows.Next() {
+		fmt.Println("next")
 		if limit == 0 {
 			break
 		}
@@ -308,6 +322,8 @@ func (db *DB) findMany(query gjson.Result) (res string) {
 		if err != nil {
 			return err.Error()
 		}
+
+		fmt.Println("record: ", record)
 
 		if ok {
 			listData = append(listData, record)

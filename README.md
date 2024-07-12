@@ -19,9 +19,9 @@ and then open : `localhost:1111`
 this docs is for libs dev, but it good for everyone : 
 [zara api](https://github.com/baxiry/zaradb/wiki/Zara-API)
 
-> [!WARNING]
+> [!NOTE]
 > It is possible that some things will change within the API, 
-> The changes will be partial. Then it stabilizes completely in version 1.0.0
+> The changes will be partial. Then it stabilizes completely in version 1.0.0.
 > This documentation is intended for library developers, but is useful to anyone interested in documentary databases 
 
 #### Limitations:
