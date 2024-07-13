@@ -61,6 +61,14 @@
              <p>select objects that match all conditions</p>
              {action:"findMany", collection:"users", match:{ $and:[name:{$eq:"akram", age:$gt:13}]}}
 
+
+             <p>sub Query</p>
+              { action:"findMany", collection:"test", match:{age:{$lt:30}}, subQuery:{ collection:"users", match:{age:{$lt:50}} } }
+
+             <p>nested sub Query</p>
+
+             { action:"findMany", collection:"test", match:{age:{$lt:30}}, subQuery:{ collection:"users", match:{age:{$lt:50}} subQuery:{ collection:"emples", match:{name:{$c:"a"}} } } 
+
              <p>order by & reverse or DISC :</p>
              {action:"findMany", collection:"users", orderBy:"name", reverse:1}
 
