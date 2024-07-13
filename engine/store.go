@@ -53,7 +53,7 @@ func NewDB(dbName string) *DB {
 
 // InsertMany inserts list of object at one time
 func (db *DB) insertMany(query gjson.Result) (res string) {
-	coll := query.Get("collection").String()
+	coll := query.Get("collection").Str
 	data := query.Get("data").Array()
 
 	//d := strings.TrimLeft(obj, " ")
@@ -63,10 +63,11 @@ func (db *DB) insertMany(query gjson.Result) (res string) {
 	strData := ""
 	for _, obj := range data {
 		db.lastid[coll]++
+		// strconv for per
 		strData += `('{"_id":` + fmt.Sprint(db.lastid[coll]) + ", " + obj.String()[1:] + `'),`
 	}
 
-	fmt.Println("bulk data:  ", strData[:len(strData)-1])
+	//fmt.Println("bulk data:  ", strData[:len(strData)-1])
 
 	_, err := db.db.Exec(`insert into ` + coll + `(record) values` + strData[:len(strData)-1]) // fast
 	if err != nil {
@@ -88,7 +89,8 @@ func (db *DB) insert(collection, obj string) error {
 	data := `{"_id":` + fmt.Sprint(db.lastid[collection]) + ", " + d[1:]
 	fmt.Println("data: ", data)
 	fmt.Println("coll: ", collection)
-	_, err := db.db.Exec(`insert into ` + collection + `(record) values('` + data + `');`) // fast
+	// + s faster then format
+	_, err := db.db.Exec(`insert into ` + collection + `(record) values('` + data + `');`)
 	if err != nil {
 		fmt.Println(err)
 		db.lastid[collection]--
@@ -110,3 +112,5 @@ func check(hint string, err error) {
 		//return
 	}
 }
+
+// end

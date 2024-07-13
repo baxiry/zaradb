@@ -261,7 +261,7 @@ func getIds(query gjson.Result) (string, error) {
 	}
 
 	if rowids == "" {
-		return "", fmt.Errorf("str zero val rowids")
+		return "", fmt.Errorf("zero value")
 	}
 
 	return rowids[:len(rowids)-1], nil
@@ -303,7 +303,7 @@ func (db *DB) findMany(query gjson.Result) (res string) {
 	listData := make([]string, 0)
 
 	for rows.Next() {
-		fmt.Println("next")
+
 		if limit == 0 {
 			break
 		}
@@ -322,8 +322,6 @@ func (db *DB) findMany(query gjson.Result) (res string) {
 		if err != nil {
 			return err.Error()
 		}
-
-		fmt.Println("record: ", record)
 
 		if ok {
 			listData = append(listData, record)
