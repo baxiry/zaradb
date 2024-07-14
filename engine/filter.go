@@ -7,6 +7,79 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+func getIds(query gjson.Result) (string, error) {
+
+	coll := query.Get("collection").Str
+	if coll == "" {
+		return "", fmt.Errorf("no collection")
+	}
+
+	mtch := query.Get("match")
+
+	if mtch.String() == "" {
+		fmt.Println("match.Str is empty")
+	}
+
+	skip := query.Get("skip").Int()
+	limit := query.Get("limit").Int()
+	if limit == 0 {
+		limit = 100
+	}
+
+	stmt := `select rowid, record from ` + coll
+
+	sub := query.Get("subQuery")
+	if sub.Raw != "" {
+		fmt.Println("sub.Row is : ", sub.Raw)
+		ids, _ := getIds(sub)
+		stmt += ` where rowid in (` + ids + `);`
+		fmt.Println(stmt)
+	}
+
+	rows, err := db.db.Query(stmt)
+	if err != nil {
+		return "", fmt.Errorf("db.Query %s", err)
+	}
+	defer rows.Close()
+
+	record := ""
+	rowids := ""
+	rowid := ""
+
+	for rows.Next() {
+		if limit == 0 {
+			break
+		}
+
+		record = ""
+		rowid = ""
+		err := rows.Scan(&rowid, &record)
+		if err != nil {
+			return "", fmt.Errorf("row.Scan %s", err)
+		}
+
+		ok, err := match(mtch, record)
+		if err != nil {
+			return "", fmt.Errorf("match %s", err)
+		}
+
+		if ok {
+			if skip != 0 {
+				skip--
+				continue
+			}
+			rowids += rowid + ","
+			limit--
+		}
+	}
+
+	if rowids == "" {
+		return "", fmt.Errorf("zero value")
+	}
+
+	return rowids[:len(rowids)-1], nil
+}
+
 // gjson.Type :
 // json:5, array:5, int:2, string:3
 
