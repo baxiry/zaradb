@@ -91,9 +91,9 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 
 	filter.ForEach(func(queryKey, queryVal gjson.Result) bool {
 
-		dataVal := gjson.Get(data, queryKey.String())
+		dataVal := gjson.Get(data, queryKey.Str)
 
-		if queryVal.Type == 5 { // 5:json, int:2, string:3
+		if queryVal.Type == 5 { // 5:json-array, 2:int, 3:string
 			queryVal.ForEach(func(subQueryKey, subQueryVal gjson.Result) bool {
 
 				if subQueryVal.Type == 3 { // 3:string,
@@ -265,10 +265,20 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 			return result
 		}
 
-		if dataVal.Str != queryVal.Str {
+		// when value of query is number {age: 10}
+		if queryVal.Type == 2 {
+			if queryVal.Num != dataVal.Num {
+				result = false
+			}
+		}
+
+		// when value of query is string : {name: "adam"}
+		if queryVal.Str != dataVal.Str {
 			result = false
 		}
-		return result // if true keep iterating
+
+		// if result is true then keep iterating
+		return result
 	})
 	return result, err
 }
