@@ -214,9 +214,10 @@ func (db *DB) findMany(query gjson.Result) (res string) {
 	stmt := `select record from ` + coll
 
 	sub := query.Get("subQuery")
+	var ids []int64
 	if sub.Raw != "" {
-		ids, _ := getIds(sub)
-		stmt += ` where rowid in (` + ids + `);`
+		ids = getIds(sub)
+		//stmt += ` where rowid in (` + ids + `);`
 		//fmt.Println(stmt)
 	}
 
@@ -245,7 +246,7 @@ func (db *DB) findMany(query gjson.Result) (res string) {
 			return err.Error() // TODO standaring errors
 		}
 
-		ok, err := match(mtch, record)
+		ok, err := match(mtch, record, ids...)
 		if err != nil {
 			return err.Error()
 		}
@@ -357,7 +358,7 @@ func (db *DB) deleteOne(query gjson.Result) string {
 	// should close here
 	rows.Close()
 
-	_, err = db.db.Exec(`delete from ` + coll + ` where rowid = ` + rowid) // fast
+	_, err = db.db.Exec(`delete from ` + coll + ` where rowid = ` + rowid) // + is fast
 	if err != nil {
 		fmt.Println(err.Error())
 		return err.Error()

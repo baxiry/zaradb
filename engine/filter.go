@@ -7,11 +7,11 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-func getIds(query gjson.Result) (string, error) {
+func getIds(query gjson.Result) (ids []int64) {
 
 	coll := query.Get("collection").Str
 	if coll == "" {
-		return "", fmt.Errorf("no collection")
+		return nil
 	}
 
 	mtch := query.Get("match")
@@ -28,23 +28,21 @@ func getIds(query gjson.Result) (string, error) {
 
 	stmt := `select rowid, record from ` + coll
 
-	sub := query.Get("subQuery")
+	sub := query.Get("sQuery")
+
 	if sub.Raw != "" {
 		fmt.Println("sub.Row is : ", sub.Raw)
-		ids, _ := getIds(sub)
-		stmt += ` where rowid in (` + ids + `);`
-		fmt.Println(stmt)
+		ids = getIds(sub)
 	}
 
 	rows, err := db.db.Query(stmt)
 	if err != nil {
-		return "", fmt.Errorf("db.Query %s", err)
+		return nil
 	}
 	defer rows.Close()
 
 	record := ""
-	rowids := ""
-	rowid := ""
+	rowid := 0
 
 	for rows.Next() {
 		if limit == 0 {
@@ -52,15 +50,13 @@ func getIds(query gjson.Result) (string, error) {
 		}
 
 		record = ""
-		rowid = ""
-		err := rows.Scan(&rowid, &record)
-		if err != nil {
-			return "", fmt.Errorf("row.Scan %s", err)
-		}
+		rowid = 0
+		_ = rows.Scan(&rowid, &record)
 
 		ok, err := match(mtch, record)
 		if err != nil {
-			return "", fmt.Errorf("match %s", err)
+			fmt.Printf("match %s\n", err)
+			return nil
 		}
 
 		if ok {
@@ -68,23 +64,19 @@ func getIds(query gjson.Result) (string, error) {
 				skip--
 				continue
 			}
-			rowids += rowid + ","
+			ids = append(ids, int64(rowid))
 			limit--
 		}
 	}
+	fmt.Println("\n", ids)
 
-	if rowids == "" {
-		return "", fmt.Errorf("zero value")
-	}
-
-	return rowids[:len(rowids)-1], nil
+	return ids
 }
 
-// gjson.Type :
-// json:5, array:5, int:2, string:3
+// gjson.Type =>  json:5, array:5, int:2, string:3
 
 // match verifies that data matches the conditions
-func match(filter gjson.Result, data string) (result bool, err error) {
+func match(filter gjson.Result, data string, ids ...int64) (result bool, err error) {
 	// TODO should return syntax error if op unknown
 
 	result = true
@@ -93,122 +85,155 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 
 		dataVal := gjson.Get(data, queryKey.Str)
 
-		if queryVal.Type == 5 { // 5:json-array, 2:int, 3:string
-			queryVal.ForEach(func(subQueryKey, subQueryVal gjson.Result) bool {
+		if queryVal.Type == 5 { // 5:json
+			// {name:{$eq:"adam"}, age:{$gt: 18}}
 
-				if subQueryVal.Type == 3 { // 3:string,
-					//fmt.Println("here with: ", subQueryKey.String())
+			queryVal.ForEach(func(sQueryKey, sQueryVal gjson.Result) bool {
 
-					switch subQueryKey.Str {
+				if sQueryVal.Type == 3 { // 3:string,
+					// from :  {$eq:"adam"} , sQueryKey is $eq, sQueryVal is "adam"
 
-					// comparition
+					switch sQueryKey.Str {
+
+					// compare sQueryKey
 					case "$gt":
-						if !(dataVal.Str > subQueryVal.Str) {
+						if !(dataVal.Str > sQueryVal.Str) {
 							result = false
 						}
 						return result
 
 					case "$lt":
-						if !(dataVal.Str < subQueryVal.Str) {
+						if !(dataVal.Str < sQueryVal.Str) {
 							result = false
 						}
 						return result
 
 					case "$gte":
-						if !(dataVal.Str >= subQueryVal.Str) {
+						if !(dataVal.Str >= sQueryVal.Str) {
 							result = false
 						}
 						return result
 
 					case "$lte":
-						if !(dataVal.Str <= subQueryVal.Str) {
+						if !(dataVal.Str <= sQueryVal.Str) {
 							result = false
 						}
 						return result
 
 					case "$eq":
-						if dataVal.Str != subQueryVal.Str {
+						if dataVal.Str != sQueryVal.Str {
 							result = false
 						}
 						return result
 					case "$ne":
-						if dataVal.Str == subQueryVal.Str {
+						if dataVal.Str == sQueryVal.Str {
 							result = false
 						}
 						return result
 
-					//
-					case "$or": // not in
-
-						result = false
-						return result
-
 					case "$st": // start with ..
-						if !strings.HasPrefix(dataVal.Str, subQueryVal.Str) {
+						if !strings.HasPrefix(dataVal.Str, sQueryVal.Str) {
 							result = false
 						}
 						return result
 
 					case "$en": // end with ..
-						if !strings.HasSuffix(dataVal.Str, subQueryVal.Str) {
+						if !strings.HasSuffix(dataVal.Str, sQueryVal.Str) {
 							result = false
 						}
 						return result
 
 					case "$c": // contains ..
-						if !strings.Contains(dataVal.Str, subQueryVal.Str) {
+						if !strings.Contains(dataVal.Str, sQueryVal.Str) {
 							result = false
 						}
 						return result
 
+					// Handle sub Database Query
+					case "$sub":
+						ln := len(ids)
+						if ln == 0 {
+							result = false
+							return result
+						}
+
+						switch sQueryVal.Str {
+						// what ??
+
+						case "$in": // in array
+							for _, v := range ids {
+								//fmt.Println("sQueryVal", sQueryVal)
+								if dataVal.Num == float64(v) {
+									return result
+								}
+							}
+							result = false
+							return result
+
+						case "$nin": // not in
+							for _, v := range ids {
+								if dataVal.Num == float64(v) {
+									result = false
+									return result
+								}
+							}
+							return result
+
+						} // end switch of sub query
+
+						// return  sub query case
+						return result
+
 					default:
-						err = fmt.Errorf("unknown %s operation", subQueryKey.Value())
-						//fmt.Println("..wher here", subQueryKey.Value(), subQueryKey.Type)
+						err = fmt.Errorf("unknown %s operation", sQueryKey.Str)
+						//fmt.Println("..wher here", sQueryKey.Value(), sQueryKey.Type)
 						result = false
 						return result
 					}
 				}
 
-				switch subQueryKey.Str {
+				// if sQueryVal is number
+				switch sQueryKey.Str {
+
 				case "$gt":
-					if !(dataVal.Num > subQueryVal.Num) {
+					if !(dataVal.Num > sQueryVal.Num) {
 						result = false
 					}
 					return result
 
 				case "$lt":
-					if !(dataVal.Num < subQueryVal.Num) {
+					if !(dataVal.Num < sQueryVal.Num) {
 						result = false
 					}
 					return result
 
 				case "$gte":
-					if !(dataVal.Num >= subQueryVal.Num) {
+					if !(dataVal.Num >= sQueryVal.Num) {
 						result = false
 					}
 					return result
 
 				case "$lte":
-					if !(dataVal.Num <= subQueryVal.Num) {
+					if !(dataVal.Num <= sQueryVal.Num) {
 						result = false
 					}
 					return result
 
 				case "$eq":
-					if dataVal.Num != subQueryVal.Num {
+					if dataVal.Num != sQueryVal.Num {
 						result = false
 					}
 					return result
 
 				case "$ne":
-					if dataVal.Num == subQueryVal.Num {
+					if dataVal.Num == sQueryVal.Num {
 						result = false
 					}
 					return result
 
 				case "$in": // in array
-					for _, v := range subQueryVal.Array() {
-						//fmt.Println("subQueryVal", subQueryVal)
+					for _, v := range sQueryVal.Array() {
+						//fmt.Println("sQueryVal", sQueryVal)
 						if dataVal.Num == v.Num {
 							return result
 						}
@@ -217,7 +242,7 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 					return result
 
 				case "$nin": // not in
-					for _, v := range subQueryVal.Array() {
+					for _, v := range sQueryVal.Array() {
 						if dataVal.Num == v.Num {
 							result = false
 							return result
@@ -228,8 +253,6 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 				default:
 
 					// {$and:[{name:{$eq:"adam"}},{name:{$eq:"jawad"}}]}
-					// {$or: [{name:{$eq:"adam"}}, {name:{$eq:"jawad"}}]}
-
 					if queryKey.Str == "$and" {
 
 						for _, v := range queryVal.Array() {
@@ -242,6 +265,7 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 						return result
 					}
 
+					// {$or: [{name:{$eq:"adam"}}, {name:{$eq:"jawad"}}]}
 					if queryKey.Str == "$or" {
 
 						for _, v := range queryVal.Array() {
@@ -255,7 +279,7 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 						return result
 					}
 
-					err = fmt.Errorf("unknown %s operation", subQueryKey.Str)
+					err = fmt.Errorf("unknown %s operation", sQueryKey.Str)
 					result = false
 					return result
 				}
@@ -265,14 +289,14 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 			return result
 		}
 
-		// when value of query is number {age: 10}
+		// if queryVal is number : {age: 10}
 		if queryVal.Type == 2 {
 			if queryVal.Num != dataVal.Num {
 				result = false
 			}
 		}
 
-		// when value of query is string : {name: "adam"}
+		// if queryVal is string : {name: "adam"}
 		if queryVal.Str != dataVal.Str {
 			result = false
 		}
