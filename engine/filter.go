@@ -96,6 +96,55 @@ func match(filter gjson.Result, data string, ids ...int64) (result bool, err err
 					switch sQueryKey.Str {
 
 					// compare sQueryKey
+
+					case "$st": // start with ..
+						if !strings.HasPrefix(dataVal.Str, sQueryVal.Str) {
+							result = false
+						}
+						return result
+
+					case "$en": // end with ..
+						if !strings.HasSuffix(dataVal.Str, sQueryVal.Str) {
+							result = false
+						}
+						return result
+
+					case "$c": // contains ..
+						if !strings.Contains(dataVal.Str, sQueryVal.Str) {
+							result = false
+						}
+						return result
+
+					case "$nst": // not start with ..
+						if strings.HasPrefix(dataVal.Str, sQueryVal.Str) {
+							result = false
+						}
+						return result
+
+					case "$nen": // not end with ..
+						if strings.HasSuffix(dataVal.Str, sQueryVal.Str) {
+							result = false
+						}
+						return result
+
+					case "$nc": // not contains ..
+						if strings.Contains(dataVal.Str, sQueryVal.Str) {
+							result = false
+						}
+						return result
+
+					case "$ne":
+						if dataVal.Str == sQueryVal.Str {
+							result = false
+						}
+						return result
+
+					case "$eq":
+						if dataVal.Str != sQueryVal.Str {
+							result = false
+						}
+						return result
+
 					case "$gt":
 						if !(dataVal.Str > sQueryVal.Str) {
 							result = false
@@ -116,35 +165,6 @@ func match(filter gjson.Result, data string, ids ...int64) (result bool, err err
 
 					case "$lte":
 						if !(dataVal.Str <= sQueryVal.Str) {
-							result = false
-						}
-						return result
-
-					case "$eq":
-						if dataVal.Str != sQueryVal.Str {
-							result = false
-						}
-						return result
-					case "$ne":
-						if dataVal.Str == sQueryVal.Str {
-							result = false
-						}
-						return result
-
-					case "$st": // start with ..
-						if !strings.HasPrefix(dataVal.Str, sQueryVal.Str) {
-							result = false
-						}
-						return result
-
-					case "$en": // end with ..
-						if !strings.HasSuffix(dataVal.Str, sQueryVal.Str) {
-							result = false
-						}
-						return result
-
-					case "$c": // contains ..
-						if !strings.Contains(dataVal.Str, sQueryVal.Str) {
 							result = false
 						}
 						return result
