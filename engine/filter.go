@@ -83,6 +83,24 @@ func match(filter gjson.Result, data string, ids ...int64) (result bool, err err
 						}
 						return result
 
+					case "$nst": // start with ..
+						if strings.HasPrefix(dataVal.Str, sQueryVal.Str) {
+							result = false
+						}
+						return result
+
+					case "$nen": // end with ..
+						if strings.HasSuffix(dataVal.Str, sQueryVal.Str) {
+							result = false
+						}
+						return result
+
+					case "$nc": // contains ..
+						if strings.Contains(dataVal.Str, sQueryVal.Str) {
+							result = false
+						}
+						return result
+
 					default:
 
 						err = fmt.Errorf("unknown %s operation", sQueryKey.Str)
