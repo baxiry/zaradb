@@ -38,7 +38,7 @@ func (db *DB) deleteMany(query gjson.Result) string {
 			return err.Error() // TODO standaring errors
 		}
 
-		ok, err := match(mtch, record)
+		ok, err := match(mtch, record, subs)
 		if err != nil {
 			return err.Error()
 		}
@@ -91,7 +91,7 @@ func (db *DB) updateMany(query gjson.Result) (result string) {
 			return err.Error() // TODO standaring errors
 		}
 
-		ok, err := match(mtch, record)
+		ok, err := match(mtch, record, subs)
 		if err != nil {
 			return err.Error()
 		}
@@ -145,7 +145,7 @@ func (db *DB) updateOne(query gjson.Result) (result string) {
 			return err.Error() // TODO standaring errors
 		}
 
-		ok, err := match(mtch, record)
+		ok, err := match(mtch, record, subs)
 		if err != nil {
 			return err.Error()
 		}
@@ -213,10 +213,9 @@ func (db *DB) findMany(query gjson.Result) (res string) {
 
 	stmt := `select record from ` + coll
 
-	sub := query.Get("subQuery")
-	var ids []int64
-	if sub.Raw != "" {
-		ids = getIds(sub)
+	subs = query.Get("subs")
+	if subs.Raw != "" {
+		//ids = getsub(sub)
 		//stmt += ` where rowid in (` + ids + `);`
 		//fmt.Println(stmt)
 	}
@@ -246,7 +245,7 @@ func (db *DB) findMany(query gjson.Result) (res string) {
 			return err.Error() // TODO standaring errors
 		}
 
-		ok, err := match(mtch, record, ids...)
+		ok, err := match(mtch, record, subs)
 		if err != nil {
 			return err.Error()
 		}
@@ -288,6 +287,7 @@ func (db *DB) findMany(query gjson.Result) (res string) {
 func (db *DB) findOne(query gjson.Result) (res string) {
 	coll := query.Get("collection").Str
 	skip := query.Get("skip").Int()
+	//subs := query.Get("subs")
 
 	// TODO are skyp useful here ?
 
@@ -311,7 +311,7 @@ func (db *DB) findOne(query gjson.Result) (res string) {
 		if err != nil {
 			return err.Error()
 		}
-		b, err := match(mtch, record)
+		b, err := match(mtch, record, subs)
 		if err != nil {
 			return err.Error()
 		}
@@ -347,7 +347,7 @@ func (db *DB) deleteOne(query gjson.Result) string {
 			fmt.Println(err.Error())
 		}
 
-		b, err := match(mtch, record)
+		b, err := match(mtch, record, subs)
 		if err != nil {
 			return err.Error()
 		}

@@ -10,8 +10,8 @@ import (
 // gjson.Type =>  json:5, array:5, int:2, string:3
 
 // match verifies that data matches the conditions
-func match(filter gjson.Result, data string, ids ...int64) (result bool, err error) {
-	// TODO should return syntax error if op unknown
+func match(filter gjson.Result, data string, subs gjson.Result) (result bool, err error) {
+	// TODO should I return syntax error if op unknown ?
 
 	result = true
 
@@ -21,50 +21,15 @@ func match(filter gjson.Result, data string, ids ...int64) (result bool, err err
 
 		if queryVal.Type == 5 { // 5:json
 			// {name:{$eq:"adam"}, age:{$gt: 18}}
-
 			queryVal.ForEach(func(sQueryKey, sQueryVal gjson.Result) bool {
 
 				if sQueryVal.Type == 3 { // 3:string,
 					// from :  {$eq:"adam"} , sQueryKey is $eq, sQueryVal is "adam"
 
 					switch sQueryKey.Str {
+					// TODO check if checking sQueryKey is not []string is reduce cpu consome ?
 
 					// compare sQueryKey
-					case "$gt":
-						if !(dataVal.Str > sQueryVal.Str) {
-							result = false
-						}
-						return result
-
-					case "$lt":
-						if !(dataVal.Str < sQueryVal.Str) {
-							result = false
-						}
-						return result
-
-					case "$gte":
-						if !(dataVal.Str >= sQueryVal.Str) {
-							result = false
-						}
-						return result
-
-					case "$lte":
-						if !(dataVal.Str <= sQueryVal.Str) {
-							result = false
-						}
-						return result
-
-					case "$eq":
-						if dataVal.Str != sQueryVal.Str {
-							result = false
-						}
-						return result
-					case "$ne":
-						if dataVal.Str == sQueryVal.Str {
-							result = false
-						}
-						return result
-
 					case "$st": // start with ..
 						if !strings.HasPrefix(dataVal.Str, sQueryVal.Str) {
 							result = false
@@ -101,15 +66,53 @@ func match(filter gjson.Result, data string, ids ...int64) (result bool, err err
 						}
 						return result
 
-					default:
+					case "$gt":
+						if !(dataVal.Str > sQueryVal.Str) {
+							result = false
+						}
+						return result
 
+					case "$lt":
+						if !(dataVal.Str < sQueryVal.Str) {
+							result = false
+						}
+						return result
+
+					case "$gte":
+						if !(dataVal.Str >= sQueryVal.Str) {
+							result = false
+						}
+						return result
+
+					case "$lte":
+						if !(dataVal.Str <= sQueryVal.Str) {
+							result = false
+						}
+						return result
+
+					case "$eq":
+						if dataVal.Str != sQueryVal.Str {
+							result = false
+						}
+						return result
+					case "$ne":
+						if dataVal.Str == sQueryVal.Str {
+							result = false
+						}
+						return result
+					case "$sub":
+						fmt.Println()
+						fmt.Println("name sub her is : ", sQueryVal.Str)
+						fmt.Println("subs.Get: ", subs.Get(sQueryVal.Str))
+						return result
+
+					default:
 						err = fmt.Errorf("unknown %s operation", sQueryKey.Str)
 						//fmt.Println("..wher here", sQueryKey.Value(), sQueryKey.Type)
 						result = false
 						return result
 					}
 				}
-
 				// if sQueryVal is number
 				switch sQueryKey.Str {
 
@@ -200,7 +203,7 @@ func match(filter gjson.Result, data string, ids ...int64) (result bool, err err
 					if queryKey.Str == "$and" {
 
 						for _, v := range queryVal.Array() {
-							res, _ := match(v, data)
+							res, _ := match(v, data, subs)
 							if !res {
 								result = false
 								return result
@@ -214,7 +217,7 @@ func match(filter gjson.Result, data string, ids ...int64) (result bool, err err
 
 						for _, v := range queryVal.Array() {
 
-							res, _ := match(v, data)
+							res, _ := match(v, data, subs)
 							if res {
 								return result
 							}
@@ -223,13 +226,12 @@ func match(filter gjson.Result, data string, ids ...int64) (result bool, err err
 						return result
 					}
 
-					err = fmt.Errorf("unknown %s operation", sQueryKey.Str)
 					result = false
 					return result
 				}
 			})
 
-			match(queryVal, queryVal.Str)
+			match(queryVal, queryVal.Str, subs)
 			return result
 		}
 
@@ -251,7 +253,20 @@ func match(filter gjson.Result, data string, ids ...int64) (result bool, err err
 	return result, err
 }
 
-func getIds(query gjson.Result) (ids []int64) {
+var subs = gjson.Result{}
+
+// fsubs is field of subQueries
+func getSubs(fsubs gjson.Result) gjson.Result {
+
+	subs := fsubs.Get("subs")
+	if subs.Raw == "" {
+		fmt.Println("no subs")
+	}
+
+	return subs
+}
+
+func getsub(query gjson.Result) (ids []int64) {
 
 	coll := query.Get("collection").Str
 	if coll == "" {
@@ -272,11 +287,10 @@ func getIds(query gjson.Result) (ids []int64) {
 
 	stmt := `select rowid, record from ` + coll
 
-	sub := query.Get("sQuery")
+	subs := query.Get("subs")
 
-	if sub.Raw != "" {
-		fmt.Println("sub.Row is : ", sub.Raw)
-		ids = getIds(sub)
+	if subs.Raw != "" {
+		fmt.Println("sub.Row is : ", subs.Raw)
 	}
 
 	rows, err := db.db.Query(stmt)
@@ -297,7 +311,7 @@ func getIds(query gjson.Result) (ids []int64) {
 		rowid = 0
 		_ = rows.Scan(&rowid, &record)
 
-		ok, err := match(mtch, record)
+		ok, err := match(mtch, record, subs)
 		if err != nil {
 			fmt.Printf("match %s\n", err)
 			return nil
@@ -312,7 +326,7 @@ func getIds(query gjson.Result) (ids []int64) {
 			limit--
 		}
 	}
-	fmt.Println("\n", ids)
+	//fmt.Println("\n", ids)
 
 	return ids
 }
