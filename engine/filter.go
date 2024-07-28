@@ -100,11 +100,6 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 							result = false
 						}
 						return result
-					case "$sub":
-						fmt.Println()
-						fmt.Println("in str switch. Raw: ", sQueryVal.Raw)
-						fmt.Println("sub: ", sQueryVal.Str)
-						return result
 
 					default:
 						err = fmt.Errorf("unknown %s operation", sQueryKey.Str)
@@ -116,10 +111,11 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 				// if sQueryVal is number
 				switch sQueryKey.Str {
 
-				case "$sub":
+				case "sub":
 					//if Subs[]
-					fmt.Println()
+					fmt.Println("we here")
 					fmt.Println("op: ", sQueryKey.Str)
+					fmt.Println("queryVal: ", queryVal)
 
 					getSubs(dataVal, sQueryVal)
 					return result
