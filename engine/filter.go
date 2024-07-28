@@ -10,7 +10,7 @@ import (
 // gjson.Type =>  json:5, array:5, int:2, string:3
 
 // match verifies that data matches the conditions
-func match(filter gjson.Result, data string, subs gjson.Result) (result bool, err error) {
+func match(filter gjson.Result, data string) (result bool, err error) {
 	// TODO should I return syntax error if op unknown ?
 
 	result = true
@@ -102,8 +102,8 @@ func match(filter gjson.Result, data string, subs gjson.Result) (result bool, er
 						return result
 					case "$sub":
 						fmt.Println()
-						fmt.Println("name sub her is : ", sQueryVal.Str)
-						fmt.Println("subs.Get: ", subs.Get(sQueryVal.Str))
+						fmt.Println("in str switch. Raw: ", sQueryVal.Raw)
+						fmt.Println("sub: ", sQueryVal.Str)
 						return result
 
 					default:
@@ -115,6 +115,14 @@ func match(filter gjson.Result, data string, subs gjson.Result) (result bool, er
 				}
 				// if sQueryVal is number
 				switch sQueryKey.Str {
+
+				case "$sub":
+					//if Subs[]
+					fmt.Println()
+					fmt.Println("op: ", sQueryKey.Str)
+
+					getSubs(dataVal, sQueryVal)
+					return result
 
 				case "$gt":
 					if !(dataVal.Num > sQueryVal.Num) {
@@ -203,7 +211,7 @@ func match(filter gjson.Result, data string, subs gjson.Result) (result bool, er
 					if queryKey.Str == "$and" {
 
 						for _, v := range queryVal.Array() {
-							res, _ := match(v, data, subs)
+							res, _ := match(v, data)
 							if !res {
 								result = false
 								return result
@@ -217,7 +225,7 @@ func match(filter gjson.Result, data string, subs gjson.Result) (result bool, er
 
 						for _, v := range queryVal.Array() {
 
-							res, _ := match(v, data, subs)
+							res, _ := match(v, data)
 							if res {
 								return result
 							}
@@ -231,7 +239,7 @@ func match(filter gjson.Result, data string, subs gjson.Result) (result bool, er
 				}
 			})
 
-			match(queryVal, queryVal.Str, subs)
+			match(queryVal, queryVal.Str)
 			return result
 		}
 
@@ -253,17 +261,14 @@ func match(filter gjson.Result, data string, subs gjson.Result) (result bool, er
 	return result, err
 }
 
-var subs = gjson.Result{}
+//var subs = make(map[string]interface{})
+//var subs = gjson.Result{}
 
 // fsubs is field of subQueries
-func getSubs(fsubs gjson.Result) gjson.Result {
-
-	subs := fsubs.Get("subs")
-	if subs.Raw == "" {
-		fmt.Println("no subs")
-	}
-
-	return subs
+func getSubs(dataVal, subQuery gjson.Result) (bool, error) {
+	fmt.Println("data Val    : ", dataVal.Raw)
+	fmt.Println("sub query    : ", subQuery.Raw)
+	return true, nil
 }
 
 func getsub(query gjson.Result) (ids []int64) {
@@ -311,7 +316,7 @@ func getsub(query gjson.Result) (ids []int64) {
 		rowid = 0
 		_ = rows.Scan(&rowid, &record)
 
-		ok, err := match(mtch, record, subs)
+		ok, err := match(mtch, record)
 		if err != nil {
 			fmt.Printf("match %s\n", err)
 			return nil
