@@ -122,6 +122,16 @@
              <p>is str contains 'ad' ? :</p>
              {action:"findMany", collection:"test", match:{name:{$c:"ad"}}}
 
+             <p>is str not starts with 'ad' ? :</p> 
+             {action:"findMany", collection:"test", match:{name:{$nst:"ad"}}}
+
+             <p>is str not ends with 'ad' ? :</p>  
+             {action:"findMany", collection:"test", match:{name:{$nen:"ad"}}}
+
+             <p>is str not contains 'ad' ? :</p>
+             {action:"findMany", collection:"test", match:{name:{$nc:"ad"}}}
+
+
              <br/>
              <br/>
              <br/>
