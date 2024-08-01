@@ -69,13 +69,20 @@ func (db *DB) insertMany(query gjson.Result) (res string) {
 
 	//fmt.Println("bulk data:  ", strData[:len(strData)-1])
 
-	_, err := db.db.Exec(`insert into ` + coll + `(record) values` + strData[:len(strData)-1]) // fast
+	_, err := db.db.Exec(`insert into ` + coll + `(record) values` + strData[:len(strData)-1]) // `+` is fast
 	if err != nil {
 		db.lastid[coll] = lid
+		if strings.Contains(err.Error(), "no such table") {
+			err = db.CreateCollection(coll)
+			if err != nil {
+				return err.Error()
+			}
+			return db.insertMany(query)
+		}
 		return err.Error()
 	}
 
-	return "in progress"
+	return "inserted"
 }
 
 // insert new record

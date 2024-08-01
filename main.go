@@ -13,10 +13,10 @@ import (
 var content embed.FS
 
 func main() {
-	// TODO close programe greatfully.
+	// TODO: Close program gracefully.
 
 	db := engine.NewDB("test.db")
-	db.CreateCollection("users")
+	db.CreateCollection("test")
 	defer db.Close()
 
 	fmt.Printf("interacte with zaradb from %s:%s\n", Host, Port)
