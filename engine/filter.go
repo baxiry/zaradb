@@ -21,6 +21,7 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 
 		if queryVal.Type == 5 { // 5:json
 			// {name:{$eq:"adam"}, age:{$gt: 18}}
+
 			queryVal.ForEach(func(sQueryKey, sQueryVal gjson.Result) bool {
 
 				if sQueryVal.Type == 3 { // 3:string,
@@ -100,6 +101,9 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 							result = false
 						}
 						return result
+					case "$glob":
+						fmt.Println("geting glob")
+						return result
 
 					default:
 						err = fmt.Errorf("unknown %s operation", sQueryKey.Str)
@@ -113,6 +117,7 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 
 				case "sub":
 					//if Subs[]
+					// TODO sub queries
 					fmt.Println("we here")
 					fmt.Println("op: ", sQueryKey.Str)
 					fmt.Println("queryVal: ", queryVal)
@@ -199,6 +204,53 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 							return result
 						}
 					}
+					return result
+
+				case "$can": // containe any
+
+					for _, v := range sQueryVal.Array() {
+						if strings.Contains(dataVal.Str, v.Str) {
+							return result
+						}
+					}
+
+					result = false
+					return result
+
+				case "$nca": // not containe any
+
+					for _, v := range sQueryVal.Array() {
+						if strings.Contains(dataVal.Str, v.Str) {
+							result = false
+							return result
+						}
+					}
+
+					return result
+
+				case "$cal": // containe all
+
+					for _, v := range sQueryVal.Array() {
+						if !strings.Contains(dataVal.Str, v.Str) {
+							result = false
+							return result
+						}
+					}
+					return result
+
+				case "$ncal": // not containe all
+					res := len(sQueryVal.Array())
+
+					for _, v := range sQueryVal.Array() {
+						if strings.Contains(dataVal.Str, v.Str) {
+							res--
+						}
+					}
+					if res == 0 {
+						result = false
+						return result
+					}
+
 					return result
 
 				default:
