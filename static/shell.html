@@ -30,100 +30,96 @@
          <h4>examples</h4>
 
 <p>insert one data object 
-<pre>{action:"insert", collection:"users", data:{name:"adam", age:12}}</pre>
+<pre>{action:"insert", collection:"users", data:{name:"adam", age:12}}</pre></br>
 
 <p>insertMany inserts many data objects at one time 'bulk'</p>
-<pre>{action:"insertMany", collection:"test", data:[{name:"jalal", age:23},{name:"akram", age:30},{name:"hasna", age:35}]}</pre>
+<pre>{action:"insertMany", collection:"test", data:[{name:"jalal", age:23},{name:"akram", age:30},{name:"hasna", age:35}]}</pre></br>
 
 <p>select one object</p>
-<pre>{action:"findOne", collection:"users", match:{name:"adam"}}</pre>
+<pre>{action:"findOne", collection:"users", match:{name:"adam"}}</pre></br>
 
 <p>select objects match conditions</p>
-<pre>{action:"findMany", collection:"users", match:{name:"adam"}}</pre>
+<pre>{action:"findMany", collection:"users", match:{name:"adam"}}</pre></br>
 
 <p>select objects that match the conditions</p>
 <pre>{action:"findMany", collection:"users", match:{name:"adam", age:{$gt:12}}}</pre>
 <p>match numeric data by $eq $nq $lt $gt $ge $le</p>
-<p>match text data by $eq $nq $lt $gt $ge $le </p>
+<p>match text data by $eq $nq $lt $gt $ge $le $c $nc $st $nst $en $nen </p></br>
 
 <p>select objects that match any value </p>
 <pre>{action:"findMany", collection:"users", match:{ age:{$in:[12, 23, 34]}}}</pre>
- </br>
- <pre>{action:"findMany", collection:"users", match:{ name:{$in:["akram", "zaid"]}}}</pre>
+<pre>{action:"findMany", collection:"users", match:{ name:{$in:["akram", "zaid"]}}}</pre></br>
 
- <p>select objects that do not match any value</p>
+<p>select objects that do not match any value</p>
 <pre>{action:"findMany", collection:"users", match:{ age:{$nin:[12, 23, 34]}}}</pre>
-</br>
-<pre>{action:"findMany", collection:"users", match:{ name:{$nin:["akram", "zaid"]}}}</pre>
+<pre>{action:"findMany", collection:"users", match:{ name:{$nin:["akram", "zaid"]}}}</pre></br>
 
- <p>select objects that match any conditions</p>
- <pre>{action:"findMany", collection:"users", match:{ $or:[name:{$eq:"akram", age:$gt:13}]}}</pre>
+<p>select objects that match any conditions</p>
+<pre>{action:"findMany", collection:"users", match:{ $or:[name:{$eq:"akram", age:$gt:13}]}}</pre></br>
 
- <p>select objects that match all conditions</p>
-<pre>{action:"findMany", collection:"users", match:{ $and:[name:{$eq:"akram", age:$gt:13}]}}</pre>
+<p>select objects that match all conditions</p>
+<pre>{action:"findMany", collection:"users", match:{ $and:[name:{$eq:"akram", age:$gt:13}]}}</pre></br>
 
 
 <p>sub Query (in progress)</p>
-<pre>{ match:{name:{sub:{op:"$eq", action:"findOne", collection:"users",match:{name:"adam"}}}}}</pre>
+<pre>{ match:{name:{sub:{op:"$eq", action:"findOne", collection:"users",match:{name:"adam"}}}}}</pre></br>
 
 <p>order by & reverse or DISC :</p>
-<pre>{action:"findMany", collection:"users", orderBy:"name", reverse:1}</pre>
+<pre>{action:"findMany", collection:"users", orderBy:"name", reverse:1}</pre></br>
 
 <p>updateById </p>
-<pre>{action:"updateById", collection:"test", _id:3, data:{name:"hosam", age:10}}</pre>
+<pre>{action:"updateById", collection:"test", _id:3, data:{name:"hosam", age:10}}</pre></br>
 
 <p>updateOne </p>
-<pre>{action:"updateById", collection:"test", match:{_id{$gt:33}}, data:{name:"hosam", age:10}}</pre>
+<pre>{action:"updateById", collection:"test", match:{_id{$gt:33}}, data:{name:"hosam", age:10}}</pre></br>
 
 <p>updateMany </p>
-<pre>{action:"updateById", collection:"test",  match:{_id{$gt:33}}, data:{name:"hosam", age:10}}</pre>
-
-
+<pre>{action:"updateById", collection:"test",  match:{_id{$gt:33}}, data:{name:"hosam", age:10}}</pre></br>
 
 <p>delete first objects that match the conditions</p>
-<pre>{action:"deleteOne", collection:"users", match:{name:"adam", age:{$gt:12}}}</pre>
+<pre>{action:"deleteOne", collection:"users", match:{name:"adam", age:{$gt:12}}}</pre></br>
 
 <p>delete all objects that match the conditions </p>
-<pre>{action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}}</pre>
+<pre>{action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}}</pre></br>
 
 <p>skip or ignor some matching objects</p>
-<pre>{action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}, skip: 3}</pre>
+<pre>{action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}, skip: 3}</pre></br>
 
 <p>Limited to a number of matching objects</p>
-<pre>{action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}, skip: 3, limit:3}</pre>
+<pre>{action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}, skip: 3, limit:3}</pre></br>
 
 <p>deleteMany</p>
-<pre>{action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}, skip: 3, limit:3}</pre>
+<pre>{action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}, skip: 3, limit:3}</pre></br>
 
 
 
 <p>exclode fields</p>
-<pre>{action:"findMany", collection:"test", fields:{_id:0, name:0}}</pre>
+<pre>{action:"findMany", collection:"test", fields:{_id:0, name:0}}</pre></br>
 
 
 <p>rename fields</p>
-  <pre>{action:"findMany", collection:"test", fields:{_id:0, name:"full_name"}}</pre>
+  <pre>{action:"findMany", collection:"test", fields:{_id:0, name:"full_name"}}</pre></br>
 
 
  <p>String matching, by `$st` `$en` `$c` :</p>
 
  <p>is str starts with 'ad' ? :</p> 
- <pre>{action:"findMany", collection:"test", match:{name:{$st:"ad"}}}</pre>
+ <pre>{action:"findMany", collection:"test", match:{name:{$st:"ad"}}}</pre></br>
 
  <p>is str ends with 'ad' ? :</p>  
- <pre>{action:"findMany", collection:"test", match:{name:{$en:"ad"}}}</pre>
+ <pre>{action:"findMany", collection:"test", match:{name:{$en:"ad"}}}</pre></br>
 
  <p>is str contains 'ad' ? :</p>
- <pre>{action:"findMany", collection:"test", match:{name:{$c:"ad"}}}</pre>
+ <pre>{action:"findMany", collection:"test", match:{name:{$c:"ad"}}}</pre></br>
 
  <p>is str not starts with 'ad' ? :</p> 
- <pre>{action:"findMany", collection:"test", match:{name:{$nst:"ad"}}}</pre>
+ <pre>{action:"findMany", collection:"test", match:{name:{$nst:"ad"}}}</pre></br>
 
  <p>is str not ends with 'ad' ? :</p>  
- <pre>{action:"findMany", collection:"test", match:{name:{$nen:"ad"}}}</pre>
+ <pre>{action:"findMany", collection:"test", match:{name:{$nen:"ad"}}}</pre></br>
 
  <p>is str not contains 'ad' ? :</p>
- <pre>{action:"findMany", collection:"test", match:{name:{$nc:"ad"}}}</pre>
+ <pre>{action:"findMany", collection:"test", match:{name:{$nc:"ad"}}}</pre></br>
 
 
  <br/>

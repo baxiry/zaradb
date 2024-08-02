@@ -64,6 +64,7 @@ queryInput.addEventListener('keydown', function(event) {
             eval("obj = "+ queryInput.value)
             let query = JSON.stringify(obj)
             ws.send(query);
+            console.log(query);
             return;
         } 
     }
