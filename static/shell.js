@@ -111,4 +111,12 @@ $(document).on("keypress", function (e) {
 });
 
 
+ 
+// copy paste example into textarea
+$('pre').click(function () {
+    $('textarea').val($(this).text())
+})
+
+// pointer on pre examples
+$('pre').css('cursor', 'pointer');
 
