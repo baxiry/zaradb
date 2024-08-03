@@ -206,7 +206,7 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 					}
 					return result
 
-				case "$can": // containe any
+				case "$can": // contain any
 
 					for _, v := range sQueryVal.Array() {
 						if strings.Contains(dataVal.Str, v.Str) {
@@ -217,7 +217,7 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 					result = false
 					return result
 
-				case "$nca": // not containe any
+				case "$nca": // not contain any
 
 					for _, v := range sQueryVal.Array() {
 						if strings.Contains(dataVal.Str, v.Str) {
@@ -228,7 +228,7 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 
 					return result
 
-				case "$cal": // containe all
+				case "$cal": // contain all
 
 					for _, v := range sQueryVal.Array() {
 						if !strings.Contains(dataVal.Str, v.Str) {
@@ -249,6 +249,50 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 					if res == 0 {
 						result = false
 						return result
+					}
+
+					return result
+
+				case "$san": // start with any
+
+					for _, v := range sQueryVal.Array() {
+						if strings.HasPrefix(dataVal.Str, v.Str) {
+							return result
+						}
+					}
+
+					result = false
+					return result
+
+				case "$nsa": // not starts with any
+
+					for _, v := range sQueryVal.Array() {
+						if strings.HasPrefix(dataVal.Str, v.Str) {
+							result = false
+							return result
+						}
+					}
+
+					return result
+
+				case "$ean": // ends with any
+
+					for _, v := range sQueryVal.Array() {
+						if strings.HasSuffix(dataVal.Str, v.Str) {
+							return result
+						}
+					}
+
+					result = false
+					return result
+
+				case "$nea": // not ends with any
+
+					for _, v := range sQueryVal.Array() {
+						if strings.HasSuffix(dataVal.Str, v.Str) {
+							result = false
+							return result
+						}
 					}
 
 					return result
