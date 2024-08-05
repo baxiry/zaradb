@@ -85,10 +85,19 @@ function prettyJSON(jsonString) {
 
 // Dealing with Textarea Height
 function calcHeight(value) {
+
     let numberOfLineBreaks = (value.match(/\n/g) || []).length;
     if (numberOfLineBreaks < 3) {
         numberOfLineBreaks = 3
     }
+
+    textarea.value = value.replace("\n\n\n", "\n")
+
+    if (numberOfLineBreaks > 24) {
+        numberOfLineBreaks = 24
+    }
+
+
     //console.log("lines:",numberOfLineBreaks)
     // min-height + lines x line-height + padding + border
     let newHeight = 20 + numberOfLineBreaks * 20 + 12 + 2;
