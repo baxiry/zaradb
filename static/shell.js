@@ -41,6 +41,7 @@ ws.onmessage = function(event) {
     $('#data').fadeIn(500);
 };
 
+//
 const queryInput = document.getElementById('query-input');
 queryInput.addEventListener('keydown', function(event) {
     if (event.altKey && event.key === 'Enter') {
@@ -69,6 +70,9 @@ queryInput.addEventListener('keydown', function(event) {
         } 
     }
 });
+} // end connection func
+
+connection()
 
 
 function prettyJSON(jsonString) {
@@ -80,8 +84,8 @@ function prettyJSON(jsonString) {
         console.error("invalid json")
         return jsonString;
     }
-  }
 }
+
 
 // Dealing with Textarea Height
 function calcHeight(value) {
@@ -112,7 +116,6 @@ textarea.addEventListener("keyup", () => {
 });
 	
 
-connection()
 
 $(document).on("keypress", function (e) {
    // console.log("event : ", e) 
@@ -125,6 +128,7 @@ $(document).on("keypress", function (e) {
 // copy paste example into textarea
 $('pre').click(function () {
     $('textarea').val($(this).text())
+    $('textarea').focus()
 })
 
 // pointer on pre examples
