@@ -10,6 +10,12 @@ func HandleQueries(query string) string {
 	parsedQuery := gjson.Parse(query)
 
 	switch parsedQuery.Get("action").String() { // action
+	case "sum":
+		return db.sum(parsedQuery)
+
+	case "avr":
+		return db.average(parsedQuery)
+
 	// database actions
 	case "findOne":
 		return db.findOne(parsedQuery)
