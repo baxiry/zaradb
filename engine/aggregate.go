@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/tidwall/gjson"
@@ -9,6 +10,206 @@ import (
 )
 
 const siparator = "_:_"
+
+// not implemented yet
+func (db *DB) average(query gjson.Result) string {
+
+	// TODO parse hol qury one time
+	coll := query.Get("collection").Str
+	if coll == "" {
+		return `{"error":"forgot collection name "}`
+	}
+
+	mtch := query.Get("match")
+
+	skip := query.Get("skip").Int()
+	limit := query.Get("limit").Int()
+	if limit == 0 {
+		limit = 100 // what is default setting ?
+	}
+
+	stmt := `select record from ` + coll
+
+	rows, err := db.db.Query(stmt)
+	if err != nil {
+		return err.Error()
+	}
+	defer rows.Close()
+
+	record := ""
+	total := 0
+
+	for rows.Next() {
+
+		if limit == 0 {
+			break
+		}
+		if skip != 0 {
+			skip--
+			continue
+		}
+
+		record = ""
+		err := rows.Scan(&record)
+		if err != nil {
+			return err.Error() // TODO standaring errors
+		}
+
+		ok, err := match(mtch, record)
+		if err != nil {
+			return err.Error()
+		}
+
+		if ok {
+			total++
+			limit--
+		}
+	}
+
+	return `{"sum":` + strconv.Itoa(total) + `}`
+}
+
+// not implemented yet
+func (db *DB) sum(query gjson.Result) string {
+
+	// TODO parse hol qury one time
+	coll := query.Get("collection").Str
+	if coll == "" {
+		return `{"error":"forgot collection name "}`
+	}
+
+	mtch := query.Get("match")
+
+	skip := query.Get("skip").Int()
+	limit := query.Get("limit").Int()
+	if limit == 0 {
+		limit = 100 // what is default setting ?
+	}
+
+	stmt := `select record from ` + coll
+
+	rows, err := db.db.Query(stmt)
+	if err != nil {
+		fmt.Println("err", err.Error())
+		return err.Error()
+	}
+	defer rows.Close()
+
+	record := ""
+	total := 0
+
+	for rows.Next() {
+
+		if limit == 0 {
+			break
+		}
+		if skip != 0 {
+			skip--
+			continue
+		}
+
+		record = ""
+		err := rows.Scan(&record)
+		if err != nil {
+			return err.Error() // TODO standaring errors
+		}
+
+		ok, err := match(mtch, record)
+		if err != nil {
+			return err.Error()
+		}
+
+		if ok {
+			total++
+			limit--
+		}
+	}
+
+	return `{"sum":` + strconv.Itoa(total) + `}`
+}
+
+// not implemented yet
+func aggrigate(query gjson.Result) string {
+
+	// TODO parse hol qury one time
+	coll := query.Get("collection").Str
+	if coll == "" {
+		return `{"error":"forgot collection name "}`
+	}
+
+	mtch := query.Get("match")
+
+	skip := query.Get("skip").Int()
+	limit := query.Get("limit").Int()
+	if limit == 0 {
+		limit = 100 // what is default setting ?
+	}
+
+	stmt := `select record from ` + coll
+
+	rows, err := db.db.Query(stmt)
+	if err != nil {
+		return err.Error()
+	}
+	defer rows.Close()
+
+	record := ""
+	listData := make([]string, 0)
+
+	for rows.Next() {
+
+		if limit == 0 {
+			break
+		}
+		if skip != 0 {
+			skip--
+			continue
+		}
+
+		record = ""
+		err := rows.Scan(&record)
+		if err != nil {
+			return err.Error() // TODO standaring errors
+		}
+
+		ok, err := match(mtch, record)
+		if err != nil {
+			return err.Error()
+		}
+
+		if ok {
+			listData = append(listData, record)
+			limit--
+		}
+	}
+
+	// order :
+	order := query.Get("orderBy").Str
+	reverse := query.Get("reverse").Int()
+
+	if order != "" {
+		listData = orderBy(order, int(reverse), listData)
+	}
+
+	// TODO aggrigate here
+
+	// remove or rename some fields
+	flds := query.Get("fields")
+	listData = reFields(listData, flds)
+
+	records := "["
+
+	for i := 0; i < len(listData); i++ {
+		records += listData[i] + ","
+	}
+
+	if len(records) == 1 {
+		return records + "]"
+	}
+
+	return records[:len(records)-1] + "]"
+
+}
 
 // reKey renames json feild
 func reKey(oldkey, newkey, json string) string {
