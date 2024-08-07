@@ -54,11 +54,13 @@
 <pre>{action:"findMany", collection:"users", match:{ age:{$nin:[12, 23, 34]}}}</pre>
 <pre>{action:"findMany", collection:"users", match:{ name:{$nin:["akram", "zaid"]}}}</pre></br>
 
-<p>select objects that match any conditions</p>
-<pre>{action:"findMany", collection:"users", match:{ $or:[name:{$eq:"akram", age:$gt:13}]}}</pre></br>
+<p>select objects that match any conditions by <b>$or</b> operation:</p>
 
-<p>select objects that match all conditions</p>
-<pre>{action:"findMany", collection:"users", match:{ $and:[name:{$eq:"akram", age:$gt:13}]}}</pre></br>
+<pre>{action:"findMany", collection:"test", match:{$or:[{name:{$eq:"akram"}},{age:{$lt:13}}]}}</pre></br>
+
+<p>select objects that match all conditions by <b>$and</b> operation:</p>
+<pre>{action:"findMany", collection:"test", match:{$and:[{name:{$c:"k"}},{name:{$nc:"m"}}]}}</pre></br>
+hote that is usefer just when we neen more conditions per field.
 
 
 <p>sub Query (in progress)</p>
