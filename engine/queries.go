@@ -319,7 +319,7 @@ func (db *DB) findOne(query gjson.Result) (res string) {
 // delete
 func (db *DB) deleteOne(query gjson.Result) string {
 
-	coll := query.Get("c").Str
+	coll := query.Get("collection").Str
 
 	stmt := `select rowid, record from ` + coll
 
