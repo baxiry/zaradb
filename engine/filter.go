@@ -106,7 +106,7 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 						return result
 
 					default:
-						err = fmt.Errorf("unknown %s operation", sQueryKey.Str)
+						err = fmt.Errorf("unknown '%s' opperation", sQueryKey.Str)
 						//fmt.Println("..wher here", sQueryKey.Value(), sQueryKey.Type)
 						result = false
 						return result
@@ -314,9 +314,11 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 
 					// {$or: [{name:{$eq:"adam"}}, {name:{$eq:"jawad"}}]}
 					if queryKey.Str == "$or" {
+						fmt.Println()
 
-						for _, v := range queryVal.Array() {
+						for k, v := range queryVal.Array() { //Map() {
 
+							fmt.Printf("%d = %s\n", k, v)
 							res, _ := match(v, data)
 							if res {
 								return result

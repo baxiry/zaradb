@@ -1,20 +1,38 @@
 package engine
 
 import (
+	"fmt"
+
 	"github.com/tidwall/gjson"
 )
+
+func (db *DB) aggregate(query gjson.Result) string { return "aggregate func in progress" }
 
 // ok
 func HandleQueries(query string) string {
 
 	parsedQuery := gjson.Parse(query)
 
-	switch parsedQuery.Get("action").String() { // action
+	switch parsedQuery.Get("action").Str { // action
+
+	// aggregate actions
+	case "aggregate":
+		return "not implemented yet"
+
+	case "count":
+		return "not implemented yet"
+
 	case "sum":
-		return db.sum(parsedQuery)
+		return "not implemented yet"
 
 	case "avr":
-		return db.average(parsedQuery)
+		return "not implemented yet"
+
+	case "min":
+		return "not implemented yet"
+
+	case "max":
+		return "not implemented yet"
 
 	// database actions
 	case "findOne":
@@ -70,7 +88,7 @@ func HandleQueries(query string) string {
 		return querySql(parsedQuery)
 
 	default:
-		return "unknowen action"
+		return fmt.Errorf("unknown '%s' cation", parsedQuery.Get("action").Str).Error()
 	}
 }
 

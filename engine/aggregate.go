@@ -1,8 +1,8 @@
 package engine
 
 import (
+	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/tidwall/gjson"
@@ -12,70 +12,16 @@ import (
 const siparator = "_:_"
 
 // not implemented yet
-func (db *DB) average(query gjson.Result) string {
+func min(query gjson.Result) (int, error)     { return 0, nil }
+func max(query gjson.Result) (int, error)     { return 0, nil }
+func sum(query gjson.Result) (int, error)     { return 0, nil }
+func average(query gjson.Result) (int, error) { return 0, nil }
+func count(query gjson.Result) (int, error) {
 
 	// TODO parse hol qury one time
 	coll := query.Get("collection").Str
 	if coll == "" {
-		return `{"error":"forgot collection name "}`
-	}
-
-	mtch := query.Get("match")
-
-	skip := query.Get("skip").Int()
-	limit := query.Get("limit").Int()
-	if limit == 0 {
-		limit = 100 // what is default setting ?
-	}
-
-	stmt := `select record from ` + coll
-
-	rows, err := db.db.Query(stmt)
-	if err != nil {
-		return err.Error()
-	}
-	defer rows.Close()
-
-	record := ""
-	total := 0
-
-	for rows.Next() {
-
-		if limit == 0 {
-			break
-		}
-		if skip != 0 {
-			skip--
-			continue
-		}
-
-		record = ""
-		err := rows.Scan(&record)
-		if err != nil {
-			return err.Error() // TODO standaring errors
-		}
-
-		ok, err := match(mtch, record)
-		if err != nil {
-			return err.Error()
-		}
-
-		if ok {
-			total++
-			limit--
-		}
-	}
-
-	return `{"sum":` + strconv.Itoa(total) + `}`
-}
-
-// not implemented yet
-func (db *DB) sum(query gjson.Result) string {
-
-	// TODO parse hol qury one time
-	coll := query.Get("collection").Str
-	if coll == "" {
-		return `{"error":"forgot collection name "}`
+		return 0, errors.New("forgot collection name")
 	}
 
 	mtch := query.Get("match")
@@ -91,7 +37,7 @@ func (db *DB) sum(query gjson.Result) string {
 	rows, err := db.db.Query(stmt)
 	if err != nil {
 		fmt.Println("err", err.Error())
-		return err.Error()
+		return 0, err
 	}
 	defer rows.Close()
 
@@ -111,12 +57,12 @@ func (db *DB) sum(query gjson.Result) string {
 		record = ""
 		err := rows.Scan(&record)
 		if err != nil {
-			return err.Error() // TODO standaring errors
+			return 0, err
 		}
 
 		ok, err := match(mtch, record)
 		if err != nil {
-			return err.Error()
+			return 0, err
 		}
 
 		if ok {
@@ -125,7 +71,7 @@ func (db *DB) sum(query gjson.Result) string {
 		}
 	}
 
-	return `{"sum":` + strconv.Itoa(total) + `}`
+	return total, nil
 }
 
 // not implemented yet
