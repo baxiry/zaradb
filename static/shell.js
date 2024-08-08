@@ -94,8 +94,13 @@ function calcHeight(value) {
     if (numberOfLineBreaks < 3) {
         numberOfLineBreaks = 3
     }
+    
+    let text = textarea.value
+    while (text.includes('\n\n\n'))  {
+         text = text.replace("\n\n\n", "\n")
+    }
 
-    textarea.value = value.replace("\n\n\n", "\n")
+    textarea.value = text 
 
     if (numberOfLineBreaks > 24) {
         numberOfLineBreaks = 24
