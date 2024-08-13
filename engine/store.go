@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	//_ "github.com/mattn/go-sqlite3"
-	"github.com/tidwall/gjson"
+
 	_ "modernc.org/sqlite"
 )
 
@@ -49,40 +49,6 @@ func NewDB(dbName string) *DB {
 		fmt.Println("Table Name:", tableName)
 	}
 	return db
-}
-
-// InsertMany inserts list of object at one time
-func (db *DB) insertMany(query gjson.Result) (res string) {
-	coll := query.Get("collection").Str
-	data := query.Get("data").Array()
-
-	//d := strings.TrimLeft(obj, " ")
-	// if len(d) == 0 {return fmt.Sprintf("len data is 0 %s\n", d)}
-
-	lid := db.lastid[coll]
-	strData := ""
-	for _, obj := range data {
-		db.lastid[coll]++
-		// strconv for per
-		strData += `('{"_id":` + fmt.Sprint(db.lastid[coll]) + ", " + obj.String()[1:] + `'),`
-	}
-
-	//fmt.Println("bulk data:  ", strData[:len(strData)-1])
-
-	_, err := db.db.Exec(`insert into ` + coll + `(record) values` + strData[:len(strData)-1]) // `+` is fast
-	if err != nil {
-		db.lastid[coll] = lid
-		if strings.Contains(err.Error(), "no such table") {
-			err = db.CreateCollection(coll)
-			if err != nil {
-				return err.Error()
-			}
-			return db.insertMany(query)
-		}
-		return err.Error()
-	}
-
-	return "inserted"
 }
 
 // insert new record

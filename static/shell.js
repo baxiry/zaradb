@@ -12,20 +12,19 @@ for (let [key, value] of Object.entries(yourobject)) {
 // WebSocket
 //var ws = new ReconnectingWebSocket('ws://localhost:1111/ws');
 
-
 function connection() {
 var ws = new WebSocket('ws://localhost:1111/ws');
 
 ws.onopen = function(){
-    //console.log('Connection established');
+    console.log('Connection established');
     $('#reconnecte').fadeOut(500);
 }
 
 //  when ws closed reconnect after 2 second
 ws.onclose = function() {
-   // ws.close()
+    ws.close()
     $('#reconnecte').show();
-    setTimeout(connection(), 500);
+    setTimeout(connection(), 700);
   };
 
 ws.onerror = function(){
@@ -65,7 +64,7 @@ queryInput.addEventListener('keydown', function(event) {
             eval("obj = "+ queryInput.value)
             let query = JSON.stringify(obj)
             ws.send(query);
-            console.log(query);
+            //console.log(query);
             return;
         } 
     }

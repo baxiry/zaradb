@@ -3,6 +3,7 @@ package engine
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/tidwall/gjson"
 )
@@ -391,7 +392,7 @@ func (db *DB) findById(query gjson.Result) (res string) {
 	return `{"result":0}`
 }
 
-// Insert
+// Insert One
 func (db *DB) insertOne(query gjson.Result) (res string) {
 	coll := query.Get("collection").Str
 	data := query.Get("data").String() // .Str not works with json obj
@@ -399,11 +400,48 @@ func (db *DB) insertOne(query gjson.Result) (res string) {
 
 	err := db.insert(coll, data)
 	if err != nil {
-		fmt.Println(err)
+		//db.lastid[coll] = lid
+		if strings.Contains(err.Error(), "no such table") {
+			err = db.CreateCollection(coll)
+			if err != nil {
+				return err.Error()
+			}
+			err = db.insert(coll, data)
+			return "inser done"
+		}
 		return err.Error()
 	}
 
 	return "inser done"
+}
+
+// InsertMany inserts list of object at one time
+func (db *DB) insertMany(query gjson.Result) (res string) {
+	coll := query.Get("collection").Str
+	data := query.Get("data").Array()
+
+	lid := db.lastid[coll]
+	strData := ""
+	for _, obj := range data {
+		db.lastid[coll]++
+		// strconv for per
+		strData += `('{"_id":` + fmt.Sprint(db.lastid[coll]) + ", " + obj.String()[1:] + `'),`
+	}
+
+	_, err := db.db.Exec(`insert into ` + coll + `(record) values` + strData[:len(strData)-1]) // `+` is fast
+	if err != nil {
+		db.lastid[coll] = lid
+		if strings.Contains(err.Error(), "no such table") {
+			err = db.CreateCollection(coll)
+			if err != nil {
+				return err.Error()
+			}
+			return db.insertMany(query)
+		}
+		return err.Error()
+	}
+
+	return "inserted"
 }
 
 // delete by id
