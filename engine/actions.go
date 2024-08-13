@@ -17,7 +17,7 @@ func HandleQueries(query string) string {
 
 	// aggregate actions
 	case "aggregate":
-		return "not implemented yet"
+		return aggrigate(parsedQuery)
 
 	case "count":
 		return "not implemented yet"

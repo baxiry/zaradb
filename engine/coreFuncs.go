@@ -174,11 +174,14 @@ func (db *DB) updateById(query gjson.Result) (result string) {
 
 	oldObj := db.findById(query)
 
-	id := query.Get("_id").Str
+	id := query.Get("_id").String()
 	if id == "" {
 		return `{"error": "forget _id"}`
 	}
-	newObj := query.Get("data").Str
+	newObj := query.Get("data").Raw
+
+	fmt.Println(newObj)
+
 	coll := query.Get("collection").Str
 
 	newData := gjson.Get(`[`+oldObj+`,`+newObj+`]`, `@join`).Raw
