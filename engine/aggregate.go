@@ -19,8 +19,9 @@ func average(query gjson.Result) (int, error) { return 0, nil }
 func count(field string, records []string) (mp map[string]int) {
 	mp = map[string]int{}
 	for _, v := range records {
-		mp[gjson.Get(v, field).Str]++
+		mp[gjson.Get(v, field).String()]++
 	}
+	fmt.Println("result:  ", mp)
 	return mp
 }
 
@@ -92,22 +93,22 @@ func aggrigate(query gjson.Result) string {
 			//json, _ := sjson.Set("", k.Str, "")
 			for _, obj := range data {
 
-				field := gjson.Get(obj, val.Str).Str
-				json, _ := sjson.Set("", key.Str, field)
+				field := gjson.Get(obj, val.String()).String()
+				json, _ := sjson.Set("", key.String(), field)
 				mapData[field] = json
 			}
 
-			fmt.Println(mapData)
-
 		case 5:
 			val.ForEach(func(opr, fld gjson.Result) bool { // opperation & field name
+				fmt.Println(fld.Str, fld.Type)
+
 				switch opr.Str {
 				case "$count":
 					counted := count(fld.Str, data)
+					fmt.Println("counted : ", counted)
 					for name, count := range counted {
 						mapData[name], _ = sjson.Set(mapData[name], key.Str, count)
 					}
-
 				case "$min":
 				case "$max":
 				case "$avg":
