@@ -25,6 +25,14 @@ func count(field string, records []string) (mp map[string]int) {
 	return mp
 }
 
+type group struct {
+	fieldKey   string
+	fieldValue string
+	results    map[string]int
+}
+
+var grp = group{}
+
 // not implemented yet
 func aggrigate(query gjson.Result) string {
 
@@ -88,7 +96,9 @@ func aggrigate(query gjson.Result) string {
 	mapData := map[string]string{}
 
 	group.ForEach(func(key, val gjson.Result) bool {
+
 		switch val.Type {
+
 		case 3:
 			//json, _ := sjson.Set("", k.Str, "")
 			for _, obj := range data {
@@ -114,13 +124,14 @@ func aggrigate(query gjson.Result) string {
 				case "$avg":
 				default:
 
+					fmt.Println("unknown aggr operation", fld.Str)
 				}
 
 				return true
 			})
 
 		default:
-			fmt.Println(val.Type)
+			fmt.Println("unknown type", val.Type)
 		}
 
 		fmt.Println()
