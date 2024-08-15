@@ -12,9 +12,20 @@ const siparator = "_:_"
 
 // not implemented yet
 func min(query gjson.Result) (int, error)     { return 0, nil }
-func max(query gjson.Result) (int, error)     { return 0, nil }
 func sum(query gjson.Result) (int, error)     { return 0, nil }
 func average(query gjson.Result) (int, error) { return 0, nil }
+
+func max(field string, records []string) (mp map[string]int) {
+	mp = map[string]int{}
+	for _, v := range records {
+		num := gjson.Get(v, field).Num
+		_ = num
+		mp[gjson.Get(v, field).Str]++
+	}
+	fmt.Println("result:  ", mp)
+
+	return mp
+}
 
 func count(field string, records []string) (mp map[string]int) {
 	mp = map[string]int{}
@@ -24,14 +35,6 @@ func count(field string, records []string) (mp map[string]int) {
 	fmt.Println("result:  ", mp)
 	return mp
 }
-
-type group struct {
-	fieldKey   string
-	fieldValue string
-	results    map[string]int
-}
-
-var grp = group{}
 
 // not implemented yet
 func aggrigate(query gjson.Result) string {
@@ -89,18 +92,17 @@ func aggrigate(query gjson.Result) string {
 	}
 
 	group := query.Get("group")
-	fmt.Println(group)
-
-	//names := make(map[string]bool)
+	if _id := group.Get("_id"); !_id.Exists() {
+		return "a group specification must include an _id"
+	}
 
 	mapData := map[string]string{}
+	message := ""
 
 	group.ForEach(func(key, val gjson.Result) bool {
 
 		switch val.Type {
-
 		case 3:
-			//json, _ := sjson.Set("", k.Str, "")
 			for _, obj := range data {
 
 				field := gjson.Get(obj, val.String()).String()
@@ -116,14 +118,13 @@ func aggrigate(query gjson.Result) string {
 				case "$count":
 					counted := count(fld.Str, data)
 					fmt.Println("counted : ", counted)
-					for name, count := range counted {
-						mapData[name], _ = sjson.Set(mapData[name], key.Str, count)
+					for _id, count := range counted {
+						mapData[_id], _ = sjson.Set(mapData[_id], key.Str, count)
 					}
-				case "$min":
 				case "$max":
+				case "$min":
 				case "$avg":
 				default:
-
 					fmt.Println("unknown aggr operation", fld.Str)
 				}
 
@@ -141,6 +142,9 @@ func aggrigate(query gjson.Result) string {
 	result := "["
 	for _, val := range mapData {
 		result += val + ","
+	}
+	if message != "" {
+		return message
 	}
 	return result[:len(result)-1] + "]"
 }
