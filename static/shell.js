@@ -61,11 +61,20 @@ queryInput.addEventListener('keydown', function(event) {
         $("#data").css("display","none");
         event.preventDefault();
         if (queryInput.value) {
-            eval("obj = "+ queryInput.value)
-            let query = JSON.stringify(obj)
-            ws.send(query);
-            //console.log(query);
-            return;
+            try {
+                eval("obj = "+ queryInput.value)
+                let query = JSON.stringify(obj)
+                ws.send(query);
+                return;
+
+            } catch (error) {
+
+                $('#data').html(`<pre><span>${error}</span></pre>`);
+                $('#data').fadeIn(500);
+
+                //console.error("Error evaluating code:", error);
+                return; 
+            }
         } 
     }
 });
