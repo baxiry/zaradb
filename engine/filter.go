@@ -18,11 +18,6 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 	filter.ForEach(func(queryKey, queryVal gjson.Result) bool {
 
 		dataVal := gjson.Get(data, queryKey.Str)
-		if !dataVal.Exists() {
-			fmt.Println("data va no exests")
-			result = false
-			return false
-		}
 
 		if queryVal.Type == 5 { // 5:json
 			// {name:{$eq:"adam"}, age:{$gt: 18}}
@@ -332,6 +327,7 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 						result = false
 						return result
 					}
+					err = fmt.Errorf("unknown %s operator", sQueryKey.Str)
 
 					result = false
 					return result
