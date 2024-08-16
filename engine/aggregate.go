@@ -87,17 +87,15 @@ func aggrigate(query gjson.Result) string {
 
 		case 5:
 			val.ForEach(func(opr, fld gjson.Result) bool { // opperation & field name
-				fmt.Println(fld.Str, fld.Type)
 
 				switch opr.Str {
 				case "$count":
 					counted := count(fld.Str, data)
-					fmt.Println("counted : ", counted)
 					for _id, count := range counted {
 						mapData[_id], _ = sjson.Set(mapData[_id], key.Str, count)
 					}
+
 				case "$max":
-					fmt.Println("$max: ")
 					maxs := max(_id, fld.Str, data)
 					for _id, max := range maxs {
 						mapData[_id], _ = sjson.Set(mapData[_id], key.Str, max)
@@ -108,6 +106,7 @@ func aggrigate(query gjson.Result) string {
 					for _id, min := range mins {
 						mapData[_id], _ = sjson.Set(mapData[_id], key.Str, min)
 					}
+
 				case "$sum":
 					sums := sum(_id, fld.Str, data)
 					for _id, sumd := range sums {
@@ -115,19 +114,22 @@ func aggrigate(query gjson.Result) string {
 					}
 
 				case "$avg":
+					avrs := average(_id, fld.Str, data)
+					for _id, avr := range avrs {
+						mapData[_id], _ = sjson.Set(mapData[_id], key.Str, avr)
+					}
 
 				default:
-					fmt.Println("unknown aggr operation", fld.Str)
+					message = "unknown " + fld.Str + " aggregator !"
 				}
 
 				return true
 			})
 
 		default:
-			fmt.Println("unknown type", val.Type)
+			message = "opss! something wrrong!"
 		}
 
-		fmt.Println()
 		return true
 	})
 
@@ -158,7 +160,6 @@ func min(_id, field string, records []string) (mp map[string]float64) {
 		if mp[id] > val {
 			mp[id] = val
 		}
-
 	}
 
 	return mp
@@ -199,10 +200,23 @@ func max(_id, field string, records []string) (mp map[string]float64) {
 // not implemented yet
 func average(_id, field string, records []string) (mp map[string]float64) {
 	mp = map[string]float64{}
+
+	fieldCount := make(map[string]float64)
+
 	for _, record := range records {
-		id := gjson.Get(record, _id).Str    // name of record
-		val := gjson.Get(record, field).Num // value of sumd field
-		mp[id] += val
+		id := gjson.Get(record, _id).Str // name of record
+		val := gjson.Get(record, field)  // value of sumd field
+
+		//
+		if val.Exists() {
+			fieldCount[id]++
+		}
+
+		mp[id] += val.Num
+
+	}
+	for fld, count := range fieldCount {
+		mp[fld] = mp[fld] / count
 	}
 
 	return mp
