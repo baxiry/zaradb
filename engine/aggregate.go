@@ -104,7 +104,18 @@ func aggrigate(query gjson.Result) string {
 					}
 
 				case "$min":
+					mins := min(_id, fld.Str, data)
+					for _id, min := range mins {
+						mapData[_id], _ = sjson.Set(mapData[_id], key.Str, min)
+					}
+				case "$sum":
+					sums := sum(_id, fld.Str, data)
+					for _id, sumd := range sums {
+						mapData[_id], _ = sjson.Set(mapData[_id], key.Str, sumd)
+					}
+
 				case "$avg":
+
 				default:
 					fmt.Println("unknown aggr operation", fld.Str)
 				}
@@ -130,14 +141,47 @@ func aggrigate(query gjson.Result) string {
 	return result[:len(result)-1] + "]"
 }
 
-func max(_id, field string, records []string) (mp map[string]float64) {
-	max := float64(-9223372036854775808) // we need min floa
-	//maxs := map[string]float64{}
+// gets mines vlaues per _id (e.g. name)
+func min(_id, field string, records []string) (mp map[string]float64) {
+	min := float64(9223372036854775807) // we need max float
 	mp = map[string]float64{}
 
+	// init mp by max float val
 	for _, record := range records {
 		id := gjson.Get(record, _id).Str
-		//maxs[id] = max
+		mp[id] = min
+	}
+
+	for _, record := range records {
+		id := gjson.Get(record, _id).Str    // name of record
+		val := gjson.Get(record, field).Num // value of compared field
+		if mp[id] > val {
+			mp[id] = val
+		}
+
+	}
+
+	return mp
+}
+
+func sum(_id, field string, records []string) (mp map[string]float64) {
+	mp = map[string]float64{}
+	for _, record := range records {
+		id := gjson.Get(record, _id).Str    // name of record
+		val := gjson.Get(record, field).Num // value of sumd field
+		mp[id] += val
+	}
+	return mp
+}
+
+// max gets vlaues per _id (e.g. name)
+func max(_id, field string, records []string) (mp map[string]float64) {
+	max := float64(-9223372036854775808) // we need min floa
+	mp = map[string]float64{}
+
+	// init mp by mines float val
+	for _, record := range records {
+		id := gjson.Get(record, _id).Str
 		mp[id] = max
 	}
 
@@ -147,25 +191,22 @@ func max(_id, field string, records []string) (mp map[string]float64) {
 		if mp[id] < val {
 			mp[id] = val
 		}
-
-		//fmt.Println(_id, gjson.Get(record, _id), gjson.Get(record, field).Num)
-	}
-
-	//min := float64(9223372036854775807) // max float
-	//fmt.Println(min)
-
-	fmt.Println("max result")
-	for k, v := range mp {
-		fmt.Println(_id, k, "\nmax price", v)
 	}
 
 	return mp
 }
 
 // not implemented yet
-func min(query gjson.Result) (int, error)     { return 0, nil }
-func sum(query gjson.Result) (int, error)     { return 0, nil }
-func average(query gjson.Result) (int, error) { return 0, nil }
+func average(_id, field string, records []string) (mp map[string]float64) {
+	mp = map[string]float64{}
+	for _, record := range records {
+		id := gjson.Get(record, _id).Str    // name of record
+		val := gjson.Get(record, field).Num // value of sumd field
+		mp[id] += val
+	}
+
+	return mp
+}
 
 func count(field string, records []string) (mp map[string]int) {
 
