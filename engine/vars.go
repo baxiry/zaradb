@@ -17,6 +17,9 @@ const (
 	fields  = "fields"   // f
 	skip    = "skip"     // s
 	limit   = "limit"    // l
+
+	// separate strings
+	siparator = "_:_"
 )
 
 var (

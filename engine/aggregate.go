@@ -8,15 +8,10 @@ import (
 	"github.com/tidwall/sjson"
 )
 
-const siparator = "_:_"
-
-// not implemented yet
-func aggrigate(query gjson.Result) string {
-
-	// TODO parse hol qury one time
+func getData(query gjson.Result) (data []string, err error) {
 	coll := query.Get("collection").Str
 	if coll == "" {
-		return `{"error":"forgot collection name "}`
+		return nil, fmt.Errorf(`{"error":"forgot collection name "}`)
 	}
 
 	mtch := query.Get("match")
@@ -31,12 +26,12 @@ func aggrigate(query gjson.Result) string {
 
 	rows, err := db.db.Query(stmt)
 	if err != nil {
-		return err.Error()
+		return nil, err
 	}
 	defer rows.Close()
 
 	record := ""
-	data := make([]string, 0)
+	//data = []string{}
 
 	for rows.Next() {
 
@@ -51,18 +46,27 @@ func aggrigate(query gjson.Result) string {
 		record = ""
 		err := rows.Scan(&record)
 		if err != nil {
-			return err.Error() // TODO standaring errors
+			return nil, err
 		}
 
 		ok, err := match(mtch, record)
 		if err != nil {
-			return err.Error()
+			return nil, err
 		}
 
 		if ok {
 			data = append(data, record)
 			limit--
 		}
+	}
+	return data, nil
+}
+
+// not implemented yet
+func aggrigate(query gjson.Result) string {
+	data, err := getData(query)
+	if err != nil {
+		return err.Error()
 	}
 
 	group := query.Get("group")
@@ -74,12 +78,21 @@ func aggrigate(query gjson.Result) string {
 	message := ""
 
 	_id := group.Get("_id").Str
+
+	// TODO parse data and exclude invalide objects
+	if gjson.Get(data[0], _id).Str == "" {
+		return "field '" + _id + "' is not exists"
+	}
+
 	group.ForEach(func(key, val gjson.Result) bool {
+		if key.Str != "_id" && val.Type != 5 {
+			message = "The field '" + key.Str + "' must be an accumulator object!"
+			return false
+		}
 
 		switch val.Type {
 		case 3:
 			for _, obj := range data {
-
 				field := gjson.Get(obj, val.String()).String()
 				json, _ := sjson.Set("", key.String(), field)
 				mapData[field] = json
@@ -120,7 +133,7 @@ func aggrigate(query gjson.Result) string {
 					}
 
 				default:
-					message = "unknown " + fld.Str + " aggregator !"
+					message = "unknown '" + opr.Str + "' aggrigate operator !"
 				}
 
 				return true

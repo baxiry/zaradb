@@ -201,56 +201,9 @@ func (db *DB) updateById(query gjson.Result) (result string) {
 // Find finds any obs match creteria.
 func (db *DB) findMany(query gjson.Result) (res string) {
 
-	// TODO parse hol qury one time
-	coll := query.Get("collection").Str
-	if coll == "" {
-		return `{"error":"forgot collection name "}`
-	}
-
-	mtch := query.Get("match")
-
-	skip := query.Get("skip").Int()
-	limit := query.Get("limit").Int()
-	if limit == 0 {
-		limit = 100 // what is default setting ?
-	}
-
-	stmt := `select record from ` + coll
-
-	rows, err := db.db.Query(stmt)
+	listData, err := getData(query)
 	if err != nil {
 		return err.Error()
-	}
-	defer rows.Close()
-
-	record := ""
-	listData := make([]string, 0)
-
-	for rows.Next() {
-
-		if limit == 0 {
-			break
-		}
-		if skip != 0 {
-			skip--
-			continue
-		}
-
-		record = ""
-		err := rows.Scan(&record)
-		if err != nil {
-			return err.Error() // TODO standaring errors
-		}
-
-		ok, err := match(mtch, record)
-		if err != nil {
-			return err.Error()
-		}
-
-		if ok {
-			listData = append(listData, record)
-			limit--
-		}
 	}
 
 	// order :
