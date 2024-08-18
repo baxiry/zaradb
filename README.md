@@ -17,7 +17,7 @@ and then open : `localhost:1111`
 
 #### Documentations:
 this docs is for libs dev, but it good for everyone : 
-[zara api](https://github.com/baxiry/zaradb/wiki/Zara-API)
+[zara wiki](https://github.com/baxiry/zaradb/wiki)
 
 > [!NOTE]
 > It is possible that some things will change within the API, 
