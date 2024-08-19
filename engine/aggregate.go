@@ -195,11 +195,14 @@ func min(_id string, field gjson.Result, records []string) (mp map[string]float6
 				}
 
 			default:
-				err = fmt.Errorf("unknown %s", op)
+				err = fmt.Errorf("unknown %s operator", op)
 			}
 
 			return false
 		})
+		if err != nil {
+			return nil, err
+		}
 
 		fmt.Println(field, "is operation")
 		fmt.Println()
@@ -229,15 +232,7 @@ func max(_id string, field gjson.Result, records []string) (mp map[string]float6
 		id := gjson.Get(record, _id).Str
 		mp[id] = max
 	}
-	/*
-		for _, record := range records {
-			id := gjson.Get(record, _id).Str        // name of record
-			val := gjson.Get(record, field.Str).Num // value of compared field
-			if mp[id] < val {
-				mp[id] = val
-			}
-		}
-	*/
+
 	switch field.Type {
 	case 3:
 		for _, record := range records {
@@ -316,6 +311,9 @@ func max(_id string, field gjson.Result, records []string) (mp map[string]float6
 
 			return false
 		})
+		if err != nil {
+			return nil, err
+		}
 
 		fmt.Println(field, "is operation")
 		fmt.Println()
@@ -396,7 +394,7 @@ func reKey(oldkey, newkey, json string) string {
 	return res[:len(res)-1] + `}`
 }
 
-// fields remove or rename fields
+// reFields remove or rename fields in result data
 func reFields(data []string, fields gjson.Result) []string {
 
 	newKey := []string{}
@@ -532,3 +530,5 @@ func sortString(field string, reverse int, list []gjson.Result) []string {
 	}
 	return res
 }
+
+// end
