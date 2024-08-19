@@ -14,6 +14,61 @@ type matched struct {
 	data string
 }
 
+// ...
+func getData(query gjson.Result) (data []string, err error) {
+	coll := query.Get("collection").Str
+	if coll == "" {
+		return nil, fmt.Errorf(`{"error":"forgot collection name "}`)
+	}
+
+	mtch := query.Get("match")
+
+	skip := query.Get("skip").Int()
+	limit := query.Get("limit").Int()
+	if limit == 0 {
+		limit = 100 // what is default setting ?
+	}
+
+	stmt := `select record from ` + coll
+
+	rows, err := db.db.Query(stmt)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	record := ""
+	//data = []string{}
+
+	for rows.Next() {
+
+		if limit == 0 {
+			break
+		}
+		if skip != 0 {
+			skip--
+			continue
+		}
+
+		record = ""
+		err := rows.Scan(&record)
+		if err != nil {
+			return nil, err
+		}
+
+		ok, err := match(mtch, record)
+		if err != nil {
+			return nil, err
+		}
+
+		if ok {
+			data = append(data, record)
+			limit--
+		}
+	}
+	return data, nil
+}
+
 // deletes Many items
 func (db *DB) deleteMany(query gjson.Result) string {
 

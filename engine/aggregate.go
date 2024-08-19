@@ -8,60 +8,6 @@ import (
 	"github.com/tidwall/sjson"
 )
 
-func getData(query gjson.Result) (data []string, err error) {
-	coll := query.Get("collection").Str
-	if coll == "" {
-		return nil, fmt.Errorf(`{"error":"forgot collection name "}`)
-	}
-
-	mtch := query.Get("match")
-
-	skip := query.Get("skip").Int()
-	limit := query.Get("limit").Int()
-	if limit == 0 {
-		limit = 100 // what is default setting ?
-	}
-
-	stmt := `select record from ` + coll
-
-	rows, err := db.db.Query(stmt)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	record := ""
-	//data = []string{}
-
-	for rows.Next() {
-
-		if limit == 0 {
-			break
-		}
-		if skip != 0 {
-			skip--
-			continue
-		}
-
-		record = ""
-		err := rows.Scan(&record)
-		if err != nil {
-			return nil, err
-		}
-
-		ok, err := match(mtch, record)
-		if err != nil {
-			return nil, err
-		}
-
-		if ok {
-			data = append(data, record)
-			limit--
-		}
-	}
-	return data, nil
-}
-
 // not implemented yet
 func aggrigate(query gjson.Result) string {
 	data, err := getData(query)
@@ -109,13 +55,22 @@ func aggrigate(query gjson.Result) string {
 					}
 
 				case "$max":
-					maxs := max(_id, fld, data)
+					maxs, err := max(_id, fld, data)
+					if err != nil {
+						message = err.Error()
+						return false
+					}
 					for _id, max := range maxs {
 						mapData[_id], _ = sjson.Set(mapData[_id], key.Str, max)
 					}
 
 				case "$min":
-					mins := min(_id, fld, data)
+					mins, err := min(_id, fld, data)
+					if err != nil {
+						message = err.Error()
+						return false
+					}
+
 					for _id, min := range mins {
 						mapData[_id], _ = sjson.Set(mapData[_id], key.Str, min)
 					}
@@ -157,7 +112,7 @@ func aggrigate(query gjson.Result) string {
 }
 
 // gets mines vlaues per _id (e.g. name)
-func min(_id string, field gjson.Result, records []string) (mp map[string]float64) {
+func min(_id string, field gjson.Result, records []string) (mp map[string]float64, err error) {
 	min := float64(9223372036854775807) // we need max float
 	mp = map[string]float64{}
 
@@ -240,7 +195,7 @@ func min(_id string, field gjson.Result, records []string) (mp map[string]float6
 				}
 
 			default:
-
+				err = fmt.Errorf("unknown %s", op)
 			}
 
 			return false
@@ -251,7 +206,7 @@ func min(_id string, field gjson.Result, records []string) (mp map[string]float6
 		fmt.Println(field.Get("$min"))
 	}
 
-	return mp
+	return mp, nil
 }
 
 func sum(_id, field string, records []string) (mp map[string]float64) {
@@ -265,7 +220,7 @@ func sum(_id, field string, records []string) (mp map[string]float64) {
 }
 
 // max gets vlaues per _id (e.g. name)
-func max(_id string, field gjson.Result, records []string) (mp map[string]float64) {
+func max(_id string, field gjson.Result, records []string) (mp map[string]float64, err error) {
 	max := float64(-9223372036854775808) // we need min floa
 	mp = map[string]float64{}
 
@@ -356,7 +311,7 @@ func max(_id string, field gjson.Result, records []string) (mp map[string]float6
 				}
 
 			default:
-
+				err = fmt.Errorf("unknown %s operator", op)
 			}
 
 			return false
@@ -366,7 +321,7 @@ func max(_id string, field gjson.Result, records []string) (mp map[string]float6
 		fmt.Println()
 		fmt.Println(field.Get("$min"))
 	}
-	return mp
+	return mp, nil
 }
 
 // not implemented yet

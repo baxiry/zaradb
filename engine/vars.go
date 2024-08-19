@@ -3,12 +3,14 @@ package engine
 import "errors"
 
 const (
-	fOne   = "findOne"    // fo
-	fMany  = "findMany"   // fm
-	upOne  = "updateOne"  // uo
-	upMany = "updateMany" // um
-	dOne   = "deleteOne"  // do
-	dMany  = "deleteMany" // dm
+	// actions
+	fOne      = "findOne"    // fo
+	fMany     = "findMany"   // fm
+	upOne     = "updateOne"  // uo
+	upMany    = "updateMany" // um
+	dOne      = "deleteOne"  // do
+	dMany     = "deleteMany" // dm
+	aggregate = "aggregate"  // ag
 
 	//
 	mtch    = "match"    // m
