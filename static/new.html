@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Input/Output Page</title>
+    <style>
+        body {
+            display: flex;
+            height: 100vh;
+        }
+
+        .input-container, .output-container {
+            flex: 1;
+            border: 1px solid black;
+            resize: horizontal;
+            overflow: auto;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            resize: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="input-container">
+        <textarea id="input"></textarea>
+    </div>
+    <div class="output-container">
+        <div id="output"></div>
+    </div>
+</body>
+</html>

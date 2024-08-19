@@ -39,7 +39,15 @@ func main() {
 // redirect to shell page temporary
 func index(w http.ResponseWriter, r *http.Request) {
 	// TODO create index page
-	http.Redirect(w, r, "http://localhost:1111/shell", http.StatusSeeOther)
+	//http.Redirect(w, r, "http://localhost:1111/shell", http.StatusSeeOther)
+	f, err := content.ReadFile("static/new.html")
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Fprint(w, string(f))
 }
 
 // render static shell.html file
