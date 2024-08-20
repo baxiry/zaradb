@@ -76,7 +76,12 @@ func aggrigate(query gjson.Result) string {
 					}
 
 				case "$sum":
-					sums := sum(_id, fld.Str, data)
+					sums, err := sum(_id, fld, data)
+					if err != nil {
+						message = err.Error()
+						return false
+					}
+
 					for _id, sumd := range sums {
 						mapData[_id], _ = sjson.Set(mapData[_id], key.Str, sumd)
 					}
@@ -109,6 +114,89 @@ func aggrigate(query gjson.Result) string {
 		return message
 	}
 	return result[:len(result)-1] + "]"
+}
+
+func sum(_id string, field gjson.Result, records []string) (mp map[string]float64, err error) {
+	mp = map[string]float64{}
+
+	switch field.Type {
+	case 3:
+		for _, record := range records {
+			id := gjson.Get(record, _id).Str        // name of record
+			val := gjson.Get(record, field.Str).Num // value of compared field
+
+			mp[id] += val
+		}
+
+	case 5:
+
+		field.ForEach(func(op, args gjson.Result) bool {
+			switch op.Str {
+			case "$multiply":
+
+				for _, record := range records {
+					id := gjson.Get(record, _id).Str                 // name of record
+					arg1 := gjson.Get(record, args.Get("0").Str).Num // value of compared field
+					arg2 := gjson.Get(record, args.Get("1").Str).Num // value of compared field
+
+					val := arg1 * arg2
+
+					mp[id] += val
+				}
+			case "$add":
+
+				for _, record := range records {
+					fmt.Println(record)
+
+					id := gjson.Get(record, _id).Str                 // name of record
+					arg1 := gjson.Get(record, args.Get("0").Str).Num // value of compared field
+					arg2 := gjson.Get(record, args.Get("1").Str).Num // value of compared field
+
+					val := arg1 + arg2
+
+					mp[id] += val
+				}
+
+			case "$sub":
+
+				for _, record := range records {
+					fmt.Println(record)
+
+					id := gjson.Get(record, _id).Str                 // name of record
+					arg1 := gjson.Get(record, args.Get("0").Str).Num // value of compared field
+					arg2 := gjson.Get(record, args.Get("1").Str).Num // value of compared field
+
+					val := arg1 - arg2
+					mp[id] += val
+				}
+
+			case "$div":
+
+				for _, record := range records {
+					fmt.Println(record)
+
+					id := gjson.Get(record, _id).Str                 // name of record
+					arg1 := gjson.Get(record, args.Get("0").Str).Num // value of compared field
+					arg2 := gjson.Get(record, args.Get("1").Str).Num // value of compared field
+					val := arg1 / arg2
+
+					mp[id] += val
+				}
+
+			default:
+				err = fmt.Errorf("unknown %s operator", op)
+			}
+
+			return false
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		fmt.Println()
+	}
+
+	return mp, nil
 }
 
 // gets mines vlaues per _id (e.g. name)
@@ -210,16 +298,6 @@ func min(_id string, field gjson.Result, records []string) (mp map[string]float6
 	}
 
 	return mp, nil
-}
-
-func sum(_id, field string, records []string) (mp map[string]float64) {
-	mp = map[string]float64{}
-	for _, record := range records {
-		id := gjson.Get(record, _id).Str    // name of record
-		val := gjson.Get(record, field).Num // value of sumd field
-		mp[id] += val
-	}
-	return mp
 }
 
 // max gets vlaues per _id (e.g. name)
