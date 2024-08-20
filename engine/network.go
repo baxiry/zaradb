@@ -7,18 +7,19 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// TODO connect with muliple clients
-
 type Notify struct {
 	message     string
 	messageType int
 	err         bool
 }
 
-var Channel = make(chan Notify, 100)
+var (
+	channel = make(chan Notify, 100)
+	note    = Notify{}
+)
 
-// Resever listens incoming queries form clients
-func Resever(w http.ResponseWriter, r *http.Request) {
+// Request listens incoming queries form client
+func Request(w http.ResponseWriter, r *http.Request) {
 
 	var upgrader = websocket.Upgrader{} // default options
 
@@ -39,22 +40,20 @@ func Resever(w http.ResponseWriter, r *http.Request) {
 		}
 		note.messageType, message, err = c.ReadMessage()
 		if err != nil {
-			log.Println("ERROR! ReadMessage: ", err)
+			log.Println("Request ERROR! ReadMessage: ", err)
 			note.err = true
-			Channel <- note
+			channel <- note
 			return
 		}
 
 		// Hande all of Queries
 		note.message = HandleQueries(string(message))
-
-		Channel <- note
-
+		channel <- note
 	}
 }
 
-// Sender  sends results to clients
-func Sender(w http.ResponseWriter, r *http.Request) {
+// Response sends results to clients
+func Response(w http.ResponseWriter, r *http.Request) {
 
 	var upgrader = websocket.Upgrader{} // default options
 
@@ -66,10 +65,8 @@ func Sender(w http.ResponseWriter, r *http.Request) {
 	}
 	defer c.Close()
 
-	var note Notify
-
 	for {
-		note = <-Channel
+		note = <-channel
 		if note.err {
 			log.Println(err)
 			return
@@ -77,10 +74,9 @@ func Sender(w http.ResponseWriter, r *http.Request) {
 		// send result to client
 		err = c.WriteMessage(note.messageType, []byte(note.message))
 		if err != nil {
-			log.Println("ERROR! WriteMessage: ", err)
-
+			log.Println("Response ERROR! WriteMessage: ", err)
 			note.err = true
-			Channel <- note
+			channel <- note
 			return
 		}
 	}
@@ -101,9 +97,7 @@ func Ws(w http.ResponseWriter, r *http.Request) {
 	for {
 		messageType, message, err := c.ReadMessage()
 		if err != nil {
-			log.Println("ERROR! ReadMessage: ", err)
-			print("ok")
-
+			log.Println("Ws ERROR! ReadMessage: ", err)
 			break
 		}
 
@@ -113,7 +107,7 @@ func Ws(w http.ResponseWriter, r *http.Request) {
 		// send result to client
 		err = c.WriteMessage(messageType, []byte(result))
 		if err != nil {
-			log.Println("ERROR! WriteMessage: ", err)
+			log.Println("Ws ERROR! WriteMessage: ", err)
 			break
 		}
 	}
