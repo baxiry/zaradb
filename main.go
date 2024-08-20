@@ -19,28 +19,30 @@ func main() {
 	db.CreateCollection("test")
 	defer db.Close()
 
-	fmt.Printf("interacte with zaradb from %s:%s\n", Host, Port)
+	fmt.Printf("interacte with zaradb through %s:%s\n", Host, Port)
 
 	http.Handle("/static/", http.FileServer(http.FS(content)))
 
 	http.HandleFunc("/shell", shell)
-	http.HandleFunc("/", index)
+
+	// not importent
+	http.HandleFunc("/dev", dev)
 
 	// standard endpoint
 	http.HandleFunc("/ws", engine.Ws)
 
 	// endpoints for speed network
-	http.HandleFunc("/query", engine.Resever)
-	http.HandleFunc("/result", engine.Sender)
+	http.HandleFunc("/query", engine.Request)
+	http.HandleFunc("/result", engine.Response)
 
 	log.Println(http.ListenAndServe(":1111", nil))
 }
 
 // redirect to shell page temporary
-func index(w http.ResponseWriter, r *http.Request) {
+func dev(w http.ResponseWriter, r *http.Request) {
 	// TODO create index page
 	//http.Redirect(w, r, "http://localhost:1111/shell", http.StatusSeeOther)
-	f, err := content.ReadFile("static/new.html")
+	f, err := content.ReadFile("static/dev.html")
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
