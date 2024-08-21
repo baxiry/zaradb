@@ -87,7 +87,11 @@ func aggrigate(query gjson.Result) string {
 					}
 
 				case "$avg":
-					avrs := average(_id, fld.Str, data)
+					avrs, err := average(_id, fld, data)
+					if err != nil {
+						message = err.Error()
+						return false
+					}
 					for _id, avr := range avrs {
 						mapData[_id], _ = sjson.Set(mapData[_id], key.Str, avr)
 					}
@@ -122,8 +126,8 @@ func sum(_id string, field gjson.Result, records []string) (mp map[string]float6
 	switch field.Type {
 	case 3:
 		for _, record := range records {
-			id := gjson.Get(record, _id).Str        // name of record
-			val := gjson.Get(record, field.Str).Num // value of compared field
+			id := gjson.Get(record, _id).Str
+			val := gjson.Get(record, field.Str).Num
 
 			mp[id] += val
 		}
@@ -135,9 +139,9 @@ func sum(_id string, field gjson.Result, records []string) (mp map[string]float6
 			case "$multiply":
 
 				for _, record := range records {
-					id := gjson.Get(record, _id).Str                 // name of record
-					arg1 := gjson.Get(record, args.Get("0").Str).Num // value of compared field
-					arg2 := gjson.Get(record, args.Get("1").Str).Num // value of compared field
+					id := gjson.Get(record, _id).Str
+					arg1 := gjson.Get(record, args.Get("0").Str).Num
+					arg2 := gjson.Get(record, args.Get("1").Str).Num
 
 					val := arg1 * arg2
 
@@ -148,9 +152,9 @@ func sum(_id string, field gjson.Result, records []string) (mp map[string]float6
 				for _, record := range records {
 					fmt.Println(record)
 
-					id := gjson.Get(record, _id).Str                 // name of record
-					arg1 := gjson.Get(record, args.Get("0").Str).Num // value of compared field
-					arg2 := gjson.Get(record, args.Get("1").Str).Num // value of compared field
+					id := gjson.Get(record, _id).Str
+					arg1 := gjson.Get(record, args.Get("0").Str).Num
+					arg2 := gjson.Get(record, args.Get("1").Str).Num
 
 					val := arg1 + arg2
 
@@ -162,9 +166,9 @@ func sum(_id string, field gjson.Result, records []string) (mp map[string]float6
 				for _, record := range records {
 					fmt.Println(record)
 
-					id := gjson.Get(record, _id).Str                 // name of record
-					arg1 := gjson.Get(record, args.Get("0").Str).Num // value of compared field
-					arg2 := gjson.Get(record, args.Get("1").Str).Num // value of compared field
+					id := gjson.Get(record, _id).Str
+					arg1 := gjson.Get(record, args.Get("0").Str).Num
+					arg2 := gjson.Get(record, args.Get("1").Str).Num
 
 					val := arg1 - arg2
 					mp[id] += val
@@ -175,9 +179,9 @@ func sum(_id string, field gjson.Result, records []string) (mp map[string]float6
 				for _, record := range records {
 					fmt.Println(record)
 
-					id := gjson.Get(record, _id).Str                 // name of record
-					arg1 := gjson.Get(record, args.Get("0").Str).Num // value of compared field
-					arg2 := gjson.Get(record, args.Get("1").Str).Num // value of compared field
+					id := gjson.Get(record, _id).Str
+					arg1 := gjson.Get(record, args.Get("0").Str).Num
+					arg2 := gjson.Get(record, args.Get("1").Str).Num
 					val := arg1 / arg2
 
 					mp[id] += val
@@ -213,8 +217,8 @@ func min(_id string, field gjson.Result, records []string) (mp map[string]float6
 	switch field.Type {
 	case 3:
 		for _, record := range records {
-			id := gjson.Get(record, _id).Str        // name of record
-			val := gjson.Get(record, field.Str).Num // value of compared field
+			id := gjson.Get(record, _id).Str
+			val := gjson.Get(record, field.Str).Num
 			if mp[id] > val {
 				mp[id] = val
 			}
@@ -228,9 +232,9 @@ func min(_id string, field gjson.Result, records []string) (mp map[string]float6
 
 				for _, record := range records {
 
-					id := gjson.Get(record, _id).Str                 // name of record
-					arg1 := gjson.Get(record, args.Get("0").Str).Num // value of compared field
-					arg2 := gjson.Get(record, args.Get("1").Str).Num // value of compared field
+					id := gjson.Get(record, _id).Str
+					arg1 := gjson.Get(record, args.Get("0").Str).Num
+					arg2 := gjson.Get(record, args.Get("1").Str).Num
 
 					val := arg1 * arg2
 					if mp[id] > val {
@@ -242,9 +246,9 @@ func min(_id string, field gjson.Result, records []string) (mp map[string]float6
 				for _, record := range records {
 					fmt.Println(record)
 
-					id := gjson.Get(record, _id).Str                 // name of record
-					arg1 := gjson.Get(record, args.Get("0").Str).Num // value of compared field
-					arg2 := gjson.Get(record, args.Get("1").Str).Num // value of compared field
+					id := gjson.Get(record, _id).Str
+					arg1 := gjson.Get(record, args.Get("0").Str).Num
+					arg2 := gjson.Get(record, args.Get("1").Str).Num
 
 					val := arg1 + arg2
 					if mp[id] > val {
@@ -257,9 +261,9 @@ func min(_id string, field gjson.Result, records []string) (mp map[string]float6
 				for _, record := range records {
 					fmt.Println(record)
 
-					id := gjson.Get(record, _id).Str                 // name of record
-					arg1 := gjson.Get(record, args.Get("0").Str).Num // value of compared field
-					arg2 := gjson.Get(record, args.Get("1").Str).Num // value of compared field
+					id := gjson.Get(record, _id).Str
+					arg1 := gjson.Get(record, args.Get("0").Str).Num
+					arg2 := gjson.Get(record, args.Get("1").Str).Num
 
 					val := arg1 - arg2
 					if mp[id] > val {
@@ -272,9 +276,9 @@ func min(_id string, field gjson.Result, records []string) (mp map[string]float6
 				for _, record := range records {
 					fmt.Println(record)
 
-					id := gjson.Get(record, _id).Str                 // name of record
-					arg1 := gjson.Get(record, args.Get("0").Str).Num // value of compared field
-					arg2 := gjson.Get(record, args.Get("1").Str).Num // value of compared field
+					id := gjson.Get(record, _id).Str
+					arg1 := gjson.Get(record, args.Get("0").Str).Num
+					arg2 := gjson.Get(record, args.Get("1").Str).Num
 					val := arg1 / arg2
 
 					if mp[id] > val {
@@ -314,8 +318,8 @@ func max(_id string, field gjson.Result, records []string) (mp map[string]float6
 	switch field.Type {
 	case 3:
 		for _, record := range records {
-			id := gjson.Get(record, _id).Str        // name of record
-			val := gjson.Get(record, field.Str).Num // value of compared field
+			id := gjson.Get(record, _id).Str
+			val := gjson.Get(record, field.Str).Num
 			if mp[id] < val {
 				mp[id] = val
 			}
@@ -329,9 +333,9 @@ func max(_id string, field gjson.Result, records []string) (mp map[string]float6
 
 				for _, record := range records {
 
-					id := gjson.Get(record, _id).Str                 // name of record
-					arg1 := gjson.Get(record, args.Get("0").Str).Num // value of compared field
-					arg2 := gjson.Get(record, args.Get("1").Str).Num // value of compared field
+					id := gjson.Get(record, _id).Str
+					arg1 := gjson.Get(record, args.Get("0").Str).Num
+					arg2 := gjson.Get(record, args.Get("1").Str).Num
 
 					val := arg1 * arg2
 					if mp[id] < val {
@@ -343,9 +347,9 @@ func max(_id string, field gjson.Result, records []string) (mp map[string]float6
 				for _, record := range records {
 					fmt.Println(record)
 
-					id := gjson.Get(record, _id).Str                 // name of record
-					arg1 := gjson.Get(record, args.Get("0").Str).Num // value of compared field
-					arg2 := gjson.Get(record, args.Get("1").Str).Num // value of compared field
+					id := gjson.Get(record, _id).Str
+					arg1 := gjson.Get(record, args.Get("0").Str).Num
+					arg2 := gjson.Get(record, args.Get("1").Str).Num
 
 					val := arg1 + arg2
 					if mp[id] < val {
@@ -358,9 +362,9 @@ func max(_id string, field gjson.Result, records []string) (mp map[string]float6
 				for _, record := range records {
 					fmt.Println(record)
 
-					id := gjson.Get(record, _id).Str                 // name of record
-					arg1 := gjson.Get(record, args.Get("0").Str).Num // value of compared field
-					arg2 := gjson.Get(record, args.Get("1").Str).Num // value of compared field
+					id := gjson.Get(record, _id).Str
+					arg1 := gjson.Get(record, args.Get("0").Str).Num
+					arg2 := gjson.Get(record, args.Get("1").Str).Num
 
 					val := arg1 - arg2
 					if mp[id] < val {
@@ -373,9 +377,9 @@ func max(_id string, field gjson.Result, records []string) (mp map[string]float6
 				for _, record := range records {
 					fmt.Println(record)
 
-					id := gjson.Get(record, _id).Str                 // name of record
-					arg1 := gjson.Get(record, args.Get("0").Str).Num // value of compared field
-					arg2 := gjson.Get(record, args.Get("1").Str).Num // value of compared field
+					id := gjson.Get(record, _id).Str
+					arg1 := gjson.Get(record, args.Get("0").Str).Num
+					arg2 := gjson.Get(record, args.Get("1").Str).Num
 					val := arg1 / arg2
 
 					if mp[id] < val {
@@ -389,41 +393,110 @@ func max(_id string, field gjson.Result, records []string) (mp map[string]float6
 
 			return false
 		})
+
 		if err != nil {
 			return nil, err
 		}
-
-		fmt.Println(field, "is operation")
-		fmt.Println()
-		fmt.Println(field.Get("$min"))
 	}
+
 	return mp, nil
 }
 
 // not implemented yet
-func average(_id, field string, records []string) (mp map[string]float64) {
+func average(_id string, field gjson.Result, records []string) (mp map[string]float64, err error) {
 	mp = map[string]float64{}
 
 	fieldCount := make(map[string]float64)
 
-	for _, record := range records {
-		id := gjson.Get(record, _id).Str // name of record
-		val := gjson.Get(record, field)  // value of sumd field
+	switch field.Type {
+	case 3:
+		for _, record := range records {
+			id := gjson.Get(record, _id).Str
+			val := gjson.Get(record, field.Str).Num
 
-		//
-		if val.Exists() {
+			//if val.Exists() {}
 			fieldCount[id]++
+			mp[id] += val //.Num
 		}
 
-		mp[id] += val.Num
+	case 5:
 
+		field.ForEach(func(op, args gjson.Result) bool {
+			switch op.Str {
+			case "$multiply":
+
+				for _, record := range records {
+
+					id := gjson.Get(record, _id).Str
+					arg1 := gjson.Get(record, args.Get("0").Str).Num
+					arg2 := gjson.Get(record, args.Get("1").Str).Num
+
+					val := arg1 * arg2
+
+					fieldCount[id]++
+					mp[id] += val //.Num
+				}
+			case "$add":
+
+				for _, record := range records {
+					fmt.Println(record)
+
+					id := gjson.Get(record, _id).Str
+					arg1 := gjson.Get(record, args.Get("0").Str).Num
+					arg2 := gjson.Get(record, args.Get("1").Str).Num
+
+					val := arg1 + arg2
+
+					mp[id] += val //.Num
+				}
+
+			case "$sub":
+
+				for _, record := range records {
+					fmt.Println(record)
+
+					id := gjson.Get(record, _id).Str
+					arg1 := gjson.Get(record, args.Get("0").Str).Num
+					arg2 := gjson.Get(record, args.Get("1").Str).Num
+
+					val := arg1 - arg2
+
+					mp[id] += val //.Num
+
+				}
+
+			case "$div":
+
+				for _, record := range records {
+					fmt.Println(record)
+
+					id := gjson.Get(record, _id).Str
+					arg1 := gjson.Get(record, args.Get("0").Str).Num
+					arg2 := gjson.Get(record, args.Get("1").Str).Num
+					val := arg1 / arg2
+
+					mp[id] += val //.Num
+
+				}
+
+			default:
+				err = fmt.Errorf("unknown %s operator", op)
+			}
+
+			return false
+		})
+
+		if err != nil {
+			return nil, err
+		}
 	}
+
 	for fld, count := range fieldCount {
 		mp[fld] = mp[fld] / count
 	}
 
-	return mp
-}
+	return mp, nil
+} // average
 
 func count(field string, records []string) (mp map[string]int) {
 
@@ -431,6 +504,7 @@ func count(field string, records []string) (mp map[string]int) {
 	for _, record := range records {
 		mp[gjson.Get(record, field).String()]++
 	}
+
 	fmt.Println("result:  ", mp)
 	return mp
 }
