@@ -105,19 +105,21 @@ func aggrigate(query gjson.Result) string {
 
 		default:
 			message = "opss! something wrrong!"
+			return false
 		}
 
 		return true
 	})
 
-	mtch := query.Get("gmatch")
+	have := query.Get("have")
 
 	result := "["
 	for _, val := range mapData {
-		if ok, _ := match(mtch, val); ok {
+		if ok, _ := match(have, val); ok {
 			result += val + ","
 		}
 	}
+
 	if message != "" {
 		return message
 	}
