@@ -124,11 +124,14 @@ func aggrigate(query gjson.Result) string {
 			result += val + ","
 		}
 	}
-	if len(result) == 1 {
-		return `[]`
+
+	ln := len(result)
+	if ln == 1 {
+		return "[]"
 	}
 
-	return result[:len(result)-1] + "]"
+	return result[:ln-1] + "]"
+
 }
 
 func sum(_id string, field gjson.Result, records []string) (mp map[string]float64, err error) {
