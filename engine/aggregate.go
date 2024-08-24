@@ -98,6 +98,7 @@ func aggrigate(query gjson.Result) string {
 
 				default:
 					message = "unknown '" + opr.Str + "' aggrigate operator !"
+					return false
 				}
 
 				return true
@@ -111,6 +112,10 @@ func aggrigate(query gjson.Result) string {
 		return true
 	})
 
+	if message != "" {
+		return message
+	}
+
 	have := query.Get("have")
 
 	result := "["
@@ -119,10 +124,10 @@ func aggrigate(query gjson.Result) string {
 			result += val + ","
 		}
 	}
-
-	if message != "" {
-		return message
+	if len(result) == 1 {
+		return `[]`
 	}
+
 	return result[:len(result)-1] + "]"
 }
 
@@ -149,9 +154,7 @@ func sum(_id string, field gjson.Result, records []string) (mp map[string]float6
 					arg1 := gjson.Get(record, args.Get("0").Str).Num
 					arg2 := gjson.Get(record, args.Get("1").Str).Num
 
-					val := arg1 * arg2
-
-					mp[id] += val
+					mp[id] += arg1 * arg2
 				}
 			case "$add":
 
@@ -162,22 +165,18 @@ func sum(_id string, field gjson.Result, records []string) (mp map[string]float6
 					arg1 := gjson.Get(record, args.Get("0").Str).Num
 					arg2 := gjson.Get(record, args.Get("1").Str).Num
 
-					val := arg1 + arg2
-
-					mp[id] += val
+					mp[id] += arg1 + arg2
 				}
 
 			case "$sub":
 
 				for _, record := range records {
-					fmt.Println(record)
 
 					id := gjson.Get(record, _id).Str
 					arg1 := gjson.Get(record, args.Get("0").Str).Num
 					arg2 := gjson.Get(record, args.Get("1").Str).Num
 
-					val := arg1 - arg2
-					mp[id] += val
+					mp[id] += arg1 - arg2
 				}
 
 			case "$div":
@@ -188,9 +187,8 @@ func sum(_id string, field gjson.Result, records []string) (mp map[string]float6
 					id := gjson.Get(record, _id).Str
 					arg1 := gjson.Get(record, args.Get("0").Str).Num
 					arg2 := gjson.Get(record, args.Get("1").Str).Num
-					val := arg1 / arg2
 
-					mp[id] += val
+					mp[id] += arg1 / arg2
 				}
 
 			default:
@@ -203,7 +201,7 @@ func sum(_id string, field gjson.Result, records []string) (mp map[string]float6
 			return nil, err
 		}
 
-		fmt.Println()
+		fmt.Println(" we are here ")
 	}
 
 	return mp, nil
@@ -235,7 +233,6 @@ func min(_id string, field gjson.Result, records []string) (mp map[string]float6
 		field.ForEach(func(op, args gjson.Result) bool {
 			switch op.Str {
 			case "$multiply":
-
 				for _, record := range records {
 
 					id := gjson.Get(record, _id).Str
@@ -301,10 +298,6 @@ func min(_id string, field gjson.Result, records []string) (mp map[string]float6
 		if err != nil {
 			return nil, err
 		}
-
-		fmt.Println(field, "is operation")
-		fmt.Println()
-		fmt.Println(field.Get("$min"))
 	}
 
 	return mp, nil
@@ -437,11 +430,10 @@ func average(_id string, field gjson.Result, records []string) (mp map[string]fl
 					arg1 := gjson.Get(record, args.Get("0").Str).Num
 					arg2 := gjson.Get(record, args.Get("1").Str).Num
 
-					val := arg1 * arg2
-
 					fieldCount[id]++
-					mp[id] += val //.Num
+					mp[id] += arg1 * arg2
 				}
+
 			case "$add":
 
 				for _, record := range records {
@@ -451,9 +443,8 @@ func average(_id string, field gjson.Result, records []string) (mp map[string]fl
 					arg1 := gjson.Get(record, args.Get("0").Str).Num
 					arg2 := gjson.Get(record, args.Get("1").Str).Num
 
-					val := arg1 + arg2
-
-					mp[id] += val //.Num
+					fieldCount[id]++
+					mp[id] += arg1 + arg2
 				}
 
 			case "$sub":
@@ -466,8 +457,9 @@ func average(_id string, field gjson.Result, records []string) (mp map[string]fl
 					arg2 := gjson.Get(record, args.Get("1").Str).Num
 
 					val := arg1 - arg2
-
 					mp[id] += val //.Num
+
+					fieldCount[id]++
 
 				}
 
@@ -482,6 +474,7 @@ func average(_id string, field gjson.Result, records []string) (mp map[string]fl
 					val := arg1 / arg2
 
 					mp[id] += val //.Num
+					fieldCount[id]++
 
 				}
 
@@ -511,7 +504,6 @@ func count(field string, records []string) (mp map[string]int) {
 		mp[gjson.Get(record, field).String()]++
 	}
 
-	fmt.Println("result:  ", mp)
 	return mp
 }
 
