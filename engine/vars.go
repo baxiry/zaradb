@@ -3,35 +3,40 @@ package engine
 import "errors"
 
 const (
+	dbname     = "db"         // d
+	collection = "collection" // c
+
 	// actions
-	fOne   = "findOne"    // fo
-	fMany  = "findMany"   // fm
-	upOne  = "updateOne"  // uo
-	upMany = "updateMany" // um
-	dOne   = "deleteOne"  // do
-	dMany  = "deleteMany" // dm
+	fOne      = "findOne"    // fo
+	fMany     = "findMany"   // fm
+	upOne     = "updateOne"  // uo
+	upMany    = "updateMany" // um
+	dOne      = "deleteOne"  // do
+	dMany     = "deleteMany" // dm
+	aggregate = "aggregate"  // ag
 
 	//
-	filter  = "match"    // m
-	sQery   = "subQuery" // sq
-	orderby = "orderBy"  // ob
-	fields  = "fields"   // f
-	skip    = "skip"     // s
-	limit   = "limit"    // l
+	filter = "match"    // m
+	sQery  = "subQuery" // sq
+	sort   = "sort"     // ob
+	fields = "fields"   // f
+	skip   = "skip"     // s
+	limit  = "limit"    // l
 
 	// works with aggregation
-	aggregate = "aggregate" // ag
-	gmatch    = "gmatch"    //gm
-	gskip     = "gskip"     // gs
-	glimit    = "glimit"    // gl
+	gmatch = "gmatch" // h
+	gsort  = "gsort"  // gs
+	gskip  = "gskip"  // gp
+	glimit = "glimit" // gl
 
 	// separate strings
-	siparator = "_:_"
+	siparator = "-:-"
 )
 
 var (
-	ErrDuplicate    = errors.New("record already exists")
-	ErrNotExists    = errors.New("row not exists")
-	ErrUpdateFailed = errors.New("update failed")
-	ErrDeleteFailed = errors.New("delete failed")
+	ErrDuplicate    = errors.New(" already exists ")
+	ErrNotExists    = errors.New(" not exists ")
+	ErrUpdateFailed = errors.New(" update failed ")
+	ErrDeleteFailed = errors.New(" delete failed ")
+	ErrIdNotExists  = errors.New("a group specification must include an _id")
 )

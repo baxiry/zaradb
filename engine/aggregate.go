@@ -17,7 +17,7 @@ func aggrigate(query gjson.Result) string {
 
 	group := query.Get("group")
 	if _id := group.Get("_id"); !_id.Exists() {
-		return "a group specification must include an _id"
+		return `{"code":0, "status":"a group specification must include an _id"}`
 	}
 
 	mapData := map[string]string{}
@@ -116,24 +116,26 @@ func aggrigate(query gjson.Result) string {
 		return message
 	}
 
-	gmatch := query.Get("gmatch")
-	limit := query.Get("glimit").Int()
-	skip := query.Get("gskip").Int()
+	filter := query.Get(gmatch)
+	limit := query.Get(glimit).Int()
+	skip := query.Get(gskip).Int()
+
 	if limit == 0 {
-		limit = 1000 // what is default setting ?
+		// what is default setting ?
+		limit = 1000
 	}
 
 	listdata := []string{}
 	for _, val := range mapData {
-		if ok, _ := match(gmatch, val); ok {
+		if ok, _ := match(filter, val); ok {
 			listdata = append(listdata, val)
 		}
 	}
 
-	// sort listdata here
+	// TODO sort listdata here
 
 	result := "["
-	for _, val := range mapData {
+	for _, val := range listdata {
 
 		if limit == 0 {
 			break
@@ -143,12 +145,11 @@ func aggrigate(query gjson.Result) string {
 			continue
 		}
 
-		if ok, _ := match(gmatch, val); ok {
-			listdata = append(listdata, val)
-			result += val + ","
-			limit--
-		}
+		listdata = append(listdata, val)
+		result += val + ","
+		limit--
 	}
+
 	ln := len(result)
 	if ln == 1 {
 		return "[]"

@@ -44,10 +44,6 @@ func getData(query gjson.Result) (data []string, err error) {
 		if limit == 0 {
 			break
 		}
-		if skip != 0 {
-			skip--
-			continue
-		}
 
 		record = ""
 		err := rows.Scan(&record)
@@ -61,9 +57,14 @@ func getData(query gjson.Result) (data []string, err error) {
 		}
 
 		if ok {
+			if skip != 0 {
+				skip--
+				continue
+			}
 			data = append(data, record)
 			limit--
 		}
+
 	}
 	return data, nil
 }
@@ -261,7 +262,7 @@ func (db *DB) findMany(query gjson.Result) (res string) {
 	}
 
 	// order :
-	order := query.Get("order").Str
+	order := query.Get("sort").Str
 	reverse := query.Get("reverse").Int()
 
 	if order != "" {
