@@ -43,7 +43,8 @@ ws.onmessage = function(event) {
 //
 const queryInput = document.getElementById('query-input');
 queryInput.addEventListener('keydown', function(event) {
-    if (event.altKey && event.key === 'Enter') {
+      if ((event.metaKey || event.altKey) && event.key === 'Enter') {
+
         const cursorPosition = queryInput.selectionStart;
 
         // Insert a newline character at the cursor position
@@ -68,17 +69,14 @@ queryInput.addEventListener('keydown', function(event) {
                 return;
 
             } catch (error) {
-
+                //console.error("Error evaluating code:", error);
                 $('#data').html(`<pre><span>${error}</span></pre>`);
                 $('#data').fadeIn(500);
-
-                //console.error("Error evaluating code:", error);
                 return; 
             }
         } 
     }
-});
-} // end connection func
+})} // end connection func
 
 connection()
 
@@ -100,34 +98,21 @@ function calcHeight(value) {
 
     let numberOfLineBreaks = (value.match(/\n/g) || []).length;
     if (numberOfLineBreaks < 3) {
-        numberOfLineBreaks = 3
+       // numberOfLineBreaks = 3
     }
 
     if (numberOfLineBreaks > 24) {
-        //numberOfLineBreaks = 24
+        numberOfLineBreaks = 24
     }
 
-    // min-height + lines x line-height + padding + border
-    let newHeight = 20 + numberOfLineBreaks * 20 + 12 + 2;
-    
-    return newHeight;
+    return 20 + numberOfLineBreaks * 20 + 12 + 2;
 }
 
 let textarea = document.querySelector("textarea");
-textarea.addEventListener("keyup", () => {
-  textarea.style.height = calcHeight(textarea.value) + "px";
-    //console.log("height",calcHeight(textarea.value))
+textarea.addEventListener("keyup", (e) => {
+    textarea.style.height = calcHeight(textarea.value) + "px";
+    //console.log("event : ", e) 
 });
-	
-
-
-$(document).on("keypress", function (e) {
-   // console.log("event : ", e) 
-   // console.log("input : ", $("#query-input").val()) 
-   // TODO some hilit for js object 
-});
-
-
  
 // copy paste example into textarea
 $('pre').click(function () {
