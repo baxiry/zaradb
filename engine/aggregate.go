@@ -116,15 +116,39 @@ func aggrigate(query gjson.Result) string {
 		return message
 	}
 
-	have := query.Get("have")
+	gmatch := query.Get("gmatch")
+	limit := query.Get("glimit").Int()
+	skip := query.Get("gskip").Int()
+	if limit == 0 {
+		limit = 1000 // what is default setting ?
+	}
 
-	result := "["
+	listdata := []string{}
 	for _, val := range mapData {
-		if ok, _ := match(have, val); ok {
-			result += val + ","
+		if ok, _ := match(gmatch, val); ok {
+			listdata = append(listdata, val)
 		}
 	}
 
+	// sort listdata here
+
+	result := "["
+	for _, val := range mapData {
+
+		if limit == 0 {
+			break
+		}
+		if skip != 0 {
+			skip--
+			continue
+		}
+
+		if ok, _ := match(gmatch, val); ok {
+			listdata = append(listdata, val)
+			result += val + ","
+			limit--
+		}
+	}
 	ln := len(result)
 	if ln == 1 {
 		return "[]"
