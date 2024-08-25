@@ -21,12 +21,10 @@ func getData(query gjson.Result) (data []string, err error) {
 		return nil, fmt.Errorf(`{"error":"forgot collection name "}`)
 	}
 
-	mtch := query.Get("match")
-
 	skip := query.Get("skip").Int()
 	limit := query.Get("limit").Int()
 	if limit == 0 {
-		limit = 100 // what is default setting ?
+		limit = 1000 // what is default setting ?
 	}
 
 	stmt := `select record from ` + coll
@@ -38,7 +36,8 @@ func getData(query gjson.Result) (data []string, err error) {
 	defer rows.Close()
 
 	record := ""
-	//data = []string{}
+
+	isMatch := query.Get("match")
 
 	for rows.Next() {
 
@@ -56,7 +55,7 @@ func getData(query gjson.Result) (data []string, err error) {
 			return nil, err
 		}
 
-		ok, err := match(mtch, record)
+		ok, err := match(isMatch, record)
 		if err != nil {
 			return nil, err
 		}
@@ -175,7 +174,7 @@ func (db *DB) updateMany(query gjson.Result) (result string) {
 	return strconv.Itoa(len(listMatch)) + " items updated"
 }
 
-// TODO updateOne one update document data
+// TODO updateOne updates one  document data
 func (db *DB) updateOne(query gjson.Result) (result string) {
 
 	mtch := query.Get("match")
@@ -262,7 +261,7 @@ func (db *DB) findMany(query gjson.Result) (res string) {
 	}
 
 	// order :
-	order := query.Get("orderBy").Str
+	order := query.Get("order").Str
 	reverse := query.Get("reverse").Int()
 
 	if order != "" {
@@ -281,11 +280,12 @@ func (db *DB) findMany(query gjson.Result) (res string) {
 		records += listData[i] + ","
 	}
 
-	if len(records) == 1 {
-		return records + "]"
+	ln := len(records)
+	if ln == 1 {
+		return "[]"
 	}
 
-	return records[:len(records)-1] + "]"
+	return records[:ln-1] + "]"
 }
 
 // Finds first obj match creteria.
@@ -315,11 +315,13 @@ func (db *DB) findOne(query gjson.Result) (res string) {
 		if err != nil {
 			return err.Error()
 		}
-		b, err := match(mtch, record)
+
+		ok, err := match(mtch, record)
 		if err != nil {
 			return err.Error()
 		}
-		if b {
+
+		if ok {
 
 			return record
 		}
