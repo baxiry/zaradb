@@ -8,9 +8,9 @@ import (
 )
 
 type Notify struct {
-	message     string
-	messageType int
-	err         bool
+	msg     string
+	msgType int
+	err     bool
 }
 
 var (
@@ -31,14 +31,14 @@ func Request(w http.ResponseWriter, r *http.Request) {
 	defer c.Close()
 
 	var note Notify
-	var message []byte
+	var msg []byte
 
 	for {
 		if note.err {
 			log.Println(err)
 			return
 		}
-		note.messageType, message, err = c.ReadMessage()
+		note.msgType, msg, err = c.ReadMessage()
 		if err != nil {
 			log.Println("Request ERROR! ReadMessage: ", err)
 			note.err = true
@@ -47,7 +47,7 @@ func Request(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Hande all of Queries
-		note.message = HandleQueries(string(message))
+		note.msg = HandleQueries(string(msg))
 		channel <- note
 	}
 }
@@ -72,7 +72,7 @@ func Response(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		// send result to client
-		err = c.WriteMessage(note.messageType, []byte(note.message))
+		err = c.WriteMessage(note.msgType, []byte(note.msg))
 		if err != nil {
 			log.Println("Response ERROR! WriteMessage: ", err)
 			note.err = true
@@ -95,17 +95,17 @@ func Ws(w http.ResponseWriter, r *http.Request) {
 	defer c.Close()
 
 	for {
-		messageType, message, err := c.ReadMessage()
+		msgType, msg, err := c.ReadMessage()
 		if err != nil {
 			log.Println("Ws ERROR! ReadMessage: ", err)
 			break
 		}
 
 		// Hande all of Queries
-		result := HandleQueries(string(message))
+		result := HandleQueries(string(msg))
 
 		// send result to client
-		err = c.WriteMessage(messageType, []byte(result))
+		err = c.WriteMessage(msgType, []byte(result))
 		if err != nil {
 			log.Println("Ws ERROR! WriteMessage: ", err)
 			break
