@@ -104,11 +104,9 @@ function calcHeight(value) {
     }
 
     if (numberOfLineBreaks > 24) {
-        numberOfLineBreaks = 24
+        //numberOfLineBreaks = 24
     }
 
-
-    //console.log("lines:",numberOfLineBreaks)
     // min-height + lines x line-height + padding + border
     let newHeight = 20 + numberOfLineBreaks * 20 + 12 + 2;
     
