@@ -4,21 +4,26 @@ import "errors"
 
 const (
 	// actions
-	fOne      = "findOne"    // fo
-	fMany     = "findMany"   // fm
-	upOne     = "updateOne"  // uo
-	upMany    = "updateMany" // um
-	dOne      = "deleteOne"  // do
-	dMany     = "deleteMany" // dm
-	aggregate = "aggregate"  // ag
+	fOne   = "findOne"    // fo
+	fMany  = "findMany"   // fm
+	upOne  = "updateOne"  // uo
+	upMany = "updateMany" // um
+	dOne   = "deleteOne"  // do
+	dMany  = "deleteMany" // dm
 
 	//
-	mtch    = "match"    // m
+	filter  = "match"    // m
 	sQery   = "subQuery" // sq
 	orderby = "orderBy"  // ob
 	fields  = "fields"   // f
 	skip    = "skip"     // s
 	limit   = "limit"    // l
+
+	// works with aggregation
+	aggregate = "aggregate" // ag
+	gmatch    = "gmatch"    //gm
+	gskip     = "gskip"     // gs
+	glimit    = "glimit"    // gl
 
 	// separate strings
 	siparator = "_:_"
