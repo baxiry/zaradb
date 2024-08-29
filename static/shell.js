@@ -98,8 +98,10 @@ function calcHeight(value) {
 
     let numberOfLineBreaks = (value.match(/\n/g) || []).length;
     if (numberOfLineBreaks < 3) {
-       // numberOfLineBreaks = 3
+       numberOfLineBreaks = 3
     }
+    
+
 
     if (numberOfLineBreaks > 24) {
         numberOfLineBreaks = 24

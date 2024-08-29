@@ -229,6 +229,7 @@ func (db *DB) updateOne(query gjson.Result) (result string) {
 func (db *DB) updateById(query gjson.Result) (result string) {
 
 	oldObj := db.findById(query)
+	fmt.Println("query ", query)
 
 	id := query.Get("_id").String()
 	if id == "" {
@@ -236,11 +237,13 @@ func (db *DB) updateById(query gjson.Result) (result string) {
 	}
 	newObj := query.Get("data").Raw
 
-	fmt.Println(newObj)
-
 	coll := query.Get("collection").Str
 
 	newData := gjson.Get(`[`+oldObj+`,`+newObj+`]`, `@join`).Raw
+	fmt.Println()
+	fmt.Println("old obj ", oldObj)
+	fmt.Println("new obj ", newObj)
+	fmt.Println("new data ", newData)
 
 	// example `update test set record = '{"_id":12,"name":"joha","age":13}' where rowid = 12;`
 
@@ -262,11 +265,10 @@ func (db *DB) findMany(query gjson.Result) (res string) {
 	}
 
 	// order :
-	order := query.Get("sort").Str
-	reverse := query.Get("reverse").Int()
+	order := query.Get("sort") //.Str
 
-	if order != "" {
-		listData = orderBy(order, int(reverse), listData)
+	if order.Exists() {
+		listData = orderBy(order, 0, listData)
 	}
 
 	// TODO aggrigate here
@@ -378,14 +380,14 @@ func (db *DB) deleteOne(query gjson.Result) string {
 func (db *DB) findById(query gjson.Result) (res string) {
 	coll := query.Get("collection").Str
 
-	id := query.Get("_id").Str
+	id := query.Get("_id").String()
 
 	stmt := `select record from ` + coll + ` where rowid = ` + id
 
 	rows, err := db.db.Query(stmt)
 	if err != nil {
 		if id == "" {
-			return `{Error:"Parameter not found: _id"}`
+			return `{Error:"_id is required"}`
 		}
 		return fmt.Sprintf(`{Error:"%s"}`, err)
 	}
@@ -457,13 +459,13 @@ func (db *DB) insertMany(query gjson.Result) (res string) {
 
 // delete by id
 func (db *DB) deleteById(query gjson.Result) string {
-	id := query.Get("_id").Str
+	id := query.Get("_id").String()
 	if id == "" {
-		return `{"error": "there is no _id"}`
+		return `{"error": "_id is required"}`
 	}
 	coll := query.Get("collection").Str
 	if coll == "" {
-		return `{"error": "there is no collection"}`
+		return `{"error": "collection is required"}`
 	}
 
 	sql := `delete from ` + coll + ` where rowid = ` + id

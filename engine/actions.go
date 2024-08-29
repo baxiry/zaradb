@@ -6,8 +6,6 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-func (db *DB) aggregate(query gjson.Result) string { return "aggregate func in progress" }
-
 // ok
 func HandleQueries(query string) string {
 
@@ -25,7 +23,7 @@ func HandleQueries(query string) string {
 	case "sum":
 		return "not implemented yet"
 
-	case "avr":
+	case "avg":
 		return "not implemented yet"
 
 	case "min":
@@ -101,6 +99,9 @@ func querySql(query gjson.Result) string {
 	for res.Next() {
 		res.Scan(&record)
 		result += record + ","
+	}
+	if result == "[" {
+		return "[]"
 	}
 	return result[:len(result)-1] + "]"
 }

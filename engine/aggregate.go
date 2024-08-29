@@ -606,7 +606,7 @@ func reFields(data []string, fields gjson.Result) []string {
 	return data
 }
 
-func orderBy(param string, reverse int, data []string) (list []string) {
+func orderBy(param gjson.Result, reverse int, data []string) (list []string) {
 
 	objects := []gjson.Result{}
 	for _, v := range data {
@@ -615,17 +615,81 @@ func orderBy(param string, reverse int, data []string) (list []string) {
 	// sort here
 
 	// check type
-	typ := objects[0].Get(param).Type
+	typ := 2 //objects[0].Get(param).Type
 	fmt.Println("type is ", typ)
 
 	if typ == 2 {
-		list = sortNumber(param, reverse, objects)
+		list = sortNumber2(param, objects)
 	}
 	if typ == 3 {
-		list = sortString(param, reverse, objects)
+		list = sortString("age", reverse, objects)
 	}
 
 	return list
+}
+
+type param struct {
+	field string
+	value int64
+}
+
+var params []param
+
+func sortNumber2(fields gjson.Result, list []gjson.Result) []string {
+
+	fields.ForEach(func(key, val gjson.Result) bool {
+		params = append(params, param{key.Str, val.Int()})
+		return true
+	})
+
+	fmt.Println("Fields: ", fields)
+	fmt.Println("params: ", params)
+	//lenListFields := len(listField)
+
+	max := len(list)
+	var tmp gjson.Result
+
+	element := list[0]
+
+	for max != 1 {
+		for i := 1; i < max; i++ {
+			fld := params[0].field
+			if element.Get(fld).Num < list[i].Get(fld).Num {
+				tmp = list[i]
+				list[i] = element
+				element = tmp
+			}
+
+			if i == max-1 {
+				tmp = list[i]
+				list[i] = element
+				element = tmp
+			}
+		}
+		max--
+	}
+
+	for k, v := range list {
+
+		fmt.Println(k, v)
+	}
+
+	list[0] = element
+	res := []string{}
+	if params[0].value == 1 {
+		fmt.Println("not reverse : ", fields.Get(params[0].field).Num)
+		for i := 0; i < len(list); i++ {
+			res = append(res, list[i].String())
+		}
+		return res
+	}
+
+	fmt.Println("reverse : ", params[0].value)
+	for i := len(list) - 1; i >= 0; i-- {
+		res = append(res, list[i].String())
+	}
+
+	return res
 }
 
 func sortNumber(field string, reverse int, list []gjson.Result) []string {
