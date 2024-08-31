@@ -609,22 +609,23 @@ func reFields(data []string, fields gjson.Result) []string {
 func orderBy(param gjson.Result, reverse int, data []string) (list []string) {
 
 	objects := []gjson.Result{}
+	fields := make([]string, 0)
 	for _, v := range data {
 		objects = append(objects, gjson.Parse(v))
 	}
-	// sort here
+	param.ForEach(func(k, v gjson.Result) bool {
+		fields = append(fields, k.Str)
+		return true
+	})
 
-	// check type
-	typ := 2 //objects[0].Get(param).Type
-	fmt.Println("type is ", typ)
-
-	if typ == 2 {
+	// check fieldType type
+	fieldType := objects[0].Get(fields[0]).Type
+	if fieldType == 2 {
 		list = sortNumber2(param, objects)
-	}
-	if typ == 3 {
-		list = sortString("age", reverse, objects)
+		return list
 	}
 
+	list = sortString2(param, objects)
 	return list
 }
 
@@ -689,6 +690,60 @@ func sortNumber2(fields gjson.Result, list []gjson.Result) []string {
 	return res
 }
 
+func sortString2(fields gjson.Result, list []gjson.Result) []string {
+	var params []param
+
+	fields.ForEach(func(key, val gjson.Result) bool {
+		params = append(params, param{key.Str, val.Int()})
+		return true
+	})
+
+	fmt.Println("Fields: ", fields) // {age:1, name:1}
+	fmt.Println("params: ", params) // [{age,1}, {name, 1}]
+	//lenListFields := len(listField) // 2
+
+	max := len(list)
+	var tmp gjson.Result
+
+	element := list[0]
+
+	fld := params[0].field // e.g age
+
+	for max != 1 {
+		for i := 1; i < max; i++ {
+			if element.Get(fld).Str < list[i].Get(fld).Str {
+				tmp = list[i]
+				list[i] = element
+				element = tmp
+			}
+
+			// fmt.Printf("\n %s, %s", element.Get("name"), element.Get("name"))
+		}
+
+		max--
+		tmp = list[max]
+		list[max] = element
+		element = tmp
+
+	}
+
+	list[0] = element
+	res := []string{}
+	if params[0].value == 1 {
+		for i := 0; i < len(list); i++ {
+			res = append(res, list[i].String())
+		}
+		return res
+	}
+
+	fmt.Println("reverse : ", params[0].value)
+	for i := len(list) - 1; i >= 0; i-- {
+		res = append(res, list[i].String())
+	}
+
+	return res
+}
+
 func sortNumber(field string, reverse int, list []gjson.Result) []string {
 	max := len(list)
 	var tmp gjson.Result
@@ -706,7 +761,6 @@ func sortNumber(field string, reverse int, list []gjson.Result) []string {
 		tmp = list[max]
 		list[max] = element
 		element = tmp
-
 	}
 
 	list[0] = element
@@ -741,13 +795,11 @@ func sortString(field string, reverse int, list []gjson.Result) []string {
 				list[i] = element
 				element = tmp
 			}
-
 		}
 		max--
 		tmp = list[max]
 		list[max] = element
 		element = tmp
-
 	}
 
 	list[0] = element
