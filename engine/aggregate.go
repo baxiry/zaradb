@@ -633,45 +633,42 @@ type param struct {
 	value int64
 }
 
-var params []param
-
 func sortNumber2(fields gjson.Result, list []gjson.Result) []string {
+	var params []param
 
 	fields.ForEach(func(key, val gjson.Result) bool {
 		params = append(params, param{key.Str, val.Int()})
 		return true
 	})
 
-	fmt.Println("Fields: ", fields)
-	fmt.Println("params: ", params)
-	//lenListFields := len(listField)
+	fmt.Println("Fields: ", fields) // {age:1, name:1}
+	fmt.Println("params: ", params) // [{age,1}, {name, 1}]
+	//lenListFields := len(listField) // 2
 
 	max := len(list)
 	var tmp gjson.Result
 
 	element := list[0]
 
+	fld := params[0].field // e.g age
+
 	for max != 1 {
 		for i := 1; i < max; i++ {
-			fld := params[0].field
 			if element.Get(fld).Num < list[i].Get(fld).Num {
 				tmp = list[i]
 				list[i] = element
 				element = tmp
 			}
 
-			if i == max-1 {
-				tmp = list[i]
-				list[i] = element
-				element = tmp
-			}
+			if element.Get(fld).Num == list[i].Get(fld).Num {
+			} // fmt.Printf("\n %s, %s", element.Get("name"), element.Get("name"))
 		}
+
 		max--
-	}
+		tmp = list[max]
+		list[max] = element
+		element = tmp
 
-	for k, v := range list {
-
-		fmt.Println(k, v)
 	}
 
 	list[0] = element
@@ -704,17 +701,16 @@ func sortNumber(field string, reverse int, list []gjson.Result) []string {
 				list[i] = element
 				element = tmp
 			}
-
-			if i == max-1 {
-				tmp = list[i]
-				list[i] = element
-				element = tmp
-			}
 		}
 		max--
+		tmp = list[max]
+		list[max] = element
+		element = tmp
+
 	}
 
 	list[0] = element
+
 	res := []string{}
 	if reverse != 1 {
 		for i := 0; i < len(list); i++ {
@@ -746,13 +742,12 @@ func sortString(field string, reverse int, list []gjson.Result) []string {
 				element = tmp
 			}
 
-			if i == max-1 {
-				tmp = list[i]
-				list[i] = element
-				element = tmp
-			}
 		}
 		max--
+		tmp = list[max]
+		list[max] = element
+		element = tmp
+
 	}
 
 	list[0] = element
