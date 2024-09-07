@@ -2,11 +2,78 @@ package engine
 
 import (
 	"fmt"
+	srt "sort"
 	"strings"
 
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 )
+
+func order(data []string, params gjson.Result) []string {
+
+	var tmplist []gjson.Result
+	for _, v := range data {
+		tmplist = append(tmplist, gjson.Parse(v))
+	}
+
+	var fields []string
+	var asc []bool
+
+	params.ForEach(func(f, v gjson.Result) bool {
+		fields = append(fields, f.Str)
+		if v.Int() == 1 {
+			asc = append(asc, true)
+			return true
+		}
+		asc = append(asc, false)
+		return true
+	})
+
+	// types : 3 is string, 2 is Num, 5 is json or array.
+
+	srt.Slice(tmplist, func(i, j int) bool {
+		for index, field := range fields {
+			valueI := tmplist[i].Get(field)
+			valueJ := tmplist[j].Get(field)
+
+			if asc[index] {
+				if valueI.Value() != valueJ.Value() {
+					switch valueI.Type {
+					case 3:
+						return valueI.Str < valueJ.Str
+
+					case 2:
+						return valueI.Num < valueJ.Num
+
+					default:
+						fmt.Println("unsupported type")
+						return true
+					}
+				}
+			}
+
+			if valueI.Value() != valueJ.Value() {
+				switch valueI.Type {
+				case 3:
+					return valueI.Str > valueJ.Str
+
+				case 2:
+					return valueI.Num > valueJ.Num
+
+				default:
+					fmt.Println("unsupported type")
+					return true
+				}
+			}
+		}
+		return false
+	})
+	for k, v := range tmplist {
+		data[k] = v.Raw
+	}
+
+	return data
+}
 
 // not implemented yet
 func aggrigate(query gjson.Result) string {
@@ -133,6 +200,10 @@ func aggrigate(query gjson.Result) string {
 	}
 
 	// TODO sort listdata here
+	srt := query.Get("gsort")
+	if srt.Exists() {
+		listdata = order(listdata, srt)
+	}
 
 	result := "["
 	for _, val := range listdata {
@@ -646,33 +717,43 @@ func sortNumber2(fields gjson.Result, list []gjson.Result) []string {
 	fmt.Println("params: ", params) // [{age,1}, {name, 1}]
 	//lenListFields := len(listField) // 2
 
-	max := len(list)
-	var tmp gjson.Result
-
-	element := list[0]
+	ln := len(list)
 
 	fld := params[0].field // e.g age
 
-	for max != 1 {
-		for i := 1; i < max; i++ {
-			if element.Get(fld).Num < list[i].Get(fld).Num {
-				tmp = list[i]
-				list[i] = element
-				element = tmp
+	for i := 0; i < ln-1; i++ {
+		fmt.Println("----------------------")
+		minIndex := i
+		for j := i + 1; j < ln; j++ {
+			fmt.Println("++++++++++++ ", i, j)
+
+			if list[j].Get(fld).Num == list[j-1].Get(fld).Num {
+				for p := 1; p < len(params); p++ {
+					if list[j].Get(params[p].field).Type == 2 {
+						if list[j].Get(params[p].field).Num == list[j-1].Get(params[p].field).Num {
+							list[j], list[j-1] = list[j-1], list[j]
+
+						}
+
+					}
+
+					fmt.Println("param: ", params[p].field)
+					fmt.Println("param: ", params[p].value)
+				}
+
+				fmt.Println()
+				//fmt.Println(list[j])
+				//fmt.Println(list[minIndex])
 			}
 
-			if element.Get(fld).Num == list[i].Get(fld).Num {
-			} // fmt.Printf("\n %s, %s", element.Get("name"), element.Get("name"))
+			if list[j].Get(fld).Num < list[minIndex].Get(fld).Num {
+				minIndex = j
+			}
+
 		}
-
-		max--
-		tmp = list[max]
-		list[max] = element
-		element = tmp
-
+		list[i], list[minIndex] = list[minIndex], list[i]
 	}
 
-	list[0] = element
 	res := []string{}
 	if params[0].value == 1 {
 		fmt.Println("not reverse : ", fields.Get(params[0].field).Num)

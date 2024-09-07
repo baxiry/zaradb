@@ -18,8 +18,8 @@ const (
 	//
 	filter = "match"    // m
 	sQery  = "subQuery" // sq
-	sort   = "sort"     // ob
 	fields = "fields"   // f
+	sort   = "sort"     // ob
 	skip   = "skip"     // s
 	limit  = "limit"    // l
 

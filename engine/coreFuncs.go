@@ -265,13 +265,11 @@ func (db *DB) findMany(query gjson.Result) (res string) {
 	}
 
 	// order :
-	order := query.Get("sort") //.Str
+	srt := query.Get("sort")
 
-	if order.Exists() {
-		listData = orderBy(order, 0, listData)
+	if srt.Exists() {
+		listData = order(listData, srt)
 	}
-
-	// TODO aggrigate here
 
 	// remove or rename some fields
 	flds := query.Get("fields")
