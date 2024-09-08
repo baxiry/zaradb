@@ -123,6 +123,47 @@ hote that is usefer just when we neen more conditions per field.
  <p>is str not contains 'ad' ? :</p>
  <pre>{action:"findMany", collection:"test", match:{name:{$nc:"ad"}}}</pre></br>
 
+ <p>Aggregation</p>
+ 
+we will appely aggregation on this data:
+
+ <pre>
+{ 
+  collection: "products",
+  action: "insertMany",
+  data: [
+	{ "item" : "Americanos", "price" : 5, "size": "Short", "quantity" : 22 },
+	{ "item" : "Cappuccino", "price" : 6, "size": "Short","quantity" : 12 },
+	{ "item" : "Lattes", "price" : 15, "size": "Grande","quantity" : 25 },
+	{ "item" : "Mochas", "price" : 25,"size": "Tall", "quantity" : 11 },
+	{ "item" : "Americanos", "price" : 10, "size": "Grande","quantity" : 12 },
+	{ "item" : "Cappuccino", "price" : 7, "size": "Tall","quantity" : 20},
+	{ "item" : "Lattes", "price" : 25,"size": "Tall", "quantity" : 30 },
+	{ "item" : "Americanos", "price" : 10, "size": "Grande","quantity" },
+	{ "item" : "Cappuccino", "price" : 10, "size": "Grande","quantity" },
+	{ "item" : "Americanos", "price" : 8, "size": "Tall","quantity" }
+  ]
+}
+</pre></br>
+
+<p>`$min` `$max` `$count` `$avg` `$sum` examples:</p>
+
+<pre>
+{
+  collection: "products",
+  action: "aggregate",  
+  group: {
+      _id: 'item',
+      minPrice: {$min: 'price'},
+      maxPrice: {$max: 'price'},
+      sumPrice: {$sum: 'price'},
+      countPrice: {$count: 'price'},
+      averagePrice: { $avg: 'price'},
+      averageAmount: {$avg: { $multiplay: ['quantity','price']}}
+    },
+}
+</pre>
+
 <br/>
 
 

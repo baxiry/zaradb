@@ -12,6 +12,7 @@ import (
 //go:embed  static
 var content embed.FS
 
+// main
 func main() {
 	// TODO: Close program gracefully.
 
@@ -54,7 +55,6 @@ func dev(w http.ResponseWriter, r *http.Request) {
 
 // render static shell.html file
 func shell(w http.ResponseWriter, r *http.Request) {
-	// Open the index.html file
 	f, err := content.ReadFile("static/shell.html")
 
 	if err != nil {
@@ -62,6 +62,12 @@ func shell(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Copy the index.html file to the response
 	fmt.Fprint(w, string(f))
+
+}
+
+// redirect to shell page temporary
+func index(w http.ResponseWriter, r *http.Request) {
+	// TODO create index page
+	http.Redirect(w, r, "http://localhost:1111/shell", http.StatusSeeOther)
 }
