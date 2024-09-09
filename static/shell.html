@@ -154,10 +154,10 @@ we will appely aggregation on this data:
   action: "aggregate",  
   group: {
       _id: 'item',
+      countItem: {$count: ''}, // count param should be zero value 
       minPrice: {$min: 'price'},
       maxPrice: {$max: 'price'},
       sumPrice: {$sum: 'price'},
-      countPrice: {$count: 'price'},
       averagePrice: { $avg: 'price'},
       averageAmount: {$avg: { $multiplay: ['quantity','price']}}
     },
