@@ -112,11 +112,11 @@ func aggrigate(query gjson.Result) string {
 			}
 
 		case 5:
-			val.ForEach(func(opr, fld gjson.Result) bool { // opperation & field name
+			// opr operation, fld field name
+			val.ForEach(func(opr, fld gjson.Result) bool {
 
 				switch opr.Str {
 				case "$count":
-					fmt.Println("item is ", _id)
 					counted := count(fld.Str, data)
 					for _id, count := range counted {
 						mapData[_id], _ = sjson.Set(mapData[_id], key.Str, count)
