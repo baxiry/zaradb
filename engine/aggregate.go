@@ -117,7 +117,7 @@ func aggrigate(query gjson.Result) string {
 
 				switch opr.Str {
 				case "$count":
-					counted := count(fld.Str, data)
+					counted := count(_id, data)
 					for _id, count := range counted {
 						mapData[_id], _ = sjson.Set(mapData[_id], key.Str, count)
 					}
@@ -597,16 +597,7 @@ func average(_id string, field gjson.Result, records []string) (mp map[string]fl
 	return mp, nil
 } // average
 
-func countField(field string, records []string) (mp map[string]int) {
-
-	mp = map[string]int{}
-	for _, record := range records {
-		mp[gjson.Get(record, field).Str]++
-	}
-
-	return mp
-}
-
+// count counts entities in collection by provid field
 func count(field string, records []string) (mp map[string]int) {
 
 	mp = map[string]int{}
