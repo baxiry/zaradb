@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	//_ "github.com/mattn/go-sqlite3"
-
 	_ "modernc.org/sqlite"
 )
 
@@ -20,7 +18,7 @@ var db *DB
 
 func NewDB(dbName string) *DB {
 
-	newdb, err := sql.Open("sqlite", dbName) // sqlite3 whith mattn lib
+	newdb, err := sql.Open("sqlite", dbName)
 	if err != nil {
 		panic(err)
 	}
@@ -46,7 +44,7 @@ func NewDB(dbName string) *DB {
 
 		db.lastid[tableName] = lid
 
-		fmt.Println("Table Name:", tableName)
+		//fmt.Println("Table Name:", tableName)
 	}
 	return db
 }

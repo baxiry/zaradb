@@ -24,11 +24,10 @@ func main() {
 
 	http.Handle("/static/", http.FileServer(http.FS(content)))
 
+	http.HandleFunc("/", index)
+	http.HandleFunc("/index", shell)
+
 	http.HandleFunc("/shell", shell)
-
-	// not importent
-	http.HandleFunc("/dev", dev)
-
 	// standard endpoint
 	http.HandleFunc("/ws", engine.Ws)
 
@@ -36,20 +35,19 @@ func main() {
 	http.HandleFunc("/query", engine.Request)
 	http.HandleFunc("/result", engine.Response)
 
+	// for pages under development
+	http.HandleFunc("/dev", dev)
+
 	log.Println(http.ListenAndServe(":1111", nil))
 }
 
 // redirect to shell page temporary
 func dev(w http.ResponseWriter, r *http.Request) {
-	// TODO create index page
-	//http.Redirect(w, r, "http://localhost:1111/shell", http.StatusSeeOther)
 	f, err := content.ReadFile("static/dev.html")
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	fmt.Fprint(w, string(f))
 }
 

@@ -112,7 +112,11 @@ function calcHeight(value) {
 
 let textarea = document.querySelector("textarea");
 textarea.addEventListener("keyup", (e) => {
-    textarea.style.height = calcHeight(textarea.value) + "px";
+    let hi = calcHeight(textarea.value) + "px"
+    textarea.style.height = hi;
+
+    $("#output").css("height", "calc(100vh - "+hi+")" )
+    //css height: calc(100vh - 100px);
     //console.log("event : ", e) 
 });
  
