@@ -81,6 +81,9 @@ func aggrigate(query gjson.Result) string {
 	if err != nil {
 		return err.Error()
 	}
+	if len(data) == 0 {
+		return "[]"
+	}
 
 	group := query.Get("group")
 	if _id := group.Get("_id"); !_id.Exists() {

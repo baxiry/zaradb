@@ -166,4 +166,7 @@ func (db *Database) Close() error {
 	}
 	clear(db.Collections)
 	return nil
+
 }
+
+// end

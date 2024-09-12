@@ -35,10 +35,9 @@ func getData(query gjson.Result) (data []string, err error) {
 	}
 	defer rows.Close()
 
-	record := ""
-
 	isMatch := query.Get("match")
 
+	record := ""
 	for rows.Next() {
 
 		if limit == 0 {
