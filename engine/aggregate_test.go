@@ -83,6 +83,6 @@ const sortedStr = `[
    }
 ]`
 
-func TestSortString(t *testing.T) {
+func TestSort(t *testing.T) {
 	// Test cases with different data and sort key
 }

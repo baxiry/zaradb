@@ -24,7 +24,4 @@ this docs is for libs dev, but it good for everyone :
 > The changes will be partial. Then it stabilizes completely in version 1.0.0.
 > This documentation is intended for library developers, but is useful to anyone interested in documentary databases 
 
-#### Limitations:
-> [!WARNING]
-> Horizontal scale is not one of Zara's goals currently.
 

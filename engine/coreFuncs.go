@@ -8,12 +8,6 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-// data that matched
-type matched struct {
-	id   string
-	data string
-}
-
 // ...
 func getData(query gjson.Result) (data []string, err error) {
 	coll := query.Get("collection").Str
@@ -28,7 +22,6 @@ func getData(query gjson.Result) (data []string, err error) {
 	}
 
 	stmt := `select record from ` + coll
-
 	rows, err := db.db.Query(stmt)
 	if err != nil {
 		return nil, err
@@ -63,7 +56,6 @@ func getData(query gjson.Result) (data []string, err error) {
 			data = append(data, record)
 			limit--
 		}
-
 	}
 	return data, nil
 }
@@ -117,12 +109,18 @@ func (db *DB) deleteMany(query gjson.Result) string {
 	return strconv.Itoa(llist) + "items has removed"
 }
 
+// data that matched
+type matched struct {
+	id   string
+	data string
+}
+
 // TODO updateMany update document data
 func (db *DB) updateMany(query gjson.Result) (result string) {
 
 	mtch := query.Get("match")
 
-	newObj := query.Get("data").Str
+	newObj := query.Get("data").Raw
 
 	coll := query.Get("collection").Str
 
