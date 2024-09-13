@@ -6,7 +6,7 @@ var ws = new WebSocket('ws://localhost:1111/ws');
 
 ws.onopen = function(){
     console.log('Connection established');
-    $('#reconnecte').fadeOut(500);
+    $('#reconnecte').fadeOut(400);
 }
 
 //  when ws closed reconnect after 700ms 
@@ -25,28 +25,15 @@ ws.onmessage = function(event) {
     const Data = prettyJSON(event.data)
     $('#examples').hide();
     $('#data').html(`<pre><span>${Data}</span></pre>`);
-    $('#data').fadeIn(500);
+    $('#data').fadeIn(400);
 };
 
 //
 const queryInput = document.getElementById('query-input');
 queryInput.addEventListener('keydown', function(event) {
-      if ((event.metaKey || event.altKey) && event.key === 'Enter') {
 
-        const cursorPosition = queryInput.selectionStart;
-
-        // Insert a newline character at the cursor position
-        const textBeforeCursor = queryInput.value.substring(0, cursorPosition);
-        const textAfterCursor = queryInput.value.substring(cursorPosition);
-        queryInput.value = textBeforeCursor + '\n' + textAfterCursor;
-
-        // Move the cursor to the end of the newline
-        queryInput.selectionStart = cursorPosition + 1;
-        queryInput.selectionEnd = cursorPosition + 1;
-        return 
-    }
-   
-    if (event.key === 'Enter') {
+    // 
+    if ((event.metaKey || event.altKey ) && event.key === 'Enter' ) {
         $("#data").css("display","none");
         event.preventDefault();
         if (queryInput.value) {
@@ -59,11 +46,26 @@ queryInput.addEventListener('keydown', function(event) {
             } catch (error) {
                 //console.error("Error evaluating code:", error);
                 $('#data').html(`<pre><span>${error}</span></pre>`);
-                $('#data').fadeIn(500);
+                $('#data').fadeIn(400);
                 return; 
             }
         } 
     }
+
+    if (event.key === 'Enter') {
+        const cursorPosition = queryInput.selectionStart;
+
+        // Insert a newline character at the cursor position
+        const textBeforeCursor = queryInput.value.substring(0, cursorPosition);
+        const textAfterCursor = queryInput.value.substring(cursorPosition);
+        queryInput.value = textBeforeCursor + '\n' + textAfterCursor;
+
+        // Move the cursor to the end of the newline
+        queryInput.selectionStart = cursorPosition + 1;
+        queryInput.selectionEnd = cursorPosition + 1;
+        return 
+    }
+
 })} // end connection func
 
 connection()
@@ -97,7 +99,17 @@ function calcHeight(value) {
 }
 
 let textarea = document.querySelector("textarea");
+
+$(document).ready(function () {
+   setHightTextArea(textarea)
+})
+
 textarea.addEventListener("keyup", (e) => {
+   setHightTextArea(textarea)
+});
+
+
+function setHightTextArea(textarea) {
     let hi = calcHeight(textarea.value) 
     textarea.style.height = hi + "px";
 
@@ -105,8 +117,8 @@ textarea.addEventListener("keyup", (e) => {
     $("#output").css("height", "calc(100vh - "+ hi +"px)" )
     //css height: calc(100vh - 100px);
     //console.log("event : ", e) 
-});
- 
+}
+
 // copy paste example into textarea
 $('pre').click(function () {
     $('textarea').val($(this).text())
