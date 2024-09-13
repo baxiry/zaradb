@@ -1,6 +1,11 @@
 package engine
 
-import "fmt"
+import (
+	"fmt"
+	"testing"
+
+	"github.com/tidwall/gjson"
+)
 
 // var query = `{"name":"adam","age": 21, "email": "jamal@email.com", "tele":"002345678"}}` //,"contact":{"home":12, "work":45, "tele":{"first":111, "Second":222}}}}`)
 // var query = `{"name":"adam","age": {"$lte":30, "$gte":18}, "email": "jamal@email.com"}, "tele":"001234567"}}` //,"contact":{"home":12, "work":45, "tele":{"first":111, "Second":222}}}}`)
@@ -8,13 +13,13 @@ var query = `{"age": {"$lte":30, "$gte":18}}` //,"contact":{"home":12, "work":45
 
 var data_ = `{"name":"adam","age": 18, "email": "jamal@email.com", "tele":"001234567"}}`
 
-func test() {
+func Test_match(t *testing.T) {
 
 	result := make([]string, 0)
 	for _, v := range data {
+		ok, _ := match(gjson.Parse(query), v)
 
-		if match(query, v) {
-
+		if ok {
 			result = append(result, v)
 		}
 	}
@@ -29,7 +34,7 @@ func test() {
 }
 
 var data = []string{
-	`{"name":"adam","age": 18, "email": "jamal@email.com", "tele":"001234567"}}`,
+	`{"name":"adam",  "age": 18, "email": "jamal@email.com", "tele":"001234567"}}`,
 	`{"name":"karim", "age": 37, "contact":{"email": "karim@email.com", "tele":002345678 }}`,
 	`{"name":"jawad", "age": 24, "contact":{"email": "jawad@email.com", "tele":001234567 }}`,
 	`{"name":"imane", "age": 26, "contact":{"email": "imane@email.com", "tele":002345030 }}`,
