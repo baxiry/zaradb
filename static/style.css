@@ -24,13 +24,10 @@ body {
     padding: 5px;
 }
 
-#config {
-    position: fixed;
-    bottom: 0;
-    right:0;
-    color : whitesmoke;
-    margin-right:10px;
-}
+/* 
+ pre {} 
+
+*/
 
 textarea:focus {
     border: none;
@@ -61,6 +58,14 @@ textarea {
 #examples {
     color: #88c0d0;
     padding-left:5%;
+}
+
+#config {
+    position: fixed;
+    bottom: 0;
+    right:0;
+    color : whitesmoke;
+    margin-right:10px;
 }
 
 /* new page*/

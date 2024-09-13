@@ -1,16 +1,5 @@
-/*
-// to fix sub field like "contact.phon",
-for (let [key, value] of Object.entries(yourobject)) {
-    console.log(key, value);
-}
-*/
 
 
-// This configuration is suitable for development situation
-//const configs = {debug: false, reconnectDecay:1 , reconnectInterval: 200, reconnectDecay:1, maxReconnectInterval:200}
-
-// WebSocket
-//var ws = new ReconnectingWebSocket('ws://localhost:1111/ws');
 
 function connection() {
 var ws = new WebSocket('ws://localhost:1111/ws');
@@ -20,7 +9,7 @@ ws.onopen = function(){
     $('#reconnecte').fadeOut(500);
 }
 
-//  when ws closed reconnect after 2 second
+//  when ws closed reconnect after 700ms 
 ws.onclose = function() {
     ws.close()
     $('#reconnecte').show();
@@ -29,7 +18,6 @@ ws.onclose = function() {
 
 ws.onerror = function(){
     ws.close()
-    //$('#reconnecte').show();
 }
 
 //
@@ -101,21 +89,20 @@ function calcHeight(value) {
        numberOfLineBreaks = 3
     }
     
-
-
     if (numberOfLineBreaks > 24) {
         numberOfLineBreaks = 24
     }
 
-    return 20 + numberOfLineBreaks * 20 + 12 + 2;
+    return 20 + numberOfLineBreaks * 20 + 12;
 }
 
 let textarea = document.querySelector("textarea");
 textarea.addEventListener("keyup", (e) => {
-    let hi = calcHeight(textarea.value) + "px"
-    textarea.style.height = hi;
+    let hi = calcHeight(textarea.value) 
+    textarea.style.height = hi + "px";
 
-    $("#output").css("height", "calc(100vh - "+hi+")" )
+    hi = calcHeight(textarea.value)  + 10 
+    $("#output").css("height", "calc(100vh - "+ hi +"px)" )
     //css height: calc(100vh - 100px);
     //console.log("event : ", e) 
 });
