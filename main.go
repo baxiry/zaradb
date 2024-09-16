@@ -25,9 +25,9 @@ func main() {
 	http.Handle("/static/", http.FileServer(http.FS(content)))
 
 	http.HandleFunc("/", index)
+	http.HandleFunc("/index", shell)
 
 	http.HandleFunc("/shell", shell)
-
 	// standard endpoint
 	http.HandleFunc("/ws", engine.Ws)
 
@@ -39,16 +39,6 @@ func main() {
 	http.HandleFunc("/dev", dev)
 
 	log.Println(http.ListenAndServe(":1111", nil))
-}
-
-// redirect to shell page temporary
-func editor(w http.ResponseWriter, r *http.Request) {
-	f, err := content.ReadFile("static/editor.html")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	fmt.Fprint(w, string(f))
 }
 
 // redirect to shell page temporary
