@@ -10,44 +10,58 @@ var testCases = []struct {
 	filter  string
 	data    string
 	isMatch bool
-	caseid  int
 }{
 	// ....filter.....     ...data...    ...isMatch...
 	//  cases of numbers
-	{`{"age": 18}`, `{"age": 18}`, true, 0},
-	{`{"age": 18}`, `{"age": 19}`, false, 1},
+	{`{"age": 18}`, `{"age": 18}`, true},
+	{`{"age": 18}`, `{"age": 19}`, false},
 
-	{`{"age":{"$eq":18}}`, `{"age": 18}`, true, 2},
-	{`{"age":{"$eq":18}}`, `{"age": 19}`, false, 3},
+	{`{"age":{"$eq":18}}`, `{"age": 18}`, true},
+	{`{"age":{"$eq":18}}`, `{"age": 19}`, false},
 
-	{`{"age":{"$ne": 18}}`, `{"age": 19}`, true, 4},
-	{`{"age":{"$ne": 18}}`, `{"age": 18}`, false, 5},
+	{`{"age":{"$ne": 18}}`, `{"age": 19}`, true},
+	{`{"age":{"$ne": 18}}`, `{"age": 18}`, false},
 
-	{`{"age":{"$gt": 18}}`, `{"age": 19}`, true, 6},
-	{`{"age":{"$gt": 18}}`, `{"age": 18}`, false, 7},
-	{`{"age":{"$gt": 18}}`, `{"age": 17}`, false, 8},
+	{`{"age":{"$gt": 18}}`, `{"age": 19}`, true},
+	{`{"age":{"$gt": 18}}`, `{"age": 18}`, false},
+	{`{"age":{"$gt": 18}}`, `{"age": 17}`, false},
 
-	{`{"age":{"$lt": 18}}`, `{"age": 17}`, true, 9},
-	{`{"age":{"$lt": 18}}`, `{"age": 18}`, false, 10},
-	{`{"age":{"$lt": 18}}`, `{"age": 19}`, false, 11},
+	{`{"age":{"$lt": 18}}`, `{"age": 17}`, true},
+	{`{"age":{"$lt": 18}}`, `{"age": 18}`, false},
+	{`{"age":{"$lt": 18}}`, `{"age": 19}`, false},
 
-	{`{"age":{"$gte": 18}}`, `{"age": 19}`, true, 12},
-	{`{"age":{"$gte": 18}}`, `{"age": 18}`, true, 13},
-	{`{"age":{"$gte": 18}}`, `{"age": 17}`, false, 14},
+	{`{"age":{"$gte": 18}}`, `{"age": 19}`, true},
+	{`{"age":{"$gte": 18}}`, `{"age": 18}`, true},
+	{`{"age":{"$gte": 18}}`, `{"age": 17}`, false},
 
-	{`{"age":{"$lte": 18}}`, `{"age": 17}`, true, 15},
-	{`{"age":{"$lte": 18}}`, `{"age": 18}`, true, 16},
-	{`{"age":{"$lte": 18}}`, `{"age": 19}`, false, 17},
+	{`{"age":{"$lte": 18}}`, `{"age": 17}`, true},
+	{`{"age":{"$lte": 18}}`, `{"age": 18}`, true},
+	{`{"age":{"$lte": 18}}`, `{"age": 19}`, false},
 
+	{`{"age":{"$lt": 28, "$gt": 18}}`, `{"age": 20}`, true},
+	{`{"age":{"$lt": 28, "$gt": 18}}`, `{"age": 27}`, true},
+	{`{"age":{"$lt": 28, "$gt": 18}}`, `{"age": 19}`, true},
+	{`{"age":{"$lt": 28, "$gt": 18}}`, `{"age": 18}`, false},
+
+	{`{"age":{"$lte": 28, "$gte": 18}}`, `{"age": 20}`, true},
+	{`{"age":{"$lte": 28, "$gte": 18}}`, `{"age": 28}`, true},
+	{`{"age":{"$lte": 28, "$gte": 18}}`, `{"age": 18}`, true},
+	{`{"age":{"$lte": 28, "$gte": 18}}`, `{"age": 16}`, false},
+
+	{`{"age":{"$in":[28,29,30]}}`, `{"age": 29}`, true},
+	{`{"age":{"$in":[28,29,30]}}`, `{"age": 9}`, false},
+
+	{`{"age":{"$nin":[28,29,30]}}`, `{"age": 9}`, true},
+	{`{"age":{"$nin":[28,29,30]}}`, `{"age": 29}`, false},
 	// string cases
-	{`{"name":"adam"}`, `{"name":"adam"}`, true, 18},
-	{`{"name":"adam"}`, `{"name":"kamal"}`, false, 19},
+	{`{"name":"adam"}`, `{"name":"adam"}`, true},
+	{`{"name":"adam"}`, `{"name":"kamal"}`, false},
 
-	{`{"name":{"$eq":"adam"}}`, `{"name":"adam"}`, true, 20},
-	{`{"name":{"$eq":"adam"}}`, `{"name":"john"}`, false, 21},
+	{`{"name":{"$eq":"adam"}}`, `{"name":"adam"}`, true},
+	{`{"name":{"$eq":"adam"}}`, `{"name":"john"}`, false},
 
-	{`{"name":{"$ne":"adam"}}`, `{"name":"john"}`, true, 22},
-	{`{"name":{"$ne":"adam"}}`, `{"name":"adam"}`, false, 23},
+	{`{"name":{"$ne":"adam"}}`, `{"name":"john"}`, true},
+	{`{"name":{"$ne":"adam"}}`, `{"name":"adam"}`, false},
 }
 
 func Test_Match(t *testing.T) {
@@ -55,8 +69,8 @@ func Test_Match(t *testing.T) {
 	for _, tcase := range testCases {
 		result, _ := match(gjson.Parse(tcase.filter), tcase.data)
 		if result != tcase.isMatch {
-			t.Errorf("\n-----caseId: %d-------\nfilter: %s\n data: %s\nexpected %v",
-				tcase.caseid, tcase.data, tcase.filter, tcase.isMatch)
+			t.Errorf("\n\nfilter:  %s\ndata:    %s\nexpected %v,\ngot:     %v\n",
+				tcase.filter, tcase.data, tcase.isMatch, result)
 		}
 	}
 }

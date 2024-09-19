@@ -164,9 +164,8 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 				case "$in": // in array
 
 					// handle Str arr
-					if sQueryKey.Type == 3 {
+					if dataVal.Type == 3 {
 						for _, v := range sQueryVal.Array() {
-							//fmt.Println("sQueryVal", sQueryVal)
 							if dataVal.Str == v.Str {
 								return result
 							}
@@ -177,7 +176,6 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 
 					// handle Num arr
 					for _, v := range sQueryVal.Array() {
-						//fmt.Println("sQueryVal", sQueryVal)
 						if dataVal.Num == v.Num {
 							return result
 						}
@@ -187,7 +185,7 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 
 				case "$nin": // not in
 					// handle string arr
-					if sQueryKey.Type == 3 {
+					if dataVal.Type == 3 {
 						for _, v := range sQueryVal.Array() {
 							if dataVal.Str == v.Str {
 								result = false
