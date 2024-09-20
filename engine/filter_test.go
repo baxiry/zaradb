@@ -13,63 +13,69 @@ var testCases = []struct {
 }{
 	// ....filter.....     ...data...    ...isMatch...
 	//  cases of numbers
-	{`{"match":{"age": 18}}`, `{"data":{"age": 18}}`, true},
-	{`{"match":{"age": 18}}`, `{"data":{"age": 19}}`, false},
+	{`{"age": 18}`, `{"age": 18}`, true},
+	{`{"age": 18}`, `{"age": 19}`, false},
 
-	{`{"match":{"age":{"$eq":18}}}`, `{"data":{"age": 18}}`, true},
-	{`{"match":{"age":{"$eq":18}}}`, `{"data":{"age": 19}}`, false},
+	{`{"age":{"$eq":18}}`, `{"age": 18}`, true},
+	{`{"age":{"$eq":18}}`, `{"age": 19}`, false},
 
-	{`{"match":{"age":{"$ne": 18}}}`, `{"data":{"age": 19}}`, true},
-	{`{"match":{"age":{"$ne": 18}}}`, `{"data":{"age": 18}}`, false},
+	{`{"age":{"$ne": 18}}`, `{"age": 19}`, true},
+	{`{"age":{"$ne": 18}}`, `{"age": 18}`, false},
 
-	{`{"match":{"age":{"$gt": 18}}}`, `{"data":{"age": 19}}`, true},
-	{`{"match":{"age":{"$gt": 18}}}`, `{"data":{"age": 18}}`, false},
-	{`{"match":{"age":{"$gt": 18}}}`, `{"data":{"age": 17}}`, false},
+	{`{"age":{"$gt": 18}}`, `{"age": 19}`, true},
+	{`{"age":{"$gt": 18}}`, `{"age": 18}`, false},
+	{`{"age":{"$gt": 18}}`, `{"age": 17}`, false},
 
-	{`{"match":{"age":{"$lt": 18}}}`, `{"data":{"age": 17}}`, true},
-	{`{"match":{"age":{"$lt": 18}}}`, `{"data":{"age": 18}}`, false},
-	{`{"match":{"age":{"$lt": 18}}}`, `{"data":{"age": 19}}`, false},
+	{`{"age":{"$lt": 18}}`, `{"age": 17}`, true},
+	{`{"age":{"$lt": 18}}`, `{"age": 18}`, false},
+	{`{"age":{"$lt": 18}}`, `{"age": 19}`, false},
 
-	{`{"match":{"age":{"$gte": 18}}}`, `{"data":{"age": 19}}`, true},
-	{`{"match":{"age":{"$gte": 18}}}`, `{"data":{"age": 18}}`, true},
-	{`{"match":{"age":{"$gte": 18}}}`, `{"data":{"age": 17}}`, false},
+	{`{"age":{"$gte": 18}}`, `{"age": 19}`, true},
+	{`{"age":{"$gte": 18}}`, `{"age": 18}`, true},
+	{`{"age":{"$gte": 18}}`, `{"age": 17}`, false},
 
-	{`{"match":{"age":{"$lte": 18}}}`, `{"data":{"age": 17}}`, true},
-	{`{"match":{"age":{"$lte": 18}}}`, `{"data":{"age": 18}}`, true},
-	{`{"match":{"age":{"$lte": 18}}}`, `{"data":{"age": 19}}`, false},
+	{`{"age":{"$lte": 18}}`, `{"age": 17}`, true},
+	{`{"age":{"$lte": 18}}`, `{"age": 18}`, true},
+	{`{"age":{"$lte": 18}}`, `{"age": 19}`, false},
 
-	{`{"match":{"age":{"$lt": 28, "$gt": 18}}}`, `{"data":{"age": 20}}`, true},
-	{`{"match":{"age":{"$lt": 28, "$gt": 18}}}`, `{"data":{"age": 27}}`, true},
-	{`{"match":{"age":{"$lt": 28, "$gt": 18}}}`, `{"data":{"age": 19}}`, true},
-	{`{"match":{"age":{"$lt": 28, "$gt": 18}}}`, `{"data":{"age": 18}}`, false},
+	{`{"age":{"$lt": 28, "$gt": 18}}`, `{"age": 20}`, true},
+	{`{"age":{"$lt": 28, "$gt": 18}}`, `{"age": 27}`, true},
+	{`{"age":{"$lt": 28, "$gt": 18}}`, `{"age": 19}`, true},
+	{`{"age":{"$lt": 28, "$gt": 18}}`, `{"age": 18}`, false},
 
-	{`{"match":{"age":{"$lte": 28, "$gte": 18}}}`, `{"data":{"age": 20}}`, true},
-	{`{"match":{"age":{"$lte": 28, "$gte": 18}}}`, `{"data":{"age": 28}}`, true},
-	{`{"match":{"age":{"$lte": 28, "$gte": 18}}}`, `{"data":{"age": 18}}`, true},
-	{`{"match":{"age":{"$lte": 28, "$gte": 18}}}`, `{"data":{"age": 16}}`, false},
+	{`{"age":{"$lte": 28, "$gte": 18}}`, `{"age": 20}`, true},
+	{`{"age":{"$lte": 28, "$gte": 18}}`, `{"age": 28}`, true},
+	{`{"age":{"$lte": 28, "$gte": 18}}`, `{"age": 18}`, true},
+	{`{"age":{"$lte": 28, "$gte": 18}}`, `{"age": 16}`, false},
 
-	{`{"match":{"age":{"$in":[28,29,30]}}}`, `{"data":{"age": 29}}`, true},
-	{`{"match":{"age":{"$in":[28,29,30]}}}`, `{"data":{"age": 9}}`, false},
+	{`{"age":{"$in":[28,29,30]}}`, `{"age": 29}`, true},
+	{`{"age":{"$in":[28,29,30]}}`, `{"age": 9}`, false},
 
-	{`{"match":{"age":{"$nin":[28,29,30]}}}`, `{"data":{"age": 9}}`, true},
-	{`{"match":{"age":{"$nin":[28,29,30]}}}`, `{"data":{"age": 29}}`, false},
+	{`{"age":{"$nin":[28,29,30]}}`, `{"age": 9}`, true},
+	{`{"age":{"$nin":[28,29,30]}}`, `{"age": 29}`, false},
+
+	{`{"$and":[{"name":{"$eq":"adam"}}, {"age":{"$eq":29}} ] }`, `{"name":"adam","age": 29}`, true},
+	{`{"$and":[{"name":{"$eq":"adam"}}, {"age":{"$eq":29}} ] }`, `{"name":"adam","age": 19}`, false},
+
+	{`{"$or":[{"name":{"$eq":"adam"}}, {"age":{"$eq":29}} ] }`, `{"name":"jhon","age": 29}`, true},
+	{`{"$or":[{"name":{"$eq":"adam"}}, {"age":{"$eq":29}} ] }`, `{"name":"jhon","age": 19}`, false},
+
 	// string cases
-	{`{"match":{"name":"adam"}}`, `{"data":{"name":"adam"}}`, true},
-	{`{"match":{"name":"adam"}}`, `{"data":{"name":"kamal"}}`, false},
+	{`{"name":"adam"}`, `{"name":"adam"}`, true},
+	{`{"name":"adam"}`, `{"name":"kamal"}`, false},
 
-	{`{"match":{"name":{"$eq":"adam"}}}`, `{"data":{"name":"adam"}}`, true},
-	{`{"match":{"name":{"$eq":"adam"}}}`, `{"data":{"name":"john"}}`, false},
+	{`{"name":{"$eq":"adam"}}`, `{"name":"adam"}`, true},
+	{`{"name":{"$eq":"adam"}}`, `{"name":"john"}`, false},
 
-	{`{"match":{"name":{"$ne":"adam"}}}`, `{"data":{"name":"john"}`, true},
-	{`{"match":{"name":{"$ne":"adam"}}}`, `{"data":{"name":"adam"}}`, false},
+	{`{"name":{"$ne":"adam"}}`, `{"name":"john"}`, true},
+	{`{"name":{"$ne":"adam"}}`, `{"name":"adam"}`, false},
 }
 
 func Test_Match(t *testing.T) {
 
 	for _, tcase := range testCases {
-		filt := gjson.Get(tcase.filter, "match")
-		data := gjson.Get(tcase.data, "data").Raw
-		result, _ := match(filt, data)
+		filt := gjson.Parse(tcase.filter)
+		result, _ := match(filt, tcase.data)
 
 		if result != tcase.isMatch {
 			t.Errorf("\nfilter:  %s\ndata:    %s\nexpected %v,\ngot:     %v\n",
