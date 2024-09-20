@@ -59,15 +59,15 @@
 <pre>{action:"findMany", collection:"test", match:{$or:[{name:{$eq:"akram"}},{age:{$lt:13}}]}}</pre></br>
 
 <p>select objects that match all conditions by <b>$and</b> operation:</p>
-<pre>{action:"findMany", collection:"test", match:{$and:[{name:{$c:"k"}},{name:{$nc:"m"}}]}}</pre></br>
-hote that is usefer just when we neen more conditions per field.
-
+<pre>{action:"findMany", collection:"test", match:{$and:[{name:{$c:"k"}},{name:{$nc:"m"}}]}}</pre>
+<note>note that is usefel just when we need more conditions per field.</note></br>
 
 <p>sub Query (in progress)</p>
 <pre>{ match:{name:{sub:{op:"$eq", action:"findOne", collection:"users",match:{name:"adam"}}}}}</pre></br>
 
-<p>order by & reverse or DISC :</p>
-<pre>{action:"findMany", collection:"users", orderBy:"name", reverse:1}</pre></br>
+<p>sort & reverse fields, sort by 1, reverse by 0</p>
+<pre>{action:"findMany", collection:"users", sort:{name:1, age:1}}</pre>
+<pre>{action:"findMany", collection:"users", sort:{name:1, age:0}}</pre></br>
 
 <p>updateById </p>
 <pre>{action:"updateById", collection:"test", _id:3, data:{name:"hosam", age:10}}</pre></br>
@@ -94,13 +94,12 @@ hote that is usefer just when we neen more conditions per field.
 <pre>{action:"deleteMany", collection:"users", match:{name:"adam", age:{$gt:12}}, skip: 3, limit:3}</pre></br>
 
 
-
 <p>exclode fields</p>
 <pre>{action:"findMany", collection:"test", fields:{_id:0, name:0}}</pre></br>
 
 
 <p>rename fields</p>
-  <pre>{action:"findMany", collection:"test", fields:{_id:0, name:"full_name"}}</pre></br>
+<pre>{action:"findMany", collection:"test", fields:{_id:0, name:"full_name"}}</pre></br>
 
 
  <p>String matching, by `$st` `$en` `$c` :</p>
