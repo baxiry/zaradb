@@ -28,6 +28,7 @@ func main() {
 	http.HandleFunc("/index", shell)
 
 	http.HandleFunc("/shell", shell)
+
 	// standard endpoint
 	http.HandleFunc("/ws", engine.Ws)
 
