@@ -102,8 +102,9 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 							result = false
 						}
 						return result
+
 					case "$glob":
-						fmt.Println("geting glob")
+						result = isMatch(sQueryVal.Str, dataVal.Str)
 						return result
 
 					default:
@@ -353,12 +354,15 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 	return result, err
 }
 
-func globPattern(pattren string) glob.Glob {
-	g := glob.MustCompile(pattren)
-	return g
-}
+var globs = make(map[string]glob.Glob, 1)
 
-func globMatch(str string, g glob.Glob) bool {
+func isMatch(pattern, str string) bool {
+
+	g, ok := globs[pattern]
+	if !ok {
+		g = glob.MustCompile(pattern)
+		globs[pattern] = g
+	}
 
 	return g.Match(str)
 }
