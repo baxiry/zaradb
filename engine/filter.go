@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gobwas/glob"
 	"github.com/tidwall/gjson"
 )
 
@@ -350,6 +351,16 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 		return result
 	})
 	return result, err
+}
+
+func globPattern(pattren string) glob.Glob {
+	g := glob.MustCompile(pattren)
+	return g
+}
+
+func globMatch(str string, g glob.Glob) bool {
+
+	return g.Match(str)
 }
 
 //var subs = make(map[string]interface{})
