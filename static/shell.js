@@ -20,11 +20,37 @@ ws.onerror = function(){
     ws.close()
 }
 
+
+// change json's output format 
+var pretty = true 
+
+$('#togglePretty').change(function() {
+    pretty = !pretty;
+    $('textarea').focus()
+});
+
 //
 ws.onmessage = function(event) {
-    const Data = prettyJSON(event.data)
+    if (pretty) {
+        var Data = prettyJSON(event.data)
+        $('#data').html(`<pre><span>${Data}</span></pre>`);
+        $('#data').fadeIn(400);
+        console.log("pretty json")
+        return
+    }
+
+
     $('#examples').hide();
-    $('#data').html(`<pre><span>${Data}</span></pre>`);
+    $('#data').html("<div><div>");
+
+    Data = JSON.parse(event.data);;
+
+    for (let i = 0;i< Data.length;i++) {
+        let obj = JSON.stringify(Data[i]) 
+        obj = obj.replace(/,"/g, ', "'); 
+
+        $('#data').append(`<pre><span>${obj}</span></pre>`);
+    }
     $('#data').fadeIn(400);
 };
 
