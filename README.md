@@ -1,4 +1,4 @@
-<h1><span style="color:red; font-weight:bold; text-align:center;">ZaraDB</span></h1>
+<h1 style="color:green; font-weight:bold; text-align:center;" >ZaraDB</h1>
 
 is an open-licensed document database with no hidden restrictions and good performance.
 Its goal is to be a lightweight alternative to common documentary databases.
