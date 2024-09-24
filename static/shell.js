@@ -1,8 +1,15 @@
 
 
+const queryInput = document.getElementById('query-input');
+const textarea = document.querySelector("textarea");
 
-function connection() {
+// pretty print json
+var pretty = localStorage.getItem("pretty") === "true" ? true : false;
 var ws = new WebSocket('ws://localhost:1111/ws');
+
+
+// handle connection with all events
+function connection() {
 
 ws.onopen = function(){
     console.log('Connection established');
@@ -14,24 +21,57 @@ ws.onclose = function() {
     ws.close()
     $('#reconnecte').show();
     setTimeout(connection(), 700);
-  };
+};
 
+// when error close connection
 ws.onerror = function(){
     ws.close()
 }
 
-
 // change json's output format 
-var pretty = true 
-
 $('#togglePretty').change(function() {
     pretty = !pretty;
+
+    if (pretty) {
+       // Storing an object in localStorage
+       localStorage.setItem('pretty', "true");
+    } else {
+       localStorage.setItem('pretty', "false");
+    }
+
     $('textarea').focus()
+    try {
+        eval("obj = "+ queryInput.value)
+        let query = JSON.stringify(obj)
+        ws.send(query);
+        return;
+
+    } catch (error) {
+        //console.error("Error evaluating code:", error);
+        $('#data').html(`<pre><span>${error}</span></pre>`);
+        $('#data').fadeIn(400);
+        return; 
+    }
 });
 
-//
+// default pretty ?
+$(document).ready(function() {
+
+    // check defult prettyJson 
+   if (localStorage.getItem('pretty') == "true") {
+       $('#togglePretty').prop('checked', true);
+       pretty = true 
+       return
+   }
+
+    $('#togglePretty').prop('checked', false);
+    pretty = false
+});
+
+// render ingoing data
 ws.onmessage = function(event) {
     if (pretty) {
+        $('#examples').hide();
         var Data = prettyJSON(event.data)
         $('#data').html(`<pre><span>${Data}</span></pre>`);
         $('#data').fadeIn(400);
@@ -54,11 +94,10 @@ ws.onmessage = function(event) {
     $('#data').fadeIn(400);
 };
 
-//
-const queryInput = document.getElementById('query-input');
+// handle textarea events
 queryInput.addEventListener('keydown', function(event) {
 
-    // 
+    // handle & send query
     if ((event.metaKey || event.altKey ) && event.key === 'Enter' ) {
         $("#data").css("display","none");
         event.preventDefault();
@@ -78,6 +117,7 @@ queryInput.addEventListener('keydown', function(event) {
         } 
     }
 
+    // handle size of textarea
     if (event.key === 'Enter') {
         const cursorPosition = queryInput.selectionStart;
 
@@ -94,9 +134,11 @@ queryInput.addEventListener('keydown', function(event) {
 
 })} // end connection func
 
+// run connection func
 connection()
 
 
+// pretty rendering json
 function prettyJSON(jsonString) {
      try {
         const jsonObject = JSON.parse(jsonString);
@@ -124,7 +166,6 @@ function calcHeight(value) {
     return 20 + numberOfLineBreaks * 20 + 12;
 }
 
-let textarea = document.querySelector("textarea");
 
 $(document).ready(function () {
    setHightTextArea(textarea)
@@ -142,7 +183,6 @@ function setHightTextArea(textarea) {
     hi = calcHeight(textarea.value)  + 10 
     $("#output").css("height", "calc(100vh - "+ hi +"px)" )
     //css height: calc(100vh - 100px);
-    //console.log("event : ", e) 
 }
 
 // copy paste example into textarea
