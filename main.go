@@ -4,6 +4,7 @@ package main
 import (
 	"embed"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"zaradb/engine"
@@ -27,6 +28,8 @@ func main() {
 	http.HandleFunc("/", index)
 	http.HandleFunc("/index", shell)
 
+	http.HandleFunc("/queries", queries)
+
 	http.HandleFunc("/shell", shell)
 
 	// standard endpoint
@@ -40,6 +43,24 @@ func main() {
 	http.HandleFunc("/dev", dev)
 
 	log.Println(http.ListenAndServe(":1111", nil))
+}
+
+// render static shell.html file
+func queries(w http.ResponseWriter, r *http.Request) {
+	// Read the body of the request
+	query, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Failed to read request body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	fmt.Printf("Received query: %s\n", query)
+
+	result := engine.HandleQueries(string(query))
+
+	w.Header().Set("Content-Type", "text/plain") // Set content type to text/plain
+	w.Write([]byte(result))
 }
 
 // redirect to shell page temporary

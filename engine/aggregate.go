@@ -3,11 +3,14 @@ package engine
 import (
 	"fmt"
 	srt "sort"
+	"strconv"
 	"strings"
 
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 )
+
+type Aggregate struct{}
 
 func order(data []string, params gjson.Result) []string {
 
@@ -76,7 +79,7 @@ func order(data []string, params gjson.Result) []string {
 }
 
 // not implemented yet
-func aggrigate(query gjson.Result) string {
+func (ag Aggregate) aggrigate(query gjson.Result) string {
 	data, err := getData(query)
 	if err != nil {
 		return err.Error()
@@ -120,7 +123,7 @@ func aggrigate(query gjson.Result) string {
 
 				switch opr.Str {
 				case "$count":
-					counted := count(_id, data)
+					counted := ag.count(_id, data)
 					for _id, count := range counted {
 						mapData[_id], _ = sjson.Set(mapData[_id], key.Str, count)
 					}
@@ -147,7 +150,7 @@ func aggrigate(query gjson.Result) string {
 					}
 
 				case "$sum":
-					sums, err := sum(_id, fld, data)
+					sums, err := ag.sum(_id, fld, data)
 					if err != nil {
 						message = err.Error()
 						return false
@@ -234,7 +237,7 @@ func aggrigate(query gjson.Result) string {
 
 }
 
-func sum(_id string, field gjson.Result, records []string) (mp map[string]float64, err error) {
+func (ag Aggregate) sum(_id string, field gjson.Result, records []string) (mp map[string]float64, err error) {
 	mp = map[string]float64{}
 
 	switch field.Type {
@@ -601,7 +604,7 @@ func average(_id string, field gjson.Result, records []string) (mp map[string]fl
 } // average
 
 // count counts entities in collection by provid field
-func count(field string, records []string) (mp map[string]int) {
+func (ag Aggregate) count(field string, records []string) (mp map[string]int) {
 
 	mp = map[string]int{}
 	for _, record := range records {
@@ -609,6 +612,23 @@ func count(field string, records []string) (mp map[string]int) {
 	}
 
 	return mp
+}
+
+// count counts entities in collection by provid field
+func countDoc(records []string) string {
+	return strconv.Itoa(len(records))
+}
+
+// count counts entities in collection by provid field
+func countField(field string, records []string) string {
+	res := 0
+	for _, record := range records {
+		if gjson.Get(record, field).Exists() {
+			res++
+		}
+	}
+
+	return strconv.Itoa(res)
 }
 
 // reKey renames json feild

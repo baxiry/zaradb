@@ -6,6 +6,8 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+var aggr Aggregate
+
 // ok
 func HandleQueries(query string) string {
 
@@ -15,10 +17,11 @@ func HandleQueries(query string) string {
 
 	// aggregate actions
 	case "aggregate":
-		return aggrigate(parsedQuery)
+		return aggr.aggrigate(parsedQuery)
 
 	case "count":
-		return "not implemented yet"
+		// count(parsedQuery)
+		return "count"
 
 	case "sum":
 		return "not implemented yet"

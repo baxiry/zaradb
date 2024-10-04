@@ -2,6 +2,12 @@
     font-size: 1.02em; /* Ems */
 }
 
+p {
+    color: #808b8a;
+    margin-bottom: 0px;
+}
+
+
 body {
     font-family: sans-serif;
     margin: 0;
