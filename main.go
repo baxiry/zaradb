@@ -1,4 +1,4 @@
-// Zaradb lite faset document database
+// Zaradb lite fast document database
 package main
 
 import (
@@ -13,9 +13,9 @@ import (
 //go:embed  static
 var content embed.FS
 
-// main
+// TODO: Close program gracefully.
+
 func main() {
-	// TODO: Close program gracefully.
 
 	db := engine.NewDB("test.db")
 	db.CreateCollection("test")
@@ -55,11 +55,9 @@ func queries(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	fmt.Printf("Received query: %s\n", query)
-
 	result := engine.HandleQueries(string(query))
 
-	w.Header().Set("Content-Type", "text/plain") // Set content type to text/plain
+	w.Header().Set("Content-Type", "text/plain")
 	w.Write([]byte(result))
 }
 
@@ -81,9 +79,7 @@ func shell(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	fmt.Fprint(w, string(f))
-
 }
 
 // redirect to shell page temporary
