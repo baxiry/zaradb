@@ -5,31 +5,25 @@ const textarea = document.querySelector("textarea");
 
 // pretty print json
 var pretty = localStorage.getItem("pretty") === "true" ? true : false;
-var ws = new WebSocket('ws://localhost:1111/ws');
 
+// default pretty ?
+$(document).ready(function() {
+    // check defult prettyJson 
+   if (localStorage.getItem('pretty') == "true") {
+       $('#togglePretty').prop('checked', true);
+       pretty = true 
+       return
+   }
 
-// handle connection with all events
-function connection() {
+    $('#togglePretty').prop('checked', false);
+    pretty = false
 
-ws.onopen = function(){
-    console.log('Connection established');
-    $('#reconnecte').fadeOut(400);
-}
-
-//  when ws closed reconnect after 700ms 
-ws.onclose = function() {
-    ws.close()
-    $('#reconnecte').show();
-    setTimeout(connection(), 700);
-};
-
-// when error close connection
-ws.onerror = function(){
-    ws.close()
-}
+    setHightTextArea(textarea)
+});
 
 // change json's output format 
 $('#togglePretty').change(function() {
+    console.log("toggle pretty: ", pretty)
     pretty = !pretty;
 
     if (pretty) {
@@ -43,7 +37,7 @@ $('#togglePretty').change(function() {
     try {
         eval("obj = "+ queryInput.value)
         let query = JSON.stringify(obj)
-        ws.send(query);
+        send(query);
         return;
 
     } catch (error) {
@@ -54,41 +48,24 @@ $('#togglePretty').change(function() {
     }
 });
 
-// default pretty ?
-$(document).ready(function() {
+// render response data 
+function HandleResponse(response) {
+    $('#examples').hide();
+    $('#data').html("<div><div>");
 
-    // check defult prettyJson 
-   if (localStorage.getItem('pretty') == "true") {
-       $('#togglePretty').prop('checked', true);
-       pretty = true 
-       return
-   }
-
-    $('#togglePretty').prop('checked', false);
-    pretty = false
-});
-
-// render ingoing data
-ws.onmessage = function(event) {
     if (pretty) {
-        $('#examples').hide();
-        var Data = prettyJSON(event.data)
+        var Data = prettyJSON(response)
         $('#data').html(`<pre><span>${Data}</span></pre>`);
         $('#data').fadeIn(400);
         console.log("pretty json")
         return
     }
 
+    data = JSON.parse(response);
 
-    $('#examples').hide();
-    $('#data').html("<div><div>");
-
-    Data = JSON.parse(event.data);;
-
-    for (let i = 0;i< Data.length;i++) {
-        let obj = JSON.stringify(Data[i]) 
+    for (let i = 0;i< data.length;i++) {
+        let obj = JSON.stringify(data[i]) 
         obj = obj.replace(/,"/g, ', "'); 
-
         $('#data').append(`<pre><span>${obj}</span></pre>`);
     }
     $('#data').fadeIn(400);
@@ -99,22 +76,9 @@ queryInput.addEventListener('keydown', function(event) {
 
     // handle & send query
     if ((event.metaKey || event.altKey ) && event.key === 'Enter' ) {
-        $("#data").css("display","none");
-        event.preventDefault();
-        if (queryInput.value) {
-            try {
-                eval("obj = "+ queryInput.value)
-                let query = JSON.stringify(obj)
-                ws.send(query);
-                return;
-
-            } catch (error) {
-                //console.error("Error evaluating code:", error);
-                $('#data').html(`<pre><span>${error}</span></pre>`);
-                $('#data').fadeIn(400);
-                return; 
-            }
-        } 
+        console.log(queryInput.value)
+        sendQuery(queryInput)
+        return
     }
 
     // handle size of textarea
@@ -131,12 +95,45 @@ queryInput.addEventListener('keydown', function(event) {
         queryInput.selectionEnd = cursorPosition + 1;
         return 
     }
+})
 
-})} // end connection func
+// Function to send query using HTTP POST request
+function send(query) {
+    $.ajax({
+        url: 'http://localhost:1111/queries', // Replace with your actual server endpoint
+        type: 'POST',
+        contentType: 'text/plain', // Assuming your server accepts plain text
+        data: query,
+        success: function(response) {
+            HandleResponse(response);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error("Error sending query:", errorThrown);
+            $('#data').html(`<pre><span>${errorThrown}</span></pre>`);
+            $('#data').fadeIn(400);
+        }
+    });
+}
 
-// run connection func
-connection()
 
+function sendQuery(input) {
+    $("#data").css("display","none");
+    //event.preventDefault();
+    if (input.value) {
+        try {
+            eval("obj = "+ input.value)
+            let query = JSON.stringify(obj)
+            send(query)
+            return;
+
+        } catch (error) {
+            console.error("Error evaluating code:", error);
+            $('#data').html(`<pre><span>${error}</span></pre>`);
+            $('#data').fadeIn(400);
+            return; 
+        }
+    } 
+}
 
 // pretty rendering json
 function prettyJSON(jsonString) {
@@ -149,7 +146,6 @@ function prettyJSON(jsonString) {
         return jsonString;
     }
 }
-
 
 // Dealing with Textarea Height
 function calcHeight(value) {
@@ -166,16 +162,13 @@ function calcHeight(value) {
     return 20 + numberOfLineBreaks * 20 + 12;
 }
 
-
-$(document).ready(function () {
-   setHightTextArea(textarea)
-})
-
 textarea.addEventListener("keyup", (e) => {
+   // resize hight of textarea
    setHightTextArea(textarea)
 });
 
 
+// resize hight of textarea dynamicly
 function setHightTextArea(textarea) {
     let hi = calcHeight(textarea.value) 
     textarea.style.height = hi + "px";
@@ -194,3 +187,4 @@ $('pre').click(function () {
 // pointer on pre examples
 $('pre').css('cursor', 'pointer');
 
+//end
