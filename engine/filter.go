@@ -379,66 +379,6 @@ func getSubs(dataVal, subQuery gjson.Result) (bool, error) {
 
 func getsub(query gjson.Result) (ids []int64) {
 
-	coll := query.Get("collection").Str
-	if coll == "" {
-		return nil
-	}
-
-	mtch := query.Get("match")
-
-	if mtch.String() == "" {
-		fmt.Println("match.Str is empty")
-	}
-
-	skip := query.Get("skip").Int()
-	limit := query.Get("limit").Int()
-	if limit == 0 {
-		limit = 100
-	}
-
-	stmt := `select rowid, record from ` + coll
-
-	subs := query.Get("subs")
-
-	if subs.Raw != "" {
-		fmt.Println("sub.Row is : ", subs.Raw)
-	}
-
-	rows, err := db.db.Query(stmt)
-	if err != nil {
-		return nil
-	}
-	defer rows.Close()
-
-	record := ""
-	rowid := 0
-
-	for rows.Next() {
-		if limit == 0 {
-			break
-		}
-
-		record = ""
-		rowid = 0
-		_ = rows.Scan(&rowid, &record)
-
-		ok, err := match(mtch, record)
-		if err != nil {
-			fmt.Printf("match %s\n", err)
-			return nil
-		}
-
-		if ok {
-			if skip != 0 {
-				skip--
-				continue
-			}
-			ids = append(ids, int64(rowid))
-			limit--
-		}
-	}
-	//fmt.Println("\n", ids)
-
 	return ids
 }
 
