@@ -23,16 +23,52 @@ func NewDB(path string) *Store {
 		log.Fatal(err)
 	}
 
-	db = &Store{db: kv, lastid: make(map[string]int64, 0)}
+	lastIds := make(map[string]int64, 0)
+
+	err = kv.View(func(tx *bbolt.Tx) error {
+		// Iterate over all buckets in the root
+		return tx.ForEach(func(name []byte, _ *bbolt.Bucket) error {
+
+			var lastKey = []byte("0")
+
+			// Get the last key in the bucket
+			err = kv.View(func(tx *bbolt.Tx) error {
+				bucket := tx.Bucket(name)
+				if bucket != nil {
+					lastKey, _ = bucket.Cursor().Last()
+				}
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+			id, _ := strconv.Atoi(string(lastKey))
+
+			lastIds[string(name)] = int64(id)
+			return nil
+		})
+
+	})
+
+	if err != nil {
+		log.Fatal(err)
+		return nil
+	}
+
+	db = &Store{db: kv, lastid: lastIds}
+	fmt.Println("last ids is : ")
+	for k, v := range db.lastid {
+		fmt.Println(k, v)
+	}
 	return db
 }
 
-func (db *Store) getLastKey(bucket string) int64 {
+func (db *Store) getLastKey(bucket []byte) int64 {
 	var lastKey = []byte("0")
 
 	// Get the last key in the bucket
 	db.db.View(func(tx *bbolt.Tx) error {
-		bucket := tx.Bucket([]byte(bucket))
+		bucket := tx.Bucket(bucket)
 		if bucket != nil {
 			lastKey, _ = bucket.Cursor().Last()
 		}

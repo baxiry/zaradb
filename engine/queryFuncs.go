@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/tidwall/gjson"
-	bolt "go.etcd.io/bbolt"
+	"go.etcd.io/bbolt"
 )
 
 func (s *Store) getData(query gjson.Result) (data []string, err error) {
@@ -20,12 +20,12 @@ func (s *Store) getData(query gjson.Result) (data []string, err error) {
 		limit = 1000 // what is default setting ?
 	}
 
-	// bolt
-	err = s.db.View(func(tx *bolt.Tx) error {
+	// bbolt
+	err = s.db.View(func(tx *bbolt.Tx) error {
 
 		bucket := tx.Bucket([]byte(coll))
 		if bucket == nil {
-			return fmt.Errorf("bucket %q not found", "myBucket")
+			return fmt.Errorf("collection %s is not exists", coll)
 		}
 		isMatch := query.Get("match")
 		// Use a cursor to iterate over all key-value pairs in the bucket.
@@ -63,7 +63,7 @@ func (s *Store) findOne(query gjson.Result) (res string) {
 	coll := query.Get("collection").Str
 	skip := query.Get("skip").Int()
 
-	err := s.db.View(func(tx *bolt.Tx) error {
+	err := s.db.View(func(tx *bbolt.Tx) error {
 
 		bucket := tx.Bucket([]byte(coll))
 		if bucket == nil {
@@ -115,8 +115,8 @@ func (db *Store) updateOne(query gjson.Result) (result string) {
 
 	coll := query.Get("collection").Str
 
-	// bolt
-	err := db.db.View(func(tx *bolt.Tx) error {
+	// bbolt
+	err := db.db.View(func(tx *bbolt.Tx) error {
 
 		bucket := tx.Bucket([]byte(coll))
 		if bucket == nil {
@@ -161,8 +161,8 @@ func (db *Store) updateMany(query gjson.Result) (result string) {
 
 	// updates exist value
 
-	// bolt
-	err := db.db.View(func(tx *bolt.Tx) error {
+	// bbolt
+	err := db.db.View(func(tx *bbolt.Tx) error {
 
 		bucket := tx.Bucket([]byte(coll))
 		if bucket == nil {
@@ -201,7 +201,7 @@ func (db *Store) deleteMany(query gjson.Result) string {
 
 	coll := query.Get("collection").Str
 
-	err := db.db.View(func(tx *bolt.Tx) error {
+	err := db.db.View(func(tx *bbolt.Tx) error {
 
 		bucket := tx.Bucket([]byte(coll))
 		if bucket == nil {
@@ -245,7 +245,7 @@ func (db *Store) updateById(query gjson.Result) (result string) {
 	coll := query.Get("collection").Str
 
 	newData := gjson.Get(`[`+oldObj+`,`+newObj+`]`, `@join`).Raw
-	err := db.db.View(func(tx *bolt.Tx) error {
+	err := db.db.View(func(tx *bbolt.Tx) error {
 
 		bucket := tx.Bucket([]byte(coll))
 		if bucket == nil {
@@ -272,7 +272,7 @@ func (db *Store) deleteOne(query gjson.Result) string {
 	isMatch := query.Get("match")
 
 	id := ""
-	err := db.db.View(func(tx *bolt.Tx) error {
+	err := db.db.View(func(tx *bbolt.Tx) error {
 
 		bucket := tx.Bucket([]byte(coll))
 		if bucket == nil {
@@ -340,7 +340,7 @@ func (db *Store) findById(query gjson.Result) (res string) {
 	coll := query.Get("collection").Str
 	key := query.Get("_id").String()
 
-	err := db.db.View(func(tx *bolt.Tx) error {
+	err := db.db.View(func(tx *bbolt.Tx) error {
 		bucket := tx.Bucket([]byte(coll))
 		if bucket == nil {
 			return fmt.Errorf("collection %s not exist", coll)
@@ -359,6 +359,7 @@ func (db *Store) findById(query gjson.Result) (res string) {
 
 // Insert One
 func (db *Store) insertOne(query gjson.Result) (res string) {
+
 	coll := query.Get("collection").Str
 	if coll == "" {
 		return `{"error":"forgot collection"}`
@@ -369,8 +370,8 @@ func (db *Store) insertOne(query gjson.Result) (res string) {
 		return `{"error":"forgot data"}`
 	}
 
-	db.lastid[collection]++
-	key := strconv.Itoa(int(db.lastid[collection]))
+	db.lastid[coll]++
+	key := strconv.Itoa(int(db.lastid[coll]))
 	data = `{"_id":` + key + ", " + data[1:]
 
 	err := db.Put(coll, key, data)
@@ -390,8 +391,7 @@ func (db *Store) insertMany(query gjson.Result) (res string) {
 
 	for _, obj := range data {
 		db.lastid[coll]++
-		// strconv for per
-
+		// strconv for perf
 		key := strconv.Itoa(int(db.lastid[coll]))
 		obj := `{"_id":` + key + `,` + obj.String()[1:]
 
@@ -415,7 +415,7 @@ func (db *Store) deleteById(query gjson.Result) string {
 	}
 	coll := query.Get("collection").Str
 
-	err := db.db.Update(func(tx *bolt.Tx) error {
+	err := db.db.Update(func(tx *bbolt.Tx) error {
 		bucket := tx.Bucket([]byte(coll))
 		if bucket == nil {
 			return fmt.Errorf("%s", `{"error": "collection is required"}`)
