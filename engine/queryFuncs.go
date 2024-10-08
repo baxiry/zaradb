@@ -8,7 +8,7 @@ import (
 	bolt "go.etcd.io/bbolt"
 )
 
-func (db *Store) getData(query gjson.Result) (data []string, err error) {
+func (s *Store) getData(query gjson.Result) (data []string, err error) {
 	coll := query.Get("collection").Str
 	if coll == "" {
 		return nil, fmt.Errorf(`{"error":"forgot collection name "}`)
@@ -21,7 +21,7 @@ func (db *Store) getData(query gjson.Result) (data []string, err error) {
 	}
 
 	// bolt
-	err = db.db.View(func(tx *bolt.Tx) error {
+	err = s.db.View(func(tx *bolt.Tx) error {
 
 		bucket := tx.Bucket([]byte(coll))
 		if bucket == nil {
@@ -59,12 +59,11 @@ func (db *Store) getData(query gjson.Result) (data []string, err error) {
 }
 
 // Finds first obj match creteria.
-func (db *Store) findOne(query gjson.Result) (res string) {
+func (s *Store) findOne(query gjson.Result) (res string) {
 	coll := query.Get("collection").Str
 	skip := query.Get("skip").Int()
 
-	// bolt
-	err := db.db.View(func(tx *bolt.Tx) error {
+	err := s.db.View(func(tx *bolt.Tx) error {
 
 		bucket := tx.Bucket([]byte(coll))
 		if bucket == nil {
@@ -94,10 +93,14 @@ func (db *Store) findOne(query gjson.Result) (res string) {
 	})
 
 	if err != nil {
-		return err.Error()
+		return `{"error":"` + err.Error() + `"}`
 	}
 
-	return `{"result":0}`
+	if res != "" {
+		return res
+	}
+
+	return `{"status":"nothing match"}`
 }
 
 // TODO updateOne updates one  document data

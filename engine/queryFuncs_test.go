@@ -33,6 +33,18 @@ func Test_insertOne(t *testing.T) {
 	})
 }
 
+func Test_findOne(t *testing.T) {
+	json := `{"collection":"test", "action":"findOne","match":{"name":"adam"}}` //
+	query := gjson.Parse(json)
+
+	res := s.findOne(query)
+	exp := []byte(`{"_id":1, "name":"adam", "age": 23}`)
+
+	if string(res) != string(exp) {
+		t.Errorf("get %s\nshould be %s", res, exp)
+	}
+}
+
 func Test_Close(t *testing.T) {
 	err := s.db.Close()
 
