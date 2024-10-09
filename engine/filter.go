@@ -11,11 +11,11 @@ import (
 // gjson.Type:
 // Null:   0
 // False:  1
+// number: 2
+// string: 3
 // True:   4
 // json:   5
 // array:  5
-// number: 2
-// string: 3
 
 // match verifies that data matches the conditions
 func match(filter gjson.Result, data string) (result bool, err error) {
@@ -28,7 +28,7 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 		dataVal := gjson.Get(data, queryKey.Str)
 
 		if queryVal.Type == 5 { // 5:json
-			// {name:{$eq:"adam"}, age:{$gt: 18}}
+			// e.g {name:{$eq:"adam"}, age:{$gt: 18}}
 
 			queryVal.ForEach(func(sQueryKey, sQueryVal gjson.Result) bool {
 
@@ -170,9 +170,10 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 					}
 					return result
 
-				case "$in": // in array
+					// works with array
+				case "$in": // exests in array
 
-					// handle Str arr
+					// handle String array
 					if dataVal.Type == 3 {
 						for _, v := range sQueryVal.Array() {
 							if dataVal.Str == v.Str {
@@ -183,7 +184,7 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 						return result
 					}
 
-					// handle Num arr
+					// handle Number array
 					for _, v := range sQueryVal.Array() {
 						if dataVal.Num == v.Num {
 							return result
@@ -192,7 +193,7 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 					result = false
 					return result
 
-				case "$nin": // not in
+				case "$nin": // not in array
 					// handle string arr
 					if dataVal.Type == 3 {
 						for _, v := range sQueryVal.Array() {
@@ -333,7 +334,6 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 					}
 
 					err = fmt.Errorf("unknown %s operator", sQueryKey.Str)
-
 					result = false
 					return result
 				}

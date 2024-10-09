@@ -7,11 +7,23 @@ import (
 )
 
 var testCases = []struct {
-	filter  string
-	data    string
-	isMatch bool
+	filter   string
+	data     string
+	expected bool
 }{
-	// ....filter.....     ...data...    ...isMatch...
+	// ....filter.....     ...data...    ...expected result...
+
+	// boalans & null cases
+	{`{"graded":true}`, `{"graded":true}`, true},
+	{`{"graded":true}`, `{"graded":false}`, false},
+
+	{`{"graded":false}`, `{"graded":true}`, false},
+	{`{"graded":false}`, `{"graded":false}`, true},
+
+	{`{"graded":null}`, `{"graded":null}`, true},
+	{`{"graded":null}`, `{"graded":true}`, false},
+	{`{"graded":null}`, `{"graded":"null"}`, false},
+
 	//  cases of numbers
 	{`{"age": 18}`, `{"age": 18}`, true},
 	{`{"age": 18}`, `{"age": 19}`, false},
@@ -69,6 +81,18 @@ var testCases = []struct {
 
 	{`{"name":{"$ne":"adam"}}`, `{"name":"john"}`, true},
 	{`{"name":{"$ne":"adam"}}`, `{"name":"adam"}`, false},
+
+	{`{"name":{"$st":"ad"}}`, `{"name":"adam"}`, true},
+	{`{"name":{"$st":"ad"}}`, `{"name":"john"}`, false},
+
+	{`{"name":{"$nst":"ad"}}`, `{"name":"john"}`, true},
+	{`{"name":{"$nst":"ad"}}`, `{"name":"adam"}`, false},
+
+	{`{"name":{"$en":"am"}}`, `{"name":"adam"}`, true},
+	{`{"name":{"$en":"ad"}}`, `{"name":"john"}`, false},
+
+	{`{"name":{"$nen":"hn"}}`, `{"name":"adam"}`, true},
+	{`{"name":{"$nen":"am"}}`, `{"name":"adam"}`, false},
 }
 
 func Test_Match(t *testing.T) {
@@ -77,11 +101,30 @@ func Test_Match(t *testing.T) {
 		filt := gjson.Parse(tcase.filter)
 		result, _ := match(filt, tcase.data)
 
-		if result != tcase.isMatch {
+		if result != tcase.expected {
 			t.Errorf("\nfilter:  %s\ndata:    %s\nexpected %v,\ngot:     %v\n",
-				filt, data, tcase.isMatch, result)
+				tcase.filter, tcase.data, tcase.expected, result)
 		}
 	}
+
+	//assert := assert.New(t)
+
+	//assert.Equal(match())
+	/*
+
+	   // assert equality
+	   assert.Equal(123, 123, "they should be equal")
+
+	   // assert inequality
+	   assert.NotEqual(123, 456, "they should not be equal")
+
+	   // assert for nil (good for errors)
+	   assert.Nil(object)
+
+	   // assert for not nil (good when you expect something)
+	   if assert.NotNil(object) {
+
+	*/
 }
 
 var data = []string{
