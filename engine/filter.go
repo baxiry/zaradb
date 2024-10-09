@@ -8,7 +8,14 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-// gjson.Type =>  json:5, array:5, int:2, string:3
+// gjson.Type:
+// Null:   0
+// False:  1
+// True:   4
+// json:   5
+// array:  5
+// number: 2
+// string: 3
 
 // match verifies that data matches the conditions
 func match(filter gjson.Result, data string) (result bool, err error) {
@@ -340,12 +347,19 @@ func match(filter gjson.Result, data string) (result bool, err error) {
 		if queryVal.Type == 2 {
 			if queryVal.Num != dataVal.Num {
 				result = false
+				return result
 			}
 		}
 
 		// if queryVal is string : {name: "adam"}
 		if queryVal.Str != dataVal.Str {
 			result = false
+			return result
+		}
+
+		if queryVal.Type != dataVal.Type {
+			result = false
+			return result
 		}
 
 		// if result is true then keep iterating
