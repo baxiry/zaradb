@@ -56,7 +56,6 @@ func NewDB(path string) *Store {
 	}
 
 	db = &Store{db: kv, lastid: lastIds}
-	fmt.Println("last ids is : ")
 	for k, v := range db.lastid {
 		fmt.Println(k, v)
 	}
@@ -66,21 +65,24 @@ func NewDB(path string) *Store {
 func (db *Store) getLastKey(bucket []byte) int64 {
 	var lastKey = []byte("0")
 
-	// Get the last key in the bucket
-	db.db.View(func(tx *bbolt.Tx) error {
+	// Get the last key from bucket
+	err := db.db.View(func(tx *bbolt.Tx) error {
 		bucket := tx.Bucket(bucket)
-		if bucket != nil {
-			lastKey, _ = bucket.Cursor().Last()
+		if bucket == nil {
+			return fmt.Errorf("bucket should not be nil")
 		}
+		lastKey, _ = bucket.Cursor().Last()
 		return nil
 	})
+	if err != nil {
+		log.Println("getLastKey :", err)
+	}
 	id, _ := strconv.Atoi(string(lastKey))
 	return int64(id)
 }
 
 func (db *Store) Put(backet, key, val string) (err error) {
-	fmt.Println("key val Is : ", key, val)
-	db.db.Update(func(tx *bbolt.Tx) error {
+	err = db.db.Update(func(tx *bbolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists([]byte(backet))
 		if err != nil {
 			fmt.Println("err in Put", err)
