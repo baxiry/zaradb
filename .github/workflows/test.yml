@@ -1,0 +1,29 @@
+name: Test Workflow
+
+on: 
+  push:
+    branches:
+      - main
+      - dev 
+  pull_request:
+    branches:
+      - main
+      - dev 
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go (if you're using Go, adjust this for your environment)
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23.2'
+
+      - name: Run tests
+        run: |
+          go test ./...
+
