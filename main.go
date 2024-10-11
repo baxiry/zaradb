@@ -13,10 +13,9 @@ import (
 //go:embed  static
 var content embed.FS
 
-// TODO: Close program gracefully.
-
 func main() {
 
+	// TODO: Close program gracefully.
 	db := engine.NewDB("test.db")
 	db.CreateCollection("test")
 	defer db.Close()
