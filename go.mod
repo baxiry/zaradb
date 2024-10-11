@@ -5,7 +5,6 @@ go 1.22
 toolchain go1.23.1
 
 require (
-	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/gobwas/glob v0.2.3
 	github.com/gorilla/websocket v1.5.0
 	github.com/tidwall/gjson v1.14.4

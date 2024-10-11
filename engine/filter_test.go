@@ -12,7 +12,6 @@ var testCases = []struct {
 	expected bool
 }{
 	// ....filter.....     ...data...    ...expected result...
-
 	// boalans & null cases
 	{`{"graded":true}`, `{"graded":true}`, true},
 	{`{"graded":true}`, `{"graded":false}`, false},
@@ -102,29 +101,21 @@ func Test_Match(t *testing.T) {
 		result, _ := match(filt, tcase.data)
 
 		if result != tcase.expected {
-			t.Errorf("\nfilter:  %s\ndata:    %s\nexpected %v,\ngot:     %v\n",
+			t.Errorf(Yellow+"\nfilter:  %s\ndata:    %s\nexpected %v,\ngot:     %v\n"+Reset,
 				tcase.filter, tcase.data, tcase.expected, result)
 		}
 	}
+}
 
-	//assert := assert.New(t)
+func assert(t *testing.T, filt, data string, exp bool) {
+	parsed := gjson.Parse(filt)
+	result, _ := match(parsed, data)
 
-	//assert.Equal(match())
-	/*
-
-	   // assert equality
-	   assert.Equal(123, 123, "they should be equal")
-
-	   // assert inequality
-	   assert.NotEqual(123, 456, "they should not be equal")
-
-	   // assert for nil (good for errors)
-	   assert.Nil(object)
-
-	   // assert for not nil (good when you expect something)
-	   if assert.NotNil(object) {
-
-	*/
+	if result != exp {
+		t.Errorf(
+			Yellow+"\nfilter:  %s\ndata:    %s\nexpected %v,\ngot:     %v\n"+
+				Reset, filt, data, exp, result)
+	}
 }
 
 var data = []string{
@@ -143,3 +134,10 @@ var data = []string{
 	`{"_id":13, "name":"rabih", "age":31, "contact":{"email": "rabih@email.com", "tele": "00230450083"}}`,
 	`{"_id":14, "name":"monir", "age":31, "contact":{"email": "monir@email.com", "tele": "00239450094"}}`,
 }
+
+const (
+	Red    = "\033[31m"
+	Green  = "\033[32m"
+	Yellow = "\033[33m"
+	Reset  = "\033[0m"
+)
