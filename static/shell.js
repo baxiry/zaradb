@@ -57,7 +57,6 @@ function HandleResponse(response) {
         var Data = prettyJSON(response)
         $('#data').html(`<pre><span>${Data}</span></pre>`);
         $('#data').fadeIn(400);
-        console.log("pretty json")
         return
     }
 
