@@ -62,21 +62,24 @@ queryInput.addEventListener('keydown', function(event) {
 
 // render response data 
 function HandleResponse(response) {
-    $('#examples').hide();
+    $('#examples').html("<div><div>");
     $('#data').html("<div><div>");
-    if (response == "") {
+    //$("#data").remove();
+    
+    if (response === "") {
         $('#data').html(`<pre><span>null</span></pre>`);
         $('#data').fadeIn(400);
         return;
     }
 
     if (pretty) {
-        let Data = prettyJSON(response)
-        $('#data').html(`<pre><span>${Data}</span></pre>`);
+        let data = prettyJSON(response)
+        $('#data').html(`<pre><span>${data}</span></pre>`);
+        $('#data').fadeIn(400);
         return;
     }
 
-    data = JSON.parse(response);
+    let data = JSON.parse(response);
     if (!Array.isArray(data)) {
         let obj = JSON.stringify(data) 
         $('#data').append(`<pre><span>${obj}</span></pre>`);
