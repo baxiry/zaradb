@@ -103,6 +103,60 @@ func (s *Store) findOne(query gjson.Result) (res string) {
 	return `{"status":"nothing match"}`
 }
 
+// Find finds any object match creteria.
+func (db *Store) findMany(query gjson.Result) (res string) {
+
+	listData, err := db.getData(query)
+	if err != nil {
+		return err.Error()
+	}
+
+	// order :
+	srt := query.Get("sort")
+
+	if srt.Exists() {
+		listData = order(listData, srt)
+	}
+
+	// remove or rename some fields
+	flds := query.Get("fields")
+	listData = reFields(listData, flds)
+
+	records := "["
+
+	for i := 0; i < len(listData); i++ {
+		records += listData[i] + ","
+	}
+
+	ln := len(records)
+	if ln == 1 {
+		return "[]"
+	}
+
+	return records[:ln-1] + "]"
+}
+
+// Finds first obj match creteria.
+func (db *Store) findById(query gjson.Result) (res string) {
+	coll := query.Get("collection").Str
+	key := query.Get("_id").String()
+
+	err := db.db.View(func(tx *bbolt.Tx) error {
+		bucket := tx.Bucket([]byte(coll))
+		if bucket == nil {
+			return fmt.Errorf("collection %s not exist", coll)
+		}
+
+		res = string(bucket.Get([]byte(key)))
+		return nil
+	})
+	if err != nil {
+		return `{"error": "` + err.Error() + `"}`
+	}
+
+	return res
+}
+
 // TODO updateOne updates one  document data
 func (db *Store) updateOne(query gjson.Result) (result string) {
 
@@ -300,61 +354,6 @@ func (db *Store) deleteOne(query gjson.Result) string {
 	}
 	return `{"result":"_id:` + id + ` deleted"}`
 
-}
-
-// Find finds any obs match creteria.
-func (db *Store) findMany(query gjson.Result) (res string) {
-
-	listData, err := db.getData(query)
-	if err != nil {
-		return err.Error()
-	}
-
-	// order :
-	srt := query.Get("sort")
-
-	if srt.Exists() {
-		listData = order(listData, srt)
-	}
-
-	// remove or rename some fields
-	flds := query.Get("fields")
-	listData = reFields(listData, flds)
-
-	records := "["
-
-	for i := 0; i < len(listData); i++ {
-		records += listData[i] + ","
-	}
-
-	ln := len(records)
-	if ln == 1 {
-		return "[]"
-	}
-
-	return records[:ln-1] + "]"
-}
-
-// Finds first obj match creteria.
-func (db *Store) findById(query gjson.Result) (res string) {
-	coll := query.Get("collection").Str
-	key := query.Get("_id").String()
-
-	err := db.db.View(func(tx *bbolt.Tx) error {
-		bucket := tx.Bucket([]byte(coll))
-		if bucket == nil {
-			return fmt.Errorf("collection %s not exist", coll)
-		}
-
-		res = string(bucket.Get([]byte(key)))
-
-		return nil
-	})
-	if err != nil {
-		return `{"error": "` + err.Error() + `"}`
-	}
-
-	return res
 }
 
 // Insert One

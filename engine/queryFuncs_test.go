@@ -45,6 +45,47 @@ func Test_findOne(t *testing.T) {
 	}
 }
 
+func Test_findById(t *testing.T) {
+
+	testCases := []struct {
+		name     string
+		query    string
+		expected string
+	}{
+		{
+			name:     "Valid collection and ID",
+			query:    `{"collection":"test","_id":1}`,
+			expected: `{"_id":1, "name":"adam", "age": 23}`,
+		},
+		{
+			name:     "Collection does not exist",
+			query:    `{"collection":"unknown","_id":1}`,
+			expected: `{"error": "collection unknown not exist"}`,
+		},
+		{
+			name:     "ID does not exist",
+			query:    `{"collection":"test","_id":"nonexistent"}`,
+			expected: "", //`{"error": ""}`, // No value in DB for this key
+		},
+		{
+			name:     "ID does not exist",
+			query:    `{"collection":"test","_id":123}`,
+			expected: "", //`{"error": ""}`, // No value in DB for this key
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			query := gjson.Parse(tc.query)
+			result := s.findById(query)
+
+			if result != tc.expected {
+				t.Errorf(Yellow+"expected %s, got %s"+Reset, tc.expected, result)
+			}
+		})
+	}
+}
+
 func Test_Close(t *testing.T) {
 	err := s.db.Close()
 
