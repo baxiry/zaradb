@@ -40,7 +40,6 @@ queryInput.addEventListener('keydown', function(event) {
 
     // handle & send query
     if ((event.metaKey || event.altKey ) && event.key === 'Enter' ) {
-        console.log("with Enter: ", queryInput)
         sendQuery(queryInput)
         return
     }
@@ -65,15 +64,19 @@ queryInput.addEventListener('keydown', function(event) {
 function HandleResponse(response) {
     $('#examples').hide();
     $('#data').html("<div><div>");
-    if (pretty) {
-        let Data = prettyJSON(response)
-        $('#data').html(`<pre><span>${Data}</span></pre>`);
+    if (response == "") {
+        $('#data').html(`<pre><span>null</span></pre>`);
         $('#data').fadeIn(400);
         return;
     }
 
-    data = JSON.parse(response);
+    if (pretty) {
+        let Data = prettyJSON(response)
+        $('#data').html(`<pre><span>${Data}</span></pre>`);
+        return;
+    }
 
+    data = JSON.parse(response);
     if (!Array.isArray(data)) {
         let obj = JSON.stringify(data) 
         $('#data').append(`<pre><span>${obj}</span></pre>`);
