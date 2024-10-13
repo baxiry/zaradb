@@ -363,6 +363,9 @@ func (db *Store) insertOne(query gjson.Result) (res string) {
 	if coll == "" {
 		return `{"error":"forgot collection"}`
 	}
+
+	fmt.Println("current coll : ", coll)
+
 	data := query.Get("data").String() // .Str not works with json obj
 
 	if data == "" {
@@ -370,13 +373,15 @@ func (db *Store) insertOne(query gjson.Result) (res string) {
 	}
 
 	db.lastid[coll]++
+	fmt.Println("current id : ", db.lastid[coll])
 	key := strconv.Itoa(int(db.lastid[coll]))
 	data = `{"_id":` + key + ", " + data[1:]
+	fmt.Println("data inserted : ", data)
 
-	err := db.Put(coll, key, data)
+	err := db.Put(coll, data)
 	if err != nil {
 		fmt.Println(err)
-		db.lastid[collection]--
+		db.lastid[coll]--
 		return err.Error()
 	}
 
@@ -385,22 +390,24 @@ func (db *Store) insertOne(query gjson.Result) (res string) {
 
 // InsertMany inserts list of object at one time
 func (db *Store) insertMany(query gjson.Result) (res string) {
+	fmt.Println("issert many")
 	coll := query.Get("collection").Str
 	data := query.Get("data").Array()
 
+	fmt.Println("last id :  ", db.lastid[coll])
 	for _, obj := range data {
 		db.lastid[coll]++
 		// strconv for perf
 		key := strconv.Itoa(int(db.lastid[coll]))
 		obj := `{"_id":` + key + `,` + obj.String()[1:]
 
-		err := db.Put(coll, key, obj)
+		err := db.Put(coll, obj)
+		db.db.Sync()
 		if err != nil {
-			fmt.Println(err)
-			db.lastid[collection]--
+			fmt.Println("at insertMany db.Put ", err)
+			db.lastid[coll]--
 			return err.Error()
 		}
-
 	}
 
 	return `{"ak":"insertMany Done"}`
