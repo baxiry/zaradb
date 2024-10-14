@@ -124,14 +124,29 @@ func Test_insertMany(t *testing.T) {
 }
 
 func Test_findMany(t *testing.T) {
-	json := `{"collection":"insertTest", "action":"findMany"}` //,"match":{"name":"adam"}
-	query := gjson.Parse(json)
 
-	got := s.findMany(query)
+	got := s.findMany(gjson.Parse(`{"collection":"insertTest", "action":"findMany"}`))
 	exp := `[{"_id":1,"name":"adam1", "age": 21},{"_id":2,"name":"adam2", "age": 22},{"_id":3,"name":"adam3", "age": 23}]`
-
 	if got != exp {
-		t.Errorf("got %s\nexp %s", got, exp)
+		t.Errorf(Red+"got %s\nexp %s"+Reset, got, exp)
+	}
+
+	got = s.findMany(gjson.Parse(`{"collection":"insertTest", "action":"findMany", "limit": 1}`))
+	exp = `[{"_id":1,"name":"adam1", "age": 21}]`
+	if got != exp {
+		t.Errorf(Red+"got %s\nexp %s"+Reset, got, exp)
+	}
+
+	got = s.findMany(gjson.Parse(`{"collection":"insertTest", "action":"findMany", "limit": 1, "skip", 2}`))
+	exp = `[{"_id":3,"name":"adam3", "age": 23}]`
+	if got != exp {
+		t.Errorf(Red+"got %s\nexp %s"+Reset, got, exp)
+	}
+
+	got = s.findMany(gjson.Parse(`{"collection":"insertTest", "action":"findMany", "skip", 3}`))
+	exp = `[]`
+	if got != exp {
+		t.Errorf(Red+"got %s\nexp %s"+Reset, got, exp)
 	}
 
 }
