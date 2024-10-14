@@ -21,6 +21,16 @@ func int64ToBytes(n int64) []byte {
 	return buf.Bytes()
 }
 
+func bytesToInt64(b []byte) int64 {
+	var n int64
+	buf := bytes.NewReader(b)
+	err := binary.Read(buf, binary.BigEndian, &n)
+	if err != nil {
+		return 0
+	}
+	return n
+}
+
 func uint64ToBytes(n uint64) []byte {
 	b := make([]byte, 8)
 	binary.BigEndian.PutUint64(b, n)

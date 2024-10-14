@@ -151,6 +151,26 @@ func Test_findMany(t *testing.T) {
 
 }
 
+func Test_updateOne(t *testing.T) {
+
+	ak := s.updateOne(gjson.Parse(`{"collection":"test", "action":"updateOne", "data":{"age":26}}, "match":{"name":"adam"}`))
+	if ak != `{"update:": "done"}` {
+		t.Errorf(Red+"got %s\nexp %s"+Reset, ak, `{"update:": "done"}`)
+	}
+
+	s.db.View(func(tx *bbolt.Tx) error {
+		bucket := tx.Bucket([]byte("test"))
+		got := bucket.Get(uint64ToBytes(1))
+		exp := `{"_id":1,"name":"adam","age":26}`
+		if string(got) != exp {
+			t.Errorf("\n%sexpect %s\ngot %s %s", Yellow, exp, got, Reset)
+		}
+
+		return nil
+	})
+
+}
+
 func Test_Close(t *testing.T) {
 	err := s.db.Close()
 

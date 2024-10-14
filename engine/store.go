@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/tidwall/gjson"
 	"go.etcd.io/bbolt"
 )
 
@@ -60,6 +61,56 @@ func NewDB(path string) *Store {
 	return db
 }
 
+func (s *Store) getData(query gjson.Result) (data []string, err error) {
+	coll := query.Get("collection").Str
+	if coll == "" {
+		return nil, fmt.Errorf(`{"error":"forgot collection name "}`)
+	}
+
+	skip := query.Get("skip").Int()
+	limit := query.Get("limit").Int()
+	if limit == 0 {
+		limit = 1000 // what is default setting ?
+	}
+
+	// bbolt
+	err = s.db.View(func(tx *bbolt.Tx) error {
+
+		bucket := tx.Bucket([]byte(coll))
+		if bucket == nil {
+			return fmt.Errorf("collection %s is not exists", coll)
+		}
+		isMatch := query.Get("match")
+		// Use a cursor to iterate over all key-value pairs in the bucket.
+		cursor := bucket.Cursor()
+		for key, value := cursor.First(); key != nil; key, value = cursor.Next() {
+
+			if limit == 0 {
+				break
+			}
+
+			ok, err := match(isMatch, string(value))
+			if err != nil {
+				return err
+			}
+
+			if ok {
+				if skip != 0 {
+					skip--
+					continue
+				}
+				data = append(data, string(value))
+				limit--
+			}
+
+		}
+
+		return nil
+	})
+
+	return data, err
+}
+
 // inset
 func (s *Store) Put(coll, val string) (err error) {
 	err = s.db.Update(func(tx *bbolt.Tx) error {
@@ -68,6 +119,7 @@ func (s *Store) Put(coll, val string) (err error) {
 			fmt.Println("err in put db.db.update", err)
 			return err
 		}
+
 		key := uint64ToBytes(db.lastid[coll])
 		bucket.Put(key, []byte(val))
 		return nil

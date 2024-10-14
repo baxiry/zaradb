@@ -8,54 +8,55 @@ import (
 	"go.etcd.io/bbolt"
 )
 
-func (s *Store) getData(query gjson.Result) (data []string, err error) {
+// Insert One
+func (db *Store) insertOne(query gjson.Result) (res string) {
+
 	coll := query.Get("collection").Str
 	if coll == "" {
-		return nil, fmt.Errorf(`{"error":"forgot collection name "}`)
+		return `{"error":"forgot collection"}`
 	}
 
-	skip := query.Get("skip").Int()
-	limit := query.Get("limit").Int()
-	if limit == 0 {
-		limit = 1000 // what is default setting ?
+	data := query.Get("data").String() // .Str not works with json obj
+
+	if data == "" {
+		return `{"error":"forgot data"}`
 	}
 
-	// bbolt
-	err = s.db.View(func(tx *bbolt.Tx) error {
+	db.lastid[coll]++
+	key := strconv.Itoa(int(db.lastid[coll]))
+	data = `{"_id":` + key + ", " + data[1:]
 
-		bucket := tx.Bucket([]byte(coll))
-		if bucket == nil {
-			return fmt.Errorf("collection %s is not exists", coll)
+	err := db.Put(coll, data)
+	if err != nil {
+		fmt.Println(err)
+		db.lastid[coll]--
+		return err.Error()
+	}
+
+	return `{"ak":"insert ` + key + ` success"}`
+}
+
+// InsertMany inserts list of object at one time
+func (db *Store) insertMany(query gjson.Result) (res string) {
+	coll := query.Get("collection").Str
+	data := query.Get("data").Array()
+
+	for _, obj := range data {
+		db.lastid[coll]++
+		// strconv for perf
+		key := strconv.Itoa(int(db.lastid[coll]))
+		obj := `{"_id":` + key + `,` + obj.String()[1:]
+
+		err := db.Put(coll, obj)
+		db.db.Sync()
+		if err != nil {
+			fmt.Println("at insertMany db.Put ", err)
+			db.lastid[coll]--
+			return err.Error()
 		}
-		isMatch := query.Get("match")
-		// Use a cursor to iterate over all key-value pairs in the bucket.
-		cursor := bucket.Cursor()
-		for key, value := cursor.First(); key != nil; key, value = cursor.Next() {
+	}
 
-			if limit == 0 {
-				break
-			}
-
-			ok, err := match(isMatch, string(value))
-			if err != nil {
-				return err
-			}
-
-			if ok {
-				if skip != 0 {
-					skip--
-					continue
-				}
-				data = append(data, string(value))
-				limit--
-			}
-
-		}
-
-		return nil
-	})
-
-	return data, err
+	return `{"ak":"insertMany Done"}`
 }
 
 // Finds first obj match creteria.
@@ -162,7 +163,7 @@ func (db *Store) updateOne(query gjson.Result) (result string) {
 
 	isMatch := query.Get("match")
 
-	newObj := query.Get("data").Str
+	newObj := query.Get("data").Raw
 	if newObj == "" {
 		return `{"error":"no data to update"}`
 	}
@@ -170,7 +171,7 @@ func (db *Store) updateOne(query gjson.Result) (result string) {
 	coll := query.Get("collection").Str
 
 	// bbolt
-	err := db.db.View(func(tx *bbolt.Tx) error {
+	err := db.db.Update(func(tx *bbolt.Tx) error {
 
 		bucket := tx.Bucket([]byte(coll))
 		if bucket == nil {
@@ -288,7 +289,6 @@ func (db *Store) deleteMany(query gjson.Result) string {
 func (db *Store) updateById(query gjson.Result) (result string) {
 
 	oldObj := db.findById(query)
-	fmt.Println("query ", query)
 
 	id := query.Get("_id").String()
 	if id == "" {
@@ -354,60 +354,6 @@ func (db *Store) deleteOne(query gjson.Result) string {
 	}
 	return `{"result":"_id:` + id + ` deleted"}`
 
-}
-
-// Insert One
-func (db *Store) insertOne(query gjson.Result) (res string) {
-
-	coll := query.Get("collection").Str
-	if coll == "" {
-		return `{"error":"forgot collection"}`
-	}
-
-	data := query.Get("data").String() // .Str not works with json obj
-
-	if data == "" {
-		return `{"error":"forgot data"}`
-	}
-
-	db.lastid[coll]++
-
-	key := strconv.Itoa(int(db.lastid[coll]))
-	data = `{"_id":` + key + ", " + data[1:]
-
-	err := db.Put(coll, data)
-	if err != nil {
-		fmt.Println(err)
-		db.lastid[coll]--
-		return err.Error()
-	}
-
-	return `{"ak":"insert ` + key + ` success"}`
-}
-
-// InsertMany inserts list of object at one time
-func (db *Store) insertMany(query gjson.Result) (res string) {
-	fmt.Println("issert many")
-	coll := query.Get("collection").Str
-	data := query.Get("data").Array()
-
-	fmt.Println("last id :  ", db.lastid[coll])
-	for _, obj := range data {
-		db.lastid[coll]++
-		// strconv for perf
-		key := strconv.Itoa(int(db.lastid[coll]))
-		obj := `{"_id":` + key + `,` + obj.String()[1:]
-
-		err := db.Put(coll, obj)
-		db.db.Sync()
-		if err != nil {
-			fmt.Println("at insertMany db.Put ", err)
-			db.lastid[coll]--
-			return err.Error()
-		}
-	}
-
-	return `{"ak":"insertMany Done"}`
 }
 
 // delete by id
