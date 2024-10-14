@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"os"
 	"testing"
 
 	"github.com/tidwall/gjson"
@@ -23,10 +24,10 @@ func Test_insertOne(t *testing.T) {
 
 	s.db.View(func(tx *bbolt.Tx) error {
 		bucket := tx.Bucket([]byte("test"))
-		res := bucket.Get([]byte("1"))
-		exp := []byte(`{"_id":1, "name":"adam", "age": 23}`)
-		if string(res) != string(exp) {
-			t.Errorf("get %s\nshould be %s", res, exp)
+		res := bucket.Get(uint64ToBytes(1))
+		exp := `{"_id":1, "name":"adam", "age": 23}`
+		if string(res) != exp {
+			t.Errorf("\n%sexpect %s\ngot %s %s", Yellow, exp, res, Reset)
 		}
 
 		return nil
@@ -41,7 +42,7 @@ func Test_findOne(t *testing.T) {
 	exp := []byte(`{"_id":1, "name":"adam", "age": 23}`)
 
 	if string(res) != string(exp) {
-		t.Errorf("get %s\nshould be %s", res, exp)
+		t.Errorf("expect %s\ngot %s", exp, res)
 	}
 }
 
@@ -86,10 +87,42 @@ func Test_findById(t *testing.T) {
 	}
 }
 
+func Test_insertMany(t *testing.T) {
+	json := `{"collection":"insertTest", "action":"insertMany","data":[{"name":"adam1", "age": 21},{"name":"adam2", "age": 22},{"name":"adam3", "age": 23}]}`
+	query := gjson.Parse(json)
+	s.insertMany(query)
+
+	s.db.View(func(tx *bbolt.Tx) error {
+		bucket := tx.Bucket([]byte("insertTest"))
+
+		exp := `{"_id":1,"name":"adam1", "age": 21}`
+		got := string(bucket.Get(uint64ToBytes(1)))
+		if got != exp {
+			t.Errorf("\n%sgot %s\nexp %s %s", Yellow, got, exp, Reset)
+		}
+
+		exp = `{"_id":2,"name":"adam2", "age": 22}`
+
+		got = string(bucket.Get(uint64ToBytes(2)))
+		if got != exp {
+			t.Errorf("\n%sgot %s\nexp %s %s", Yellow, got, exp, Reset)
+		}
+
+		exp = `{"_id":3,"name":"adam3", "age": 23}`
+
+		got = string(bucket.Get(uint64ToBytes(3)))
+		if got != exp {
+			t.Errorf("\n%sgot %s\nexp %s %s", Yellow, got, exp, Reset)
+		}
+
+		return nil
+	})
+}
 func Test_Close(t *testing.T) {
 	err := s.db.Close()
 
 	if err != nil {
 		t.Error("Store should be nil")
 	}
+	os.Remove("tmptest.db")
 }

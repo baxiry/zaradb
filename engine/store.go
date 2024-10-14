@@ -16,7 +16,6 @@ type Store struct {
 }
 
 func NewDB(path string) *Store {
-	fmt.Println("TEST INSERT MANY")
 
 	// Open a bbolt database
 	kv, err := bbolt.Open(path, 0600, nil)
@@ -79,10 +78,4 @@ func (s *Store) Put(coll, val string) (err error) {
 func (s *Store) Close() {
 	s.db.Sync()
 	s.db.Close()
-}
-
-func uint64ToBytes(n uint64) []byte {
-	b := make([]byte, 8)
-	binary.BigEndian.PutUint64(b, n)
-	return b
 }

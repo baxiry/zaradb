@@ -139,7 +139,7 @@ func (db *Store) findMany(query gjson.Result) (res string) {
 // Finds first obj match creteria.
 func (db *Store) findById(query gjson.Result) (res string) {
 	coll := query.Get("collection").Str
-	key := query.Get("_id").String()
+	key := query.Get("_id").Int()
 
 	err := db.db.View(func(tx *bbolt.Tx) error {
 		bucket := tx.Bucket([]byte(coll))
@@ -147,7 +147,7 @@ func (db *Store) findById(query gjson.Result) (res string) {
 			return fmt.Errorf("collection %s not exist", coll)
 		}
 
-		res = string(bucket.Get([]byte(key)))
+		res = string(bucket.Get(int64ToBytes(key)))
 		return nil
 	})
 	if err != nil {
@@ -364,8 +364,6 @@ func (db *Store) insertOne(query gjson.Result) (res string) {
 		return `{"error":"forgot collection"}`
 	}
 
-	fmt.Println("current coll : ", coll)
-
 	data := query.Get("data").String() // .Str not works with json obj
 
 	if data == "" {
@@ -373,10 +371,9 @@ func (db *Store) insertOne(query gjson.Result) (res string) {
 	}
 
 	db.lastid[coll]++
-	fmt.Println("current id : ", db.lastid[coll])
+
 	key := strconv.Itoa(int(db.lastid[coll]))
 	data = `{"_id":` + key + ", " + data[1:]
-	fmt.Println("data inserted : ", data)
 
 	err := db.Put(coll, data)
 	if err != nil {

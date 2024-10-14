@@ -1,6 +1,8 @@
 package engine
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"log"
 	"os"
@@ -8,6 +10,22 @@ import (
 	"os/user"
 	"path/filepath"
 )
+
+func int64ToBytes(n int64) []byte {
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.BigEndian, n)
+	if err != nil {
+		fmt.Println("binary.Write failed:", err)
+		return []byte{}
+	}
+	return buf.Bytes()
+}
+
+func uint64ToBytes(n uint64) []byte {
+	b := make([]byte, 8)
+	binary.BigEndian.PutUint64(b, n)
+	return b
+}
 
 func rootPath() string {
 	usr, err := user.Current()
