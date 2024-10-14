@@ -10,6 +10,10 @@ import (
 
 var s *Store
 
+//func Test_NewDB(){}
+//func Test_findOne(){}
+//func Test_findById(){}
+
 func Test_NewDB(t *testing.T) {
 	s = NewDB("tmptest.db")
 	if s == nil {
@@ -118,6 +122,20 @@ func Test_insertMany(t *testing.T) {
 		return nil
 	})
 }
+
+func Test_findMany(t *testing.T) {
+	json := `{"collection":"insertTest", "action":"findMany"}` //,"match":{"name":"adam"}
+	query := gjson.Parse(json)
+
+	got := s.findMany(query)
+	exp := `[{"_id":1,"name":"adam1", "age": 21},{"_id":2,"name":"adam2", "age": 22},{"_id":3,"name":"adam3", "age": 23}]`
+
+	if got != exp {
+		t.Errorf("got %s\nexp %s", got, exp)
+	}
+
+}
+
 func Test_Close(t *testing.T) {
 	err := s.db.Close()
 
