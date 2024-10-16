@@ -2,15 +2,19 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"time"
 	"zaradb/engine"
 )
 
-//go:embed  static
+//go:embed static
 var content embed.FS
 
 // TODO: Close program gracefully.
@@ -45,7 +49,36 @@ func main() {
 	// for pages under development
 	http.HandleFunc("/dev", dev)
 
-	log.Println(http.ListenAndServe(":1111", nil))
+	// Create server with a specified address
+	srv := &http.Server{
+		Addr: ":1111",
+	}
+
+	// Start the server in a goroutine
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("listen: %s\n", err)
+		}
+	}()
+
+	// Graceful shutdown handling
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	fmt.Println()
+	log.Println("Shutting down zaradb...")
+
+	// Create a context with timeout to allow active requests to complete
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	// Gracefully shutdown the server
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal("zaradb forced to shutdown:", err)
+	}
+
+	log.Println("zaradb exiting")
+
 }
 
 // render static shell.html file
