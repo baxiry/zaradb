@@ -17,10 +17,7 @@ import (
 //go:embed static
 var content embed.FS
 
-// TODO: Close program gracefully.
-
 func main() {
-
 	db := engine.NewDB("test.db")
 	if db == nil {
 		log.Fatal("no db")
@@ -120,6 +117,6 @@ func shell(w http.ResponseWriter, r *http.Request) {
 
 // redirect to shell page temporary
 func index(w http.ResponseWriter, r *http.Request) {
-	// TODO create index page
+	// TOD create index page
 	http.Redirect(w, r, "http://localhost:1111/shell", http.StatusSeeOther)
 }
