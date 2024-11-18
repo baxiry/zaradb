@@ -8,6 +8,8 @@ import (
 	"go.etcd.io/bbolt"
 )
 
+// TODO  use strings.Builder for string concatunation
+
 // Insert One
 func (db *Store) insertOne(query gjson.Result) (res string) {
 
@@ -126,6 +128,7 @@ func (db *Store) findMany(query gjson.Result) (res string) {
 	records := "["
 
 	for i := 0; i < len(listData); i++ {
+		// Todo use strings.Builder
 		records += listData[i] + ","
 	}
 
@@ -134,6 +137,7 @@ func (db *Store) findMany(query gjson.Result) (res string) {
 		return "[]"
 	}
 
+	// Todo use strings.Builder
 	return records[:ln-1] + "]"
 }
 
@@ -152,6 +156,7 @@ func (db *Store) findById(query gjson.Result) (res string) {
 		return nil
 	})
 	if err != nil {
+		// Todo use strings.Builder
 		return `{"error": "` + err.Error() + `"}`
 	}
 
