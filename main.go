@@ -19,11 +19,7 @@ var content embed.FS
 
 // TODO: Close program gracefully.
 func main() {
-<<<<<<< HEAD
-=======
 
-	// should remove from here
->>>>>>> 98447d2 (test workflow)
 	db := engine.NewDB("test.db")
 	if db == nil {
 		log.Fatal("no db")
