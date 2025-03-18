@@ -35,8 +35,6 @@ $('#togglePretty').change(function() {
     return;
 });
 
-<<<<<<< HEAD
-=======
 // render response data 
 function HandleResponse(response) {
     $('#examples').hide();
@@ -59,7 +57,6 @@ function HandleResponse(response) {
     $('#data').fadeIn(400);
 };
 
->>>>>>> 6280d36 (new workflow)
 // handle textarea events
 queryInput.addEventListener('keydown', function(event) {
 
