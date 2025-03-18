@@ -35,6 +35,31 @@ $('#togglePretty').change(function() {
     return;
 });
 
+<<<<<<< HEAD
+=======
+// render response data 
+function HandleResponse(response) {
+    $('#examples').hide();
+    $('#data').html("<div><div>");
+
+    if (pretty) {
+        var Data = prettyJSON(response)
+        $('#data').html(`<pre><span>${Data}</span></pre>`);
+        $('#data').fadeIn(400);
+        return
+    }
+
+    data = JSON.parse(response);
+
+    for (let i = 0;i< data.length;i++) {
+        let obj = JSON.stringify(data[i]) 
+        obj = obj.replace(/,"/g, ', "'); 
+        $('#data').append(`<pre><span>${obj}</span></pre>`);
+    }
+    $('#data').fadeIn(400);
+};
+
+>>>>>>> 6280d36 (new workflow)
 // handle textarea events
 queryInput.addEventListener('keydown', function(event) {
 
