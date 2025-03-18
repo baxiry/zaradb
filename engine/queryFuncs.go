@@ -26,6 +26,7 @@ func (db *Store) insertOne(query gjson.Result) (res string) {
 
 	db.lastid[coll]++
 	key := strconv.Itoa(int(db.lastid[coll]))
+	// strings.Builder
 	data = `{"_id":` + key + ", " + data[1:]
 
 	err := db.Put(coll, data)

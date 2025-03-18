@@ -112,7 +112,7 @@ func (s *Store) getData(query gjson.Result) (data []string, err error) {
 	return data, err
 }
 
-// inset
+// insert
 func (s *Store) Put(coll, val string) (err error) {
 	err = s.db.Update(func(tx *bbolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists([]byte(coll))
@@ -128,37 +128,43 @@ func (s *Store) Put(coll, val string) (err error) {
 	return err
 }
 
+// insert
+func (s *Store) Puts(coll, val string) (err error) {
+	key := uint64ToBytes(db.lastid[coll])
+	_ = key
+	return err
+}
+
 // to work with writer
 var (
-	oksChan = make(chan []bool, 1)
+	oksChan = make(chan []error, 1)
 	done    = make(chan bool, 1)
 	objChan = make(chan Object, 1)
 )
 
 type Object struct {
-	id       int
 	bucket   string
 	key, val []byte
 }
 
 // Function to gather data and send after a duration
-func writer(db *bbolt.DB, input chan Object) {
+func (db *Store) writer(input chan Object) {
 	dataBatch := make(map[string][]Object)
 	ticker := time.NewTicker(100 * time.Millisecond)
+
+	oks := make([]error, 0)
 	var obj Object
-	oks := make([]bool, 0)
 	for {
 		select {
 		case obj = <-input:
 			dataBatch[obj.bucket] = append(dataBatch[obj.bucket], obj)
-			oks = append(oks, true)
 
 		case <-ticker.C:
 			if len(dataBatch) == 0 {
 				fmt.Println("nothing to write")
 				continue
 			}
-			err := db.Batch(func(tx *bbolt.Tx) error {
+			err := db.db.Batch(func(tx *bbolt.Tx) error {
 				for bucketName, keyValues := range dataBatch {
 					bucket, err := tx.CreateBucketIfNotExists([]byte(bucketName))
 					if err != nil {
@@ -166,9 +172,13 @@ func writer(db *bbolt.DB, input chan Object) {
 					}
 					for _, v := range keyValues {
 						if err := bucket.Put(v.key, v.val); err != nil {
-							return err
+							oks = append(oks, err)
+							continue
+							//return err
 						}
 					}
+					oks = append(oks, err)
+
 				}
 				return nil
 			})
@@ -176,8 +186,8 @@ func writer(db *bbolt.DB, input chan Object) {
 				fmt.Println("error at db.batch", err)
 			}
 			oksChan <- oks
+			oks = []error{}
 			dataBatch = map[string][]Object{}
-			oks = []bool{}
 		case <-done:
 			break
 		}

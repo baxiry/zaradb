@@ -1,8 +1,6 @@
 module zaradb
 
-go 1.22
-
-toolchain go1.23.1
+go 1.23
 
 require (
 	github.com/gobwas/glob v0.2.3
