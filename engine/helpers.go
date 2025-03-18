@@ -1,37 +1,40 @@
 package engine
 
 import (
-	"database/sql"
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"os/signal"
 	"os/user"
 	"path/filepath"
-	"runtime"
 )
 
-func getLastId(db *sql.DB, table string) (int64, error) {
-	stmt := fmt.Sprintf(`SELECT rowid FROM %s ORDER BY ROWID DESC LIMIT 1`, table)
-	res, err := db.Query(stmt)
+func int64ToBytes(n int64) []byte {
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.BigEndian, n)
 	if err != nil {
-		return 0, err
+		fmt.Println("binary.Write failed:", err)
+		return []byte{}
 	}
-	defer res.Close()
+	return buf.Bytes()
+}
 
-	var lastid int64
-
-	if !res.Next() {
-		return 0, nil
-	}
-
-	err = res.Scan(&lastid)
+func bytesToInt64(b []byte) int64 {
+	var n int64
+	buf := bytes.NewReader(b)
+	err := binary.Read(buf, binary.BigEndian, &n)
 	if err != nil {
-		return 0, err
+		return 0
 	}
+	return n
+}
 
-	return lastid, err
+func uint64ToBytes(n uint64) []byte {
+	b := make([]byte, 8)
+	binary.BigEndian.PutUint64(b, n)
+	return b
 }
 
 func rootPath() string {
@@ -40,21 +43,6 @@ func rootPath() string {
 		log.Fatal(err)
 	}
 	return filepath.Join(usr.HomeDir, ".dbs") + "/" // slash
-}
-
-func ClearScreen() {
-	var cmd *exec.Cmd
-
-	if runtime.GOOS == "windows" {
-		cmd = exec.Command("cmd", "/c", "cls")
-	} else {
-		cmd = exec.Command("clear")
-	}
-
-	cmd.Stdout = os.Stdout
-	cmd.Run()
-	//cmd.Run()
-	//Runs twice because sometimes pterodactyl servers needs a 2nd clear
 }
 
 func SysNotify() {

@@ -1,87 +1,206 @@
 package engine
 
 import (
-	"database/sql"
+	"encoding/binary"
 	"fmt"
-	"strings"
+	"log"
+	"time"
 
-	_ "modernc.org/sqlite"
+	"github.com/tidwall/gjson"
+	"go.etcd.io/bbolt"
 )
 
-type DB struct {
-	db     *sql.DB
-	lastid map[string]int64
+var db *Store
+
+type Store struct {
+	db     *bbolt.DB
+	lastid map[string]uint64
 }
 
-// var lastid = make(map[string]int64, 0)
-var db *DB
-
-func NewDB(dbName string) *DB {
-
-	newdb, err := sql.Open("sqlite", dbName)
+func NewDB(path string) *Store {
+	// Open a bbolt database
+	kv, err := bbolt.Open(path, 0600, nil)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
-	db = &DB{db: newdb}
-	db.lastid = make(map[string]int64, 0)
+	lastIds := make(map[string]uint64, 0)
 
-	// Query the sqlite_master table to get table names
-	rows, err := newdb.Query("SELECT name FROM sqlite_master WHERE type='table'")
+	err = kv.View(func(tx *bbolt.Tx) error {
+		// Iterate over all buckets in the root
+		return tx.ForEach(func(name []byte, _ *bbolt.Bucket) error {
+
+			var lastKey = uint64ToBytes(0)
+
+			// Get the last key in the bucket
+			err = kv.View(func(tx *bbolt.Tx) error {
+				bucket := tx.Bucket(name)
+				if bucket == nil {
+					return fmt.Errorf("bucket not found")
+				}
+				lastKey, _ = bucket.Cursor().Last()
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+
+			lastIds[string(name)] = binary.BigEndian.Uint64(lastKey)
+			return nil
+		})
+
+	})
+
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
+		return nil
 	}
-	defer rows.Close()
 
-	// Iterate through rows and print table names
-	for rows.Next() {
-		var tableName string
-		err := rows.Scan(&tableName)
-		if err != nil {
-			panic(err)
-		}
-		lid, _ := getLastId(newdb, tableName)
-
-		db.lastid[tableName] = lid
-
-		//fmt.Println("Table Name:", tableName)
-	}
+	db = &Store{db: kv, lastid: lastIds}
+	//toRemove for k, v := range db.lastid {fmt.Println(k, v)}
 	return db
 }
 
-// insert new record
-func (db *DB) insert(collection, obj string) error {
-	d := strings.TrimLeft(obj, " ")
-	if len(d) < 2 {
-		return fmt.Errorf("len data is 0 %s\n", d)
+// getData fitch for data
+func (s *Store) getData(query gjson.Result) (data []string, err error) {
+	coll := query.Get("collection").Str
+	if coll == "" {
+		return nil, fmt.Errorf(`{"error":"forgot collection name "}`)
 	}
 
-	db.lastid[collection]++
-	data := `{"_id":` + fmt.Sprint(db.lastid[collection]) + ", " + d[1:]
-	fmt.Println("data: ", data)
-	fmt.Println("coll: ", collection)
-	// + s faster then format
-	_, err := db.db.Exec(`insert into ` + collection + `(record) values('` + data + `');`)
-	if err != nil {
-		fmt.Println(err)
-		db.lastid[collection]--
-		return err
+	skip := query.Get("skip").Int()
+	limit := query.Get("limit").Int()
+	if limit == 0 {
+		// what default setting should be here ?
+		limit = 1000
 	}
 
-	return nil
+	err = s.db.View(func(tx *bbolt.Tx) error {
+
+		bucket := tx.Bucket([]byte(coll))
+		if bucket == nil {
+			return fmt.Errorf("collection %s is not exists", coll)
+		}
+		isMatch := query.Get("match")
+		// Use a cursor to iterate over all key-value pairs in the bucket.
+		cursor := bucket.Cursor()
+		for key, value := cursor.First(); key != nil; key, value = cursor.Next() {
+
+			if limit == 0 {
+				break
+			}
+
+			ok, err := match(isMatch, string(value))
+			if err != nil {
+				return err
+			}
+
+			if ok {
+				if skip != 0 {
+					skip--
+					continue
+				}
+				data = append(data, string(value))
+				limit--
+			}
+
+		}
+
+		return nil
+	})
+
+	return data, err
 }
 
-// Close db
-func (db *DB) Close() {
-	db.db.Close()
+// insert
+func (s *Store) Put(coll, val string) (err error) {
+	err = s.db.Update(func(tx *bbolt.Tx) error {
+		bucket, err := tx.CreateBucketIfNotExists([]byte(coll))
+		if err != nil {
+			fmt.Println("err in put db.db.update", err)
+			return err
+		}
+
+		key := uint64ToBytes(db.lastid[coll])
+		bucket.Put(key, []byte(val))
+		return nil
+	})
+	return err
 }
 
-// error
-func check(hint string, err error) {
-	if err != nil {
-		fmt.Println(hint, err)
-		//return
+// insert
+func (s *Store) Puts(coll, val string) (err error) {
+	key := uint64ToBytes(db.lastid[coll])
+	_ = key
+	return err
+}
+
+// to work with writer
+var (
+	oksChan = make(chan []error, 1)
+	done    = make(chan bool, 1)
+	objChan = make(chan Object, 1)
+)
+
+type Object struct {
+	bucket   string
+	key, val []byte
+}
+
+// Function to gather data and send after a duration
+func (db *Store) writer(input chan Object) {
+	dataBatch := make(map[string][]Object)
+	ticker := time.NewTicker(100 * time.Millisecond)
+
+	oks := make([]error, 0)
+	var obj Object
+	for {
+		select {
+		case obj = <-input:
+			dataBatch[obj.bucket] = append(dataBatch[obj.bucket], obj)
+
+		case <-ticker.C:
+			if len(dataBatch) == 0 {
+				fmt.Println("nothing to write")
+				continue
+			}
+			err := db.db.Batch(func(tx *bbolt.Tx) error {
+				for bucketName, keyValues := range dataBatch {
+					bucket, err := tx.CreateBucketIfNotExists([]byte(bucketName))
+					if err != nil {
+						return err
+					}
+					for _, v := range keyValues {
+						if err := bucket.Put(v.key, v.val); err != nil {
+							oks = append(oks, err)
+							continue
+							//return err
+						}
+					}
+					oks = append(oks, err)
+
+				}
+				return nil
+			})
+			if err != nil {
+				fmt.Println("error at db.batch", err)
+			}
+			oksChan <- oks
+			oks = []error{}
+			dataBatch = map[string][]Object{}
+		case <-done:
+			break
+		}
 	}
 }
 
-// end
+func toByte(number int) []byte {
+	buf := make([]byte, 8)
+	binary.BigEndian.PutUint64(buf, uint64(number))
+	return buf
+}
+
+func (s *Store) Close() {
+	s.db.Sync()
+	s.db.Close()
+}

@@ -1,86 +1,249 @@
 package engine
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/tidwall/gjson"
 )
 
-var testCases = []struct {
-	filter  string
-	data    string
-	isMatch bool
-}{
-	// ....filter.....     ...data...    ...isMatch...
-	//  cases of numbers
-	{`{"age": 18}`, `{"age": 18}`, true},
-	{`{"age": 18}`, `{"age": 19}`, false},
+// ....filter.....     ...data...    ...expected result...
+func check(filter, data string, expected bool) string {
+	filt := gjson.Parse(filter)
+	result, _ := match(filt, data)
 
-	{`{"age":{"$eq":18}}`, `{"age": 18}`, true},
-	{`{"age":{"$eq":18}}`, `{"age": 19}`, false},
-
-	{`{"age":{"$ne": 18}}`, `{"age": 19}`, true},
-	{`{"age":{"$ne": 18}}`, `{"age": 18}`, false},
-
-	{`{"age":{"$gt": 18}}`, `{"age": 19}`, true},
-	{`{"age":{"$gt": 18}}`, `{"age": 18}`, false},
-	{`{"age":{"$gt": 18}}`, `{"age": 17}`, false},
-
-	{`{"age":{"$lt": 18}}`, `{"age": 17}`, true},
-	{`{"age":{"$lt": 18}}`, `{"age": 18}`, false},
-	{`{"age":{"$lt": 18}}`, `{"age": 19}`, false},
-
-	{`{"age":{"$gte": 18}}`, `{"age": 19}`, true},
-	{`{"age":{"$gte": 18}}`, `{"age": 18}`, true},
-	{`{"age":{"$gte": 18}}`, `{"age": 17}`, false},
-
-	{`{"age":{"$lte": 18}}`, `{"age": 17}`, true},
-	{`{"age":{"$lte": 18}}`, `{"age": 18}`, true},
-	{`{"age":{"$lte": 18}}`, `{"age": 19}`, false},
-
-	{`{"age":{"$lt": 28, "$gt": 18}}`, `{"age": 20}`, true},
-	{`{"age":{"$lt": 28, "$gt": 18}}`, `{"age": 27}`, true},
-	{`{"age":{"$lt": 28, "$gt": 18}}`, `{"age": 19}`, true},
-	{`{"age":{"$lt": 28, "$gt": 18}}`, `{"age": 18}`, false},
-
-	{`{"age":{"$lte": 28, "$gte": 18}}`, `{"age": 20}`, true},
-	{`{"age":{"$lte": 28, "$gte": 18}}`, `{"age": 28}`, true},
-	{`{"age":{"$lte": 28, "$gte": 18}}`, `{"age": 18}`, true},
-	{`{"age":{"$lte": 28, "$gte": 18}}`, `{"age": 16}`, false},
-
-	{`{"age":{"$in":[28,29,30]}}`, `{"age": 29}`, true},
-	{`{"age":{"$in":[28,29,30]}}`, `{"age": 9}`, false},
-
-	{`{"age":{"$nin":[28,29,30]}}`, `{"age": 9}`, true},
-	{`{"age":{"$nin":[28,29,30]}}`, `{"age": 29}`, false},
-
-	{`{"$and":[{"name":{"$eq":"adam"}}, {"age":{"$eq":29}} ] }`, `{"name":"adam","age": 29}`, true},
-	{`{"$and":[{"name":{"$eq":"adam"}}, {"age":{"$eq":29}} ] }`, `{"name":"adam","age": 19}`, false},
-
-	{`{"$or":[{"name":{"$eq":"adam"}}, {"age":{"$eq":29}} ] }`, `{"name":"jhon","age": 29}`, true},
-	{`{"$or":[{"name":{"$eq":"adam"}}, {"age":{"$eq":29}} ] }`, `{"name":"jhon","age": 19}`, false},
-
-	// string cases
-	{`{"name":"adam"}`, `{"name":"adam"}`, true},
-	{`{"name":"adam"}`, `{"name":"kamal"}`, false},
-
-	{`{"name":{"$eq":"adam"}}`, `{"name":"adam"}`, true},
-	{`{"name":{"$eq":"adam"}}`, `{"name":"john"}`, false},
-
-	{`{"name":{"$ne":"adam"}}`, `{"name":"john"}`, true},
-	{`{"name":{"$ne":"adam"}}`, `{"name":"adam"}`, false},
+	if result != expected {
+		return fmt.Sprintf(Yellow+"\nfilter:  %s\ndata:    %s\nexpected %v,\ngot:     %v\n"+Reset,
+			filter, data, expected, result)
+	}
+	return ""
 }
 
 func Test_Match(t *testing.T) {
 
-	for _, tcase := range testCases {
-		filt := gjson.Parse(tcase.filter)
-		result, _ := match(filt, tcase.data)
+	// ....filter.....     ...data...    ...expected result...
+	if res := check(`{"graded":true}`, `{"graded":true}`, true); res != "" {
+		t.Error(res)
+	}
 
-		if result != tcase.isMatch {
-			t.Errorf("\nfilter:  %s\ndata:    %s\nexpected %v,\ngot:     %v\n",
-				filt, data, tcase.isMatch, result)
-		}
+	if res := check(`{"graded":true}`, `{"graded":false}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"graded":false}`, `{"graded":false}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"graded":false}`, `{"graded":true}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"graded":null}`, `{"graded":null}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"graded":null}`, `{"graded":true}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"graded":null}`, `{"graded":"null"}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age": 18}`, `{"age": 18}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age": 18}`, `{"age": 19}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$eq":18}}`, `{"age": 18}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$eq":18}}`, `{"age": 19}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$ne": 18}}`, `{"age": 19}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$ne": 18}}`, `{"age": 18}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$gt": 18}}`, `{"age": 19}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$gt": 18}}`, `{"age": 18}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$gt": 18}}`, `{"age": 17}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$lt": 18}}`, `{"age": 17}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$lt": 18}}`, `{"age": 18}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$lt": 18}}`, `{"age": 19}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$gte": 18}}`, `{"age": 19}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$gte": 18}}`, `{"age": 18}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$gte": 18}}`, `{"age": 17}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$lte": 18}}`, `{"age": 17}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$lte": 18}}`, `{"age": 18}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$lte": 18}}`, `{"age": 19}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$lt": 28, "$gt": 18}}`, `{"age": 20}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$lt": 28, "$gt": 18}}`, `{"age": 27}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$lt": 28, "$gt": 18}}`, `{"age": 19}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$lt": 28, "$gt": 18}}`, `{"age": 18}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$lte": 28, "$gte": 18}}`, `{"age": 20}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$lte": 28, "$gte": 18}}`, `{"age": 28}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$lte": 28, "$gte": 18}}`, `{"age": 18}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$lte": 28, "$gte": 18}}`, `{"age": 16}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$in":[28,29,30]}}`, `{"age": 29}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$in":[28,29,30]}}`, `{"age": 9}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$nin":[28,29,30]}}`, `{"age": 9}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"age":{"$nin":[28,29,30]}}`, `{"age": 29}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"$and":[{"name":{"$eq":"adam"}}, {"age":{"$eq":29}} ] }`, `{"name":"adam","age": 29}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"$and":[{"name":{"$eq":"adam"}}, {"age":{"$eq":29}} ] }`, `{"name":"adam","age": 19}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"$or":[{"name":{"$eq":"adam"}}, {"age":{"$eq":29}} ] }`, `{"name":"jhon","age": 29}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"$or":[{"name":{"$eq":"adam"}}, {"age":{"$eq":29}} ] }`, `{"name":"jhon","age": 19}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"name":"adam"}`, `{"name":"adam"}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"name":"adam"}`, `{"name":"kamal"}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"name":{"$eq":"adam"}}`, `{"name":"adam"}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"name":{"$eq":"adam"}}`, `{"name":"john"}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"name":{"$ne":"adam"}}`, `{"name":"john"}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"name":{"$ne":"adam"}}`, `{"name":"adam"}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"name":{"$st":"ad"}}`, `{"name":"adam"}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"name":{"$st":"ad"}}`, `{"name":"john"}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"name":{"$nst":"ad"}}`, `{"name":"john"}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"name":{"$nst":"ad"}}`, `{"name":"adam"}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"name":{"$en":"am"}}`, `{"name":"adam"}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"name":{"$en":"ad"}}`, `{"name":"john"}`, false); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"name":{"$nen":"hn"}}`, `{"name":"adam"}`, true); res != "" {
+		t.Error(res)
+	}
+
+	if res := check(`{"name":{"$nen":"am"}}`, `{"name":"adam"}`, false); res != "" {
+		t.Error(res)
+	}
+	//
+	if res := check(`{"name":{"$nen":"am"}}`, `{"name":"adam"}`, false); res != "" {
+		t.Error(res)
 	}
 }
 
@@ -100,3 +263,10 @@ var data = []string{
 	`{"_id":13, "name":"rabih", "age":31, "contact":{"email": "rabih@email.com", "tele": "00230450083"}}`,
 	`{"_id":14, "name":"monir", "age":31, "contact":{"email": "monir@email.com", "tele": "00239450094"}}`,
 }
+
+const (
+	Red    = "\033[31m"
+	Green  = "\033[32m"
+	Yellow = "\033[33m"
+	Reset  = "\033[0m"
+)
