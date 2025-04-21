@@ -6,7 +6,7 @@ import (
 )
 
 const Host = "localhost"
-const Port = "1111"
+const Port = ":1111"
 
 type config struct {
 	// TODO
