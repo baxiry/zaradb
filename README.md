@@ -5,9 +5,6 @@ Its goal is to be a lightweight alternative to common documentary databases.
 It can also provide superior performance compared to Mongo in many common use cases.
 
 **Installation**
-download zara pre-compiled from [here](https://github.com/baxiry/zaradb/releases), extract it, and run it as any program.
-
-Or compile it from soure:
 
 ```bash
 git clone --depth 1 https://github.com/baxiry/zaradb.git && cd zaradb && go build . && ./zaradb
@@ -15,9 +12,6 @@ git clone --depth 1 https://github.com/baxiry/zaradb.git && cd zaradb && go buil
 
 and then open : `localhost:1111`
 
-#### Documentations:
-this docs is for libs dev, but it good for everyone : 
-[zara wiki](https://github.com/baxiry/zaradb/wiki/API-Examples)
 
 > [!NOTE]
 > It is possible that some things will change within the API, 
@@ -27,11 +21,10 @@ this docs is for libs dev, but it good for everyone :
 
 ## API Documentation
 
-> [!NOTE]
-> Zara receives queries in JSON format. However, you can use JavaScript objects through the web interface provided by Zara via: `localhost:1111`
+***Zara receives queries in JSON format. However, you can use JavaScript objects through the web interface provided by Zara via: `localhost:1111`***
 
 ### Insert
-insert one object:
+***insert one object:***
 
 ```javascript
 {
