@@ -98,7 +98,7 @@ func (ag Aggregate) aggrigate(query gjson.Result) string {
 
 	_id := group.Get("_id").Str
 
-	// TODO parse data and exclude invalide objects
+	// TODO parse data and exclude invalid objects
 	if gjson.Get(data[0], _id).Str == "" {
 		return "field '" + _id + "' is not exists"
 	}
@@ -206,7 +206,6 @@ func (ag Aggregate) aggrigate(query gjson.Result) string {
 		}
 	}
 
-	// TODO sort listdata here
 	srt := query.Get("gsort")
 	if srt.Exists() {
 		listdata = order(listdata, srt)
@@ -233,6 +232,7 @@ func (ag Aggregate) aggrigate(query gjson.Result) string {
 		return "[]"
 	}
 
+	//fmt.Println("agg res: ", data)
 	return result[:ln-1] + "]"
 
 }

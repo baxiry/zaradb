@@ -37,6 +37,7 @@ $('#togglePretty').change(function() {
 
 // render response data 
 function HandleResponse(response) {
+    console.log("res: ", response)
     $('#examples').hide();
     $('#data').html("<div><div>");
 
@@ -62,7 +63,11 @@ queryInput.addEventListener('keydown', function(event) {
 
     // handle & send query
     if ((event.metaKey || event.altKey ) && event.key === 'Enter' ) {
-        sendQuery(queryInput)
+        try {
+           sendQuery(queryInput)
+        } catch (err) {
+            console.log(err)
+        }
         return
     }
 
@@ -101,7 +106,9 @@ function HandleResponse(response) {
         return;
     }
 
+    console.log(response)
     let data = JSON.parse(response);
+
     if (!Array.isArray(data)) {
         let obj = JSON.stringify(data) 
         $('#data').append(`<pre><span>${obj}</span></pre>`);
