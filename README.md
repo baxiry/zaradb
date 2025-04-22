@@ -277,16 +277,16 @@ we will appely aggregation on this data:
   collection: "products",
   action: "insertMany",
   data: [
-	{ item: "Americanos", price: 5,  size: Short",  "quantity": 22 },
-	{ item: "Cappuccino", price: 6,  size: Short",  "quantity": 12 },
-	{ item: "Lattes",     price: 15, size: Grande", "quantity": 25 },
-	{ item: "Mochas",     price: 25, size: Tall",   "quantity": 11 },
-	{ item: "Americanos", price: 10, size: Grande", "quantity": 12 },
-	{ item: "Cappuccino", price: 7,  size: Tall",   "quantity": 20 },
-	{ item: "Lattes",     price: 25, size: Tall",   "quantity": 30 },
-	{ item: "Americanos", price: 10, size: Grande", "quantity": 24 },
-	{ item: "Cappuccino", price: 10, size: Grande", "quantity": 25 },
-	{ item: "Americanos", price: 8,  size: Tall",   "quantity": 28 }
+	{ item: "Americanos", price: 5,  size: "Short",  quantity: 22 },
+	{ item: "Cappuccino", price: 6,  size: "Short",  quantity: 12 },
+	{ item: "Lattes",     price: 15, size: "Grande", quantity: 25 },
+	{ item: "Mochas",     price: 25, size: "Tall",   quantity: 11 },
+	{ item: "Americanos", price: 10, size: "Grande", quantity: 12 },
+	{ item: "Cappuccino", price: 7,  size: "Tall",   quantity: 20 },
+	{ item: "Lattes",     price: 25, size: "Tall",   quantity: 30 },
+	{ item: "Americanos", price: 10, size: "Grande", quantity: 24 },
+	{ item: "Cappuccino", price: 10, size: "Grande", quantity: 25 },
+	{ item: "Americanos", price: 8,  size: "Tall",   quantity: 28 }
   ]
 }
 ```
@@ -308,7 +308,7 @@ we will appely aggregation on this data:
 }
 ```
 
-#### match & sort with aggregation
+#### match & sort aggregation by gmatch & gsort (group match, grop sort)
 
 ```js
 {
@@ -325,5 +325,6 @@ we will appely aggregation on this data:
     gsort:{averageAmount:1},
 }
 ```
+
 
 
