@@ -20,7 +20,6 @@ and then open : `localhost:1111`
 
 
 ## API Documentation
-
 ***Zara receives queries in JSON format. However, you can use JavaScript objects through the web interface provided by Zara via: `localhost:1111`***
 
 ### Insert
@@ -314,7 +313,7 @@ we will appely aggregation on this data:
 {
   collection: "products",
   action: "aggregate",  
-  gmatch:{price:{$gte:20}}
+  gmatch:{price:{$gte:20}},
   group: {
       _id: 'item',
       countItems: {$count: ''}, // count param should be zero value
