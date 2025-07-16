@@ -49,7 +49,39 @@ and then open : `localhost:1111`
   ],
 }
 ```
-### Find & match
+### Find One 
+***find objects:***
+
+```javascript
+{
+  collection: "users",
+  action: "findOne",
+}
+```
+### Find One & match "where..."
+***find objects matching specific conditions:***
+
+```javascript
+{
+  collection: "users",
+  action: "findOne",
+  match: {
+    name: "Adam",
+  },
+}
+```
+
+### Find Many 
+***find objects***
+
+```javascript
+{
+  collection: "users",
+  action: "findMany",
+}
+```
+
+### Find Many & match
 ***find objects matching specific conditions:***
 
 ```javascript
@@ -58,11 +90,12 @@ and then open : `localhost:1111`
   action: "findMany",
   match: {
     name: "adam",
-    age: { $gt: 18 }, // Greater than 18
+    age: { $gt: 23 }, // Greater than 23
   },
 }
 ```
 
+### match select just objects that matching specific conditions:
 ***Operators works with string & number:***
 
  `$eq` equal, e.g `match:{age:{$eq: 20}}`
@@ -141,7 +174,7 @@ find any object whose age does not match any value in the list.
   collection: "users",
   action: "findMany",
   match: {
-    age: { $nin: [12, 23, 34] },
+    age: { $nin: [12, 23, 34] }, // not in
   },
 }
 ```
