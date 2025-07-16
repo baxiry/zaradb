@@ -37,52 +37,52 @@ func HandleQueries(query string) string {
 
 	// database actions
 	case "findOne":
-		return db.findOne(parsedQuery)
+		return s.findOne(parsedQuery)
 
 	case "findMany":
-		return db.findMany(parsedQuery)
+		return s.findMany(parsedQuery)
 
 	case "findById":
-		return db.findById(parsedQuery)
+		return s.findById(parsedQuery)
 
 	case "insert":
-		return db.insertOne(parsedQuery)
+		return s.insertOne(parsedQuery)
 
 	case "insertMany":
-		return db.insertMany(parsedQuery)
+		return s.insertMany(parsedQuery)
 
 	// update
 	case "updateById":
-		return db.updateById(parsedQuery)
+		return s.updateById(parsedQuery)
 
 	case "updateOne":
-		return db.updateOne(parsedQuery)
+		return s.updateOne(parsedQuery)
 
 	case "updateMany":
-		return db.updateMany(parsedQuery)
+		return s.updateMany(parsedQuery)
 
 	case "deleteById":
-		return db.deleteById(parsedQuery)
+		return s.deleteById(parsedQuery)
 
 	case "deleteOne":
-		return db.deleteOne(parsedQuery)
+		return s.deleteOne(parsedQuery)
 
 	case "deleteMany":
-		return db.deleteMany(parsedQuery)
+		return s.deleteMany(parsedQuery)
 
 	case "transaction":
 		return transaction(parsedQuery)
 
 	// manage database
 	case "create_collection":
-		return createCollection(parsedQuery.Get("collection"))
+		return s.createCollection(parsedQuery.Get("collection"))
 
 	case "delete_collection":
-		return deleteCollection(parsedQuery.Get("collection"))
+		return s.deleteCollection(parsedQuery.Get("collection"))
 
 	case "getCollections":
 		//return showCollections(db.path)
-		return getCollections()
+		return s.getCollections()
 
 	default:
 		return fmt.Errorf("unknown '%s' cation", parsedQuery.Get("action").Str).Error()

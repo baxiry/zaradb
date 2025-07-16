@@ -35,8 +35,14 @@
 <p>insertMany inserts many data objects at one time 'bulk'</p>
 <pre>{action:"insertMany", collection:"test", data:[{name:"jalal", age:23},{name:"akram", age:30},{name:"hasna", age:35}]}</pre></br>
 
-<p>select one object</p>
+<p>find one object</p>
+<pre>{ collection:"test", action:"findOne"}</pre></br>
+
+<p>find one object with match conditions, ***where***</p>
 <pre>{ collection:"test", action:"findOne", match:{name:"adam"}}</pre></br>
+
+<p>find many objects</p>
+<pre>{collection:"test", action:"findMany"}</pre></br>
 
 <p>select objects match conditions</p>
 <pre>{collection:"test", action:"findMany", match:{name:"adam"}}</pre></br>

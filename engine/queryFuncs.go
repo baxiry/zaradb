@@ -2,16 +2,17 @@ package engine
 
 import (
 	"fmt"
+	"log"
 	"strconv"
+	"strings"
 
 	"github.com/tidwall/gjson"
-	"go.etcd.io/bbolt"
 )
 
 // TODO  use strings.Builder for string concatunation
 
 // Insert One
-func (db *Store) insertOne(query gjson.Result) (res string) {
+func (store *Store) insertOne(query gjson.Result) (res string) {
 
 	coll := query.Get("collection").Str
 	if coll == "" {
@@ -19,43 +20,48 @@ func (db *Store) insertOne(query gjson.Result) (res string) {
 	}
 
 	data := query.Get("data").String() // .Str not works with json obj
-
 	if data == "" {
 		return `{"error":"forgot data"}`
 	}
 
-	db.lastid[coll]++
-	key := strconv.Itoa(int(db.lastid[coll]))
-	// strings.Builder
-	data = `{"_id":` + key + ", " + data[1:]
+	store.lastids[coll]++
+	key := strconv.Itoa(int(store.lastids[coll]))
+	data = `{"_id":` + key + ", " + data[1:] // strings.Builder
 
-	err := db.Put(coll, data)
+	err := store.Put(coll, data)
 	if err != nil {
-		fmt.Println(err)
-		db.lastid[coll]--
-		return err.Error()
+		if strings.Contains(err.Error(), "no such table:") {
+			store.createCollection(query)
+			err = store.Put(coll, data)
+		} else {
+			return `{"ak":"error:` + err.Error() + `"}`
+		}
 	}
-
-	return `{"ak":"insert ` + key + ` success"}`
+	return `{"ak":"insert new obj with:` + key + ` success"}`
 }
 
 // InsertMany inserts list of object at one time
-func (db *Store) insertMany(query gjson.Result) (res string) {
-	coll := query.Get("collection").Str
+func (store *Store) insertMany(query gjson.Result) (res string) {
+	coll := query.Get(collection).Str
 	data := query.Get("data").Array()
 
 	for _, obj := range data {
-		db.lastid[coll]++
-		// strconv for perf
-		key := strconv.Itoa(int(db.lastid[coll]))
+		store.lastids[coll]++
+		key := strconv.Itoa(int(store.lastids[coll]))
 		obj := `{"_id":` + key + `,` + obj.String()[1:]
 
-		err := db.Put(coll, obj)
-		db.db.Sync()
+		err := store.Put(coll, obj)
+
 		if err != nil {
-			fmt.Println("at insertMany db.Put ", err)
-			db.lastid[coll]--
-			return err.Error()
+			if strings.Contains(err.Error(), "no such table:") {
+				s.createCollection(query)
+				err = s.Put(coll, obj)
+				if err != nil {
+					log.Fatal(err)
+				}
+			} else {
+				return `{"error":"` + err.Error() + `"}`
+			}
 		}
 	}
 
@@ -66,38 +72,32 @@ func (db *Store) insertMany(query gjson.Result) (res string) {
 func (s *Store) findOne(query gjson.Result) (res string) {
 	coll := query.Get("collection").Str
 	skip := query.Get("skip").Int()
+	isMatch := query.Get("match")
 
-	err := s.db.View(func(tx *bbolt.Tx) error {
-
-		bucket := tx.Bucket([]byte(coll))
-		if bucket == nil {
-			return fmt.Errorf("bucket %q not found", "myBucket")
-		}
-		isMatch := query.Get("match")
-
-		cursor := bucket.Cursor()
-		for key, value := cursor.First(); key != nil; key, value = cursor.Next() {
-
-			ok, err := match(isMatch, string(value))
-			if err != nil {
-				return err
-			}
-
-			if ok {
-				if skip != 0 {
-					skip--
-					continue
-				}
-				res = string(value)
-				return nil
-			}
-		}
-
-		return nil
-	})
-
+	rows, err := s.db.Query("SELECT * FROM " + coll)
 	if err != nil {
-		return `{"error":"` + err.Error() + `"}`
+		return `{"error": "` + err.Error() + `"}`
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var obj string
+
+		err := rows.Scan(&obj)
+
+		ok, err := match(isMatch, string(obj))
+		if err != nil {
+			return `{"error":"` + err.Error() + `"}`
+		}
+
+		if ok {
+			if skip != 0 {
+				skip--
+				continue
+			}
+			res = string(obj)
+			break
+		}
 	}
 
 	if res != "" {
@@ -108,11 +108,11 @@ func (s *Store) findOne(query gjson.Result) (res string) {
 }
 
 // Find finds any object match creteria.
-func (db *Store) findMany(query gjson.Result) (res string) {
+func (s *Store) findMany(query gjson.Result) (res string) {
 
-	listData, err := db.getData(query)
+	listData, err := s.Get(query)
 	if err != nil {
-		return err.Error()
+		return `{"error":"` + err.Error() + `"}`
 	}
 
 	// order :
@@ -127,7 +127,6 @@ func (db *Store) findMany(query gjson.Result) (res string) {
 	listData = reFields(listData, flds)
 
 	records := "["
-
 	for i := 0; i < len(listData); i++ {
 		// Todo use strings.Builder
 		records += listData[i] + ","
@@ -143,76 +142,53 @@ func (db *Store) findMany(query gjson.Result) (res string) {
 }
 
 // Finds first obj match creteria.
-func (db *Store) findById(query gjson.Result) (res string) {
-	coll := query.Get("collection").Str
-	key := query.Get("_id").Int()
+func (s *Store) findById(query gjson.Result) (res string) {
+	coll := query.Get(collection).Str
 
-	err := db.db.View(func(tx *bbolt.Tx) error {
-		bucket := tx.Bucket([]byte(coll))
-		if bucket == nil {
-			return fmt.Errorf("collection %s not exist", coll)
-		}
-
-		res = string(bucket.Get(int64ToBytes(key)))
-		return nil
-	})
+	id := query.Get("_id").String()
+	if id == "0" {
+		return "_id forgoten"
+	}
+	row := s.db.QueryRow("SELECT obj FROM " + coll + " where rowid =" + id)
+	err := row.Scan(&res)
 	if err != nil {
-		// Todo use strings.Builder
-		return `{"error": "` + err.Error() + `"}`
+		if strings.Contains(err.Error(), "no such table:") {
+			return `{"error": "collection does not exist"}`
+		}
+		return `{"error": "_id does not exist"}`
 	}
 
 	return res
 }
 
 // TODO updateOne updates one  document data
-func (db *Store) updateOne(query gjson.Result) (result string) {
-
-	isMatch := query.Get("match")
+func (s *Store) updateOne(query gjson.Result) (result string) {
+	oldObj := s.findOne(query)
+	fmt.Println("updateOne: oldObj: ", oldObj)
 
 	newObj := query.Get("data").Raw
-	if newObj == "" {
-		return `{"error":"no data to update"}`
-	}
+	fmt.Println("updateOne: newObj: ", newObj)
 
-	coll := query.Get("collection").Str
+	newData := gjson.Get(`[`+oldObj+`,`+newObj+`]`, `@join`).Raw
 
-	// bbolt
-	err := db.db.Update(func(tx *bbolt.Tx) error {
+	coll := query.Get(collection).Str
 
-		bucket := tx.Bucket([]byte(coll))
-		if bucket == nil {
-			return fmt.Errorf("bucket %q not found", "myBucket")
-		}
-		// Use a cursor to iterate over all key-value pairs in the bucket.
-		cursor := bucket.Cursor()
-		for key, value := cursor.First(); key != nil; key, value = cursor.Next() {
-
-			ok, err := match(isMatch, string(value))
-			if err != nil {
-				return err
-			}
-
-			if ok {
-				newData := gjson.Get(`[`+string(value)+`,`+newObj+`]`, `@join`).Raw
-				bucket.Put(key, []byte(newData))
-				return nil
-			}
-		}
-
-		return nil
-	})
-
+	stmt, err := s.db.Prepare("UPDATE " + coll + " SET obj = ?;") // strings.Builder
 	if err != nil {
-		fmt.Println(err.Error())
-		// TODO
-		return `{"error": "` + err.Error() + `"}`
+		fmt.Println("error is :                ", err)
+		return err.Error()
 	}
 
-	return `{"update:": "done"}`
+	_, err = stmt.Exec(newData)
+	if err != nil {
+		return `{"ak", "` + err.Error() + `"}` // TODO err
+	}
+
+	return `{"ak": "update: done"}`
 }
 
 // TODO updateMany update document data
-func (db *Store) updateMany(query gjson.Result) (result string) {
+func (s *Store) updateMany(query gjson.Result) (result string) {
 
 	isMatch := query.Get("match")
 
@@ -220,102 +196,130 @@ func (db *Store) updateMany(query gjson.Result) (result string) {
 
 	coll := query.Get("collection").Str
 
-	// updates exist value
-
-	// bbolt
-	err := db.db.View(func(tx *bbolt.Tx) error {
-
-		bucket := tx.Bucket([]byte(coll))
-		if bucket == nil {
-			return fmt.Errorf("bucket %q not found", "myBucket")
-		}
-		// Use a cursor to iterate over all key-value pairs in the bucket.
-		cursor := bucket.Cursor()
-		for key, value := cursor.First(); key != nil; key, value = cursor.Next() {
-
-			ok, err := match(isMatch, string(value))
-			if err != nil {
-				return err
-			}
-
-			if ok {
-				newData := gjson.Get(`[`+string(value)+`,`+newObj+`]`, `@join`).Raw
-				bucket.Put(key, []byte(newData))
-			}
-		}
-
-		return nil
-	})
-
+	rows, err := s.db.Query("select * from " + coll)
 	if err != nil {
-
 		return `{"error": "` + err.Error() + `"}`
 	}
 
-	return "many items updated"
+	for rows.Next() {
+		var value string
+		ok, err := match(isMatch, string(value))
+		if err != nil {
+			fmt.Println("updateMany err", err)
+			continue
+		}
+
+		if ok {
+			newData := gjson.Get(`[`+string(value)+`,`+newObj+`]`, `@join`).Raw
+			_, err = s.db.Exec("Update "+coll+" set obj = "+newData, "where id  = 1")
+			if err != nil {
+				return `{"error": "` + err.Error() + `"}`
+			}
+		}
+
+		if err != nil {
+			return `{"error": "` + err.Error() + `"}`
+		}
+
+	}
+
+	return "many items updated succesfully"
+}
+
+// delete one item
+func (s *Store) deleteOne(query gjson.Result) string {
+
+	coll := query.Get("collection").Str
+
+	matchPattren := query.Get("match")
+
+	rows, err := s.db.Query("select rowid from " + coll)
+	if err != nil {
+		return `{"error": "` + err.Error() + `"}`
+	}
+
+	var rowid string
+
+	for rows.Next() {
+		rows.Scan(&rowid)
+		ok, err := match(matchPattren, rowid)
+		if err != nil {
+			return `{"error": "` + err.Error() + `"}`
+		}
+
+		if ok {
+			_, err = s.db.Exec("delete from " + coll + "where rowid=" + rowid)
+			if err != nil {
+				return `{"error": "` + err.Error() + `"}`
+			}
+
+		}
+	}
+
+	return `{"result":"_id:` + rowid + ` deleted"}`
 }
 
 // deletes Many items
-func (db *Store) deleteMany(query gjson.Result) string {
+func (s *Store) deleteMany(query gjson.Result) string {
 
 	isMatch := query.Get("match")
 
 	coll := query.Get("collection").Str
 
-	err := db.db.View(func(tx *bbolt.Tx) error {
-
-		bucket := tx.Bucket([]byte(coll))
-		if bucket == nil {
-			return fmt.Errorf("bucket %q not found", "myBucket")
-		}
-		// Use a cursor to iterate over all key-value pairs in the bucket.
-		cursor := bucket.Cursor()
-		for key, value := cursor.First(); key != nil; key, value = cursor.Next() {
-
-			ok, err := match(isMatch, string(value))
-			if err != nil {
-				return err
-			}
-
-			if ok {
-				bucket.Delete(key)
-			}
-		}
-
-		return nil
-	})
+	rows, err := s.db.Query("select * from " + coll)
 	if err != nil {
 		return `{"error": "` + err.Error() + `"}`
 	}
 
-	return " many items has removed"
+	for rows.Next() {
+		var obj string
+		var rowid string
+		rows.Scan(&rowid, &obj)
+
+		ok, err := match(isMatch, obj)
+		if err != nil {
+			fmt.Println("updateMany err", err)
+			continue
+		}
+
+		if ok {
+			_, err = s.db.Exec("DELETE FROM "+coll+" WHERE id = ?", rowid)
+			if err != nil {
+				return `{"error": "` + err.Error() + `"}`
+			}
+		}
+
+		if err != nil {
+			return `{"error": "` + err.Error() + `"}`
+		}
+	}
+
+	return " many items has removed successfully"
 }
 
 // Update update document data
-func (db *Store) updateById(query gjson.Result) (result string) {
+func (s *Store) updateById(query gjson.Result) (result string) {
 
-	oldObj := db.findById(query)
-
-	id := query.Get("_id").String()
+	id := query.Get("_id").Str
 	if id == "" {
 		return `{"error": "forget _id"}`
 	}
 	newObj := query.Get("data").Raw
+	if id == "" {
+		return `{"error": "forget data"}`
+	}
 
 	coll := query.Get("collection").Str
+	var rowid string
+	var oldObj string
+
+	row := s.db.QueryRow("select * from " + coll)
+
+	row.Scan(&rowid, &oldObj)
 
 	newData := gjson.Get(`[`+oldObj+`,`+newObj+`]`, `@join`).Raw
-	err := db.db.View(func(tx *bbolt.Tx) error {
 
-		bucket := tx.Bucket([]byte(coll))
-		if bucket == nil {
-			return fmt.Errorf("collection %q not found", coll)
-		}
-
-		bucket.Put([]byte(id), []byte(newData))
-
-		return nil
-	})
+	_, err := s.db.Exec("Update "+coll+"set obj ="+newData+"where rowid=", rowid)
 
 	if err != nil {
 		return `{"error": "` + err.Error() + `"}`
@@ -324,64 +328,20 @@ func (db *Store) updateById(query gjson.Result) (result string) {
 	return id + " updated"
 }
 
-// delete one item
-func (db *Store) deleteOne(query gjson.Result) string {
+// delete by id
+func (s *Store) deleteById(query gjson.Result) string {
+
+	id := query.Get("_id").Str
+	if id == "" {
+		return `{"error": "forget _id"}`
+	}
 
 	coll := query.Get("collection").Str
 
-	isMatch := query.Get("match")
+	_, err := s.db.Exec("delete from " + coll + "where rowid = " + id)
 
-	id := ""
-	err := db.db.View(func(tx *bbolt.Tx) error {
-
-		bucket := tx.Bucket([]byte(coll))
-		if bucket == nil {
-			return fmt.Errorf("bucket %q not found", "myBucket")
-		}
-		// Use a cursor to iterate over all key-value pairs in the bucket.
-		cursor := bucket.Cursor()
-		for key, value := cursor.First(); key != nil; key, value = cursor.Next() {
-
-			ok, err := match(isMatch, string(value))
-			if err != nil {
-				return err
-			}
-
-			if ok {
-				id = string(key)
-				bucket.Delete(key)
-			}
-		}
-
-		return nil
-	})
 	if err != nil {
 		return `{"error": "` + err.Error() + `"}`
-	}
-	return `{"result":"_id:` + id + ` deleted"}`
-
-}
-
-// delete by id
-func (db *Store) deleteById(query gjson.Result) string {
-	id := query.Get("_id").String()
-	if id == "" {
-		return `{"error": "_id is required"}`
-	}
-	coll := query.Get("collection").Str
-
-	err := db.db.Update(func(tx *bbolt.Tx) error {
-		bucket := tx.Bucket([]byte(coll))
-		if bucket == nil {
-			return fmt.Errorf("%s", `{"error": "collection is required"}`)
-		}
-
-		bucket.Delete([]byte(id))
-
-		return nil
-	})
-	if err != nil {
-		return `{"error": "internal error"}` // + err.Error()
 	}
 
 	return `{"aknowlge": "row ` + id + ` deleted"}`

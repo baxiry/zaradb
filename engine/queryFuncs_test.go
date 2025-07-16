@@ -1,18 +1,18 @@
 package engine
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
 	"github.com/tidwall/gjson"
-	"go.etcd.io/bbolt"
 )
-
-var s *Store
 
 //func Test_NewDB(){}
 //func Test_findOne(){}
 //func Test_findById(){}
+
+var got string
 
 func Test_NewDB(t *testing.T) {
 	s = NewDB("tmptest.db")
@@ -26,16 +26,14 @@ func Test_insertOne(t *testing.T) {
 	query := gjson.Parse(json)
 	s.insertOne(query)
 
-	s.db.View(func(tx *bbolt.Tx) error {
-		bucket := tx.Bucket([]byte("test"))
-		res := bucket.Get(uint64ToBytes(1))
-		exp := `{"_id":1, "name":"adam", "age": 23}`
-		if string(res) != exp {
-			t.Errorf("\n%sexpect %s\ngot %s %s", Yellow, exp, res, Reset)
-		}
+	res := s.db.QueryRow("select obj from test where rowid=1")
+	res.Scan(&got)
 
-		return nil
-	})
+	exp := `{"_id":1, "name":"adam", "age": 23}`
+	if got != exp {
+		t.Errorf("\n%sexpect %s\ngot %s %s", Yellow, exp, got, Reset)
+	}
+
 }
 
 func Test_findOne(t *testing.T) {
@@ -43,9 +41,9 @@ func Test_findOne(t *testing.T) {
 	query := gjson.Parse(json)
 
 	res := s.findOne(query)
-	exp := []byte(`{"_id":1, "name":"adam", "age": 23}`)
+	exp := `{"_id":1, "name":"adam", "age": 23}`
 
-	if string(res) != string(exp) {
+	if res != exp {
 		t.Errorf("expect %s\ngot %s", exp, res)
 	}
 }
@@ -65,17 +63,12 @@ func Test_findById(t *testing.T) {
 		{
 			name:     "Collection does not exist",
 			query:    `{"collection":"unknown","_id":1}`,
-			expected: `{"error": "collection unknown not exist"}`,
-		},
-		{
-			name:     "ID does not exist",
-			query:    `{"collection":"test","_id":"nonexistent"}`,
-			expected: "", //`{"error": ""}`, // No value in DB for this key
+			expected: `{"error": "collection does not exist"}`,
 		},
 		{
 			name:     "ID does not exist",
 			query:    `{"collection":"test","_id":123}`,
-			expected: "", //`{"error": ""}`, // No value in DB for this key
+			expected: `{"error": "_id does not exist"}`, // No value in DB for this key
 		},
 	}
 
@@ -85,65 +78,63 @@ func Test_findById(t *testing.T) {
 			result := s.findById(query)
 
 			if result != tc.expected {
-				t.Errorf(Yellow+"expected %s, got %s"+Reset, tc.expected, result)
+				t.Errorf(Yellow+"\nexpected %s\n got %s\n"+Reset, tc.expected, result)
 			}
 		})
 	}
 }
 
 func Test_insertMany(t *testing.T) {
-	json := `{"collection":"insertTest", "action":"insertMany","data":[{"name":"adam1", "age": 21},{"name":"adam2", "age": 22},{"name":"adam3", "age": 23}]}`
-	query := gjson.Parse(json)
-	s.insertMany(query)
+	json := `{"collection":"testInsertMany", "action":"insertMany","data":[{"name":"adam1", "age": 21},{"name":"adam2", "age": 22},{"name":"adam3", "age": 23}]}`
 
-	s.db.View(func(tx *bbolt.Tx) error {
-		bucket := tx.Bucket([]byte("insertTest"))
+	if s.insertMany(gjson.Parse(json)) != `{"ak":"insertMany Done"}` {
+		t.Error("error when insertMany")
+	}
 
-		exp := `{"_id":1,"name":"adam1", "age": 21}`
-		got := string(bucket.Get(uint64ToBytes(1)))
-		if got != exp {
-			t.Errorf("\n%sgot %s\nexp %s %s", Yellow, got, exp, Reset)
-		}
+	exp := `{"_id":1,"name":"adam1", "age": 21}`
+	res := s.db.QueryRow("select obj from testInsertMany where rowid=1")
+	res.Scan(&got)
+	if got != exp {
+		t.Errorf("\n%sgot %s\nexp %s %s", Yellow, got, exp, Reset)
+	}
 
-		exp = `{"_id":2,"name":"adam2", "age": 22}`
+	exp = `{"_id":2,"name":"adam2", "age": 22}`
+	res = s.db.QueryRow("select obj from testInsertMany where rowid=2")
+	res.Scan(&got)
+	if got != exp {
+		t.Errorf("\n%sgot %s\nexp %s %s", Yellow, got, exp, Reset)
+	}
 
-		got = string(bucket.Get(uint64ToBytes(2)))
-		if got != exp {
-			t.Errorf("\n%sgot %s\nexp %s %s", Yellow, got, exp, Reset)
-		}
+	exp = `{"_id":3,"name":"adam3", "age": 23}`
+	res = s.db.QueryRow("select obj from testInsertMany where rowid=3")
+	res.Scan(&got)
 
-		exp = `{"_id":3,"name":"adam3", "age": 23}`
-
-		got = string(bucket.Get(uint64ToBytes(3)))
-		if got != exp {
-			t.Errorf("\n%sgot %s\nexp %s %s", Yellow, got, exp, Reset)
-		}
-
-		return nil
-	})
+	if got != exp {
+		t.Errorf("\n%sgot %s\nexp %s %s", Yellow, got, exp, Reset)
+	}
 }
 
 func Test_findMany(t *testing.T) {
 
-	got := s.findMany(gjson.Parse(`{"collection":"insertTest", "action":"findMany"}`))
+	got := s.findMany(gjson.Parse(`{"collection":"testInsertMany", "action":"findMany"}`))
 	exp := `[{"_id":1,"name":"adam1", "age": 21},{"_id":2,"name":"adam2", "age": 22},{"_id":3,"name":"adam3", "age": 23}]`
 	if got != exp {
 		t.Errorf(Red+"got %s\nexp %s"+Reset, got, exp)
 	}
 
-	got = s.findMany(gjson.Parse(`{"collection":"insertTest", "action":"findMany", "limit": 1}`))
+	got = s.findMany(gjson.Parse(`{"collection":"testInsertMany", "action":"findMany", "limit": 1}`))
 	exp = `[{"_id":1,"name":"adam1", "age": 21}]`
 	if got != exp {
 		t.Errorf(Red+"got %s\nexp %s"+Reset, got, exp)
 	}
 
-	got = s.findMany(gjson.Parse(`{"collection":"insertTest", "action":"findMany", "limit": 1, "skip", 2}`))
+	got = s.findMany(gjson.Parse(`{"collection":"testInsertMany", "action":"findMany", "limit": 1, "skip", 2}`))
 	exp = `[{"_id":3,"name":"adam3", "age": 23}]`
 	if got != exp {
 		t.Errorf(Red+"got %s\nexp %s"+Reset, got, exp)
 	}
 
-	got = s.findMany(gjson.Parse(`{"collection":"insertTest", "action":"findMany", "skip", 3}`))
+	got = s.findMany(gjson.Parse(`{"collection":"testInsertMany", "action":"findMany", "skip", 3}`))
 	exp = `[]`
 	if got != exp {
 		t.Errorf(Red+"got %s\nexp %s"+Reset, got, exp)
@@ -154,21 +145,18 @@ func Test_findMany(t *testing.T) {
 func Test_updateOne(t *testing.T) {
 
 	ak := s.updateOne(gjson.Parse(`{"collection":"test", "action":"updateOne", "data":{"age":26}}, "match":{"name":"adam"}`))
-	if ak != `{"update:": "done"}` {
-		t.Errorf(Red+"got %s\nexp %s"+Reset, ak, `{"update:": "done"}`)
+	if ak != `{"ak": "update: done"}` {
+		fmt.Println("akk: ", ak)
+		t.Errorf(Red+"got\t %s\nexp\t %s"+Reset, ak, `{"ak": "update: done"}`)
 	}
 
-	s.db.View(func(tx *bbolt.Tx) error {
-		bucket := tx.Bucket([]byte("test"))
-		got := bucket.Get(uint64ToBytes(1))
-		exp := `{"_id":1,"name":"adam","age":26}`
-		if string(got) != exp {
-			t.Errorf("\n%sexpect %s\ngot %s %s", Yellow, exp, got, Reset)
-		}
+	exp := `{"_id":1,"name":"adam","age":26}`
+	res := s.db.QueryRow("select obj from test;")
+	res.Scan(&got)
 
-		return nil
-	})
-
+	if got != exp {
+		t.Errorf("\n%sexp\t %s\ngot\t %s %s", Yellow, exp, got, Reset)
+	}
 }
 
 func Test_Close(t *testing.T) {
@@ -176,6 +164,10 @@ func Test_Close(t *testing.T) {
 
 	if err != nil {
 		t.Error("Store should be nil")
+	}
+	err = s.db.Ping()
+	if err.Error() != "sql: database is closed" {
+		t.Error("store steal work")
 	}
 	os.Remove("tmptest.db")
 }

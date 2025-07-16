@@ -1,64 +1,56 @@
 package engine
 
 import (
-	"fmt"
-
 	"github.com/tidwall/gjson"
-	"go.etcd.io/bbolt"
 )
 
-func getCollections() string {
-
-	result := `["`
-
-	// Use a read-only transaction to list all top-level buckets.
-	err := db.db.View(func(tx *bbolt.Tx) error {
-		// Iterate over each bucket in the root.
-		return tx.ForEach(func(name []byte, b *bbolt.Bucket) error {
-			result += string(name) + ", "
-
-			fmt.Printf("Bucket: %s\n", name)
-			return nil
-		})
-	})
-
-	if err != nil {
-		return err.Error()
-	}
-
-	result = `{"collections": ` + result[:len(result)-2] + `"], "size": "123mb"}`
-
-	return result
+func (s *Store) getCollections() string {
+	return "not implemented yet"
 }
 
 // deletes collection
-func deleteCollection(query gjson.Result) string {
+func (s *Store) deleteCollection(query gjson.Result) string {
 	// TODO return number of deleted objects
+	coll := query.Get("collection").Str
+
+	_, err := s.db.Exec("drop table " + coll)
+	if err != nil {
+
+		return `{"satatus":"delecte table success"}`
+	}
 	return "not implemented yet"
 }
 
 // creates new collection
-func createCollection(query gjson.Result) string {
-	return "not implemented yet"
+func (s *Store) createCollection(query gjson.Result) string {
+	coll := query.Get("collection").Str
+	s.db.Exec("create table " + coll + "(obj text);")
+	s.lastids[coll] = 1
+	return coll + "Done"
 }
 
 // Rename renames db.
-func renameDB(query gjson.Result) error {
-	return nil
+func (s *Store) renameDB(query gjson.Result) string {
+	_ = query
+	return "no yer"
 }
 
 // Remove remove db to .Trash dir
-func removeDB(query gjson.Result) (err error) {
+func (s *Store) removeDB(query gjson.Result) (err error) {
+	_ = query
 	return nil
 }
 
-// CreateDB create db. TODO return this directly
-func createDB(query gjson.Result) (string, error) {
+// ???
+func (s *Store) createDB(query gjson.Result) (string, error) {
 
+	_ = query
 	return "not yet", nil
 }
 
-// DeleteDB deletes db. (free hard drive).
+// ???
 func deleteDB(query gjson.Result) string {
+
+	_ = query
 	return " not yet"
 }
