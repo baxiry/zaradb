@@ -8,10 +8,6 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-//func Test_NewDB(){}
-//func Test_findOne(){}
-//func Test_findById(){}
-
 var got string
 
 func Test_NewDB(t *testing.T) {
@@ -37,10 +33,9 @@ func Test_insertOne(t *testing.T) {
 }
 
 func Test_findOne(t *testing.T) {
-	json := `{"collection":"test", "action":"findOne","match":{"name":"adam"}}` //
-	query := gjson.Parse(json)
+	query := `{"collection":"test", "action":"findOne","match":{"name":"adam"}}` //
 
-	res := s.findOne(query)
+	res := HandleQueries(query)
 	exp := `{"_id":1, "name":"adam", "age": 23}`
 
 	if res != exp {
@@ -48,39 +43,39 @@ func Test_findOne(t *testing.T) {
 	}
 }
 
-func Test_findById(t *testing.T) {
+func Test_HandleQury(t *testing.T) {
+	// TODO
+	_ = HandleQueries("")
+}
 
-	testCases := []struct {
-		name     string
-		query    string
-		expected string
-	}{
-		{
-			name:     "Valid collection and ID",
-			query:    `{"collection":"test","_id":1}`,
-			expected: `{"_id":1, "name":"adam", "age": 23}`,
-		},
-		{
-			name:     "Collection does not exist",
-			query:    `{"collection":"unknown","_id":1}`,
-			expected: `{"error": "collection does not exist"}`,
-		},
-		{
-			name:     "ID does not exist",
-			query:    `{"collection":"test","_id":123}`,
-			expected: `{"error": "_id does not exist"}`, // No value in DB for this key
-		},
+func cfindById(jsonQuery, expected string) string {
+	query := gjson.Parse(jsonQuery)
+
+	result := s.findById(query)
+
+	if result != expected {
+		return fmt.Sprintf(Yellow+"\nexp\t %s\ngot\t %s\n"+Reset, expected, result)
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			query := gjson.Parse(tc.query)
-			result := s.findById(query)
+	return ""
+}
 
-			if result != tc.expected {
-				t.Errorf(Yellow+"\nexpected %s\n got %s\n"+Reset, tc.expected, result)
-			}
-		})
+func Test_findById(t *testing.T) {
+
+	// "Valid collection and ID"
+	if res := cfindById(`{"collection":"test", "action":"findById", "_id":1}`, `{"_id":1, "name":"adam", "age": 23}`); res != "" {
+		t.Error("\nValid collection and ID", res)
+	}
+
+	// "Collection does not exist"
+	if res := cfindById(`{"collection":"unknown", "action":"findById", "_id":1}`, `{"error": "collection does not exist"}`); res != "" {
+		t.Error("\nCollection does not exist", res)
+	}
+
+	// "ID does not exist"
+	// "Collection does not exist"
+	if res := cfindById(`{"collection":"test", "action":"findById", "_id":123}`, `{"error": "_id does not exist"}`); res != "" {
+		t.Error("\nID does not exist", res)
 	}
 }
 
@@ -171,3 +166,40 @@ func Test_Close(t *testing.T) {
 	}
 	os.Remove("tmptest.db")
 }
+
+/*
+
+	testCases := []struct {
+		name     string
+		query    string
+		expected string
+	}{
+		{
+			name:     "Collection does not exist",
+			query:    `{"collection":"unknown","_id":1}`,
+			expected: `{"error": "collection does not exist"}`,
+		},
+		{
+			name:     "ID does not exist",
+			query:    `{"collection":"test","_id":123}`,
+			expected: `{"error": "_id does not exist"}`, // No value in DB for this key
+		},
+		{
+			name:     "Valid collection and ID",
+			query:    `{"collection":"test","_id":1}`,
+			expected: `{"_id":1, "name":"adam", "age": 23}`,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			query := gjson.Parse(tc.query)
+			result := s.findById(query)
+
+			if result != tc.expected {
+				t.Errorf(Yellow+"\nexpected %s\n got %s\n"+Reset, tc.expected, result)
+			}
+		})
+	}
+
+*/

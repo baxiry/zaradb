@@ -149,6 +149,7 @@ func (s *Store) findById(query gjson.Result) (res string) {
 	if id == "0" {
 		return "_id forgoten"
 	}
+
 	row := s.db.QueryRow("SELECT obj FROM " + coll + " where rowid =" + id)
 	err := row.Scan(&res)
 	if err != nil {
@@ -164,10 +165,8 @@ func (s *Store) findById(query gjson.Result) (res string) {
 // TODO updateOne updates one  document data
 func (s *Store) updateOne(query gjson.Result) (result string) {
 	oldObj := s.findOne(query)
-	fmt.Println("updateOne: oldObj: ", oldObj)
 
 	newObj := query.Get("data").Raw
-	fmt.Println("updateOne: newObj: ", newObj)
 
 	newData := gjson.Get(`[`+oldObj+`,`+newObj+`]`, `@join`).Raw
 

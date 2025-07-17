@@ -19,23 +19,8 @@ func HandleQueries(query string) string {
 	case "aggregate":
 		return aggr.aggrigate(parsedQuery)
 
-	case "count":
-		// count(parsedQuery)
-		return "count"
-
-	case "sum":
-		return "not implemented yet"
-
-	case "avg":
-		return "not implemented yet"
-
-	case "min":
-		return "not implemented yet"
-
-	case "max":
-		return "not implemented yet"
-
 	// database actions
+	// find
 	case "findOne":
 		return s.findOne(parsedQuery)
 
@@ -45,6 +30,7 @@ func HandleQueries(query string) string {
 	case "findById":
 		return s.findById(parsedQuery)
 
+		// insert
 	case "insert":
 		return s.insertOne(parsedQuery)
 
@@ -81,7 +67,6 @@ func HandleQueries(query string) string {
 		return s.deleteCollection(parsedQuery.Get("collection"))
 
 	case "getCollections":
-		//return showCollections(db.path)
 		return s.getCollections()
 
 	default:
