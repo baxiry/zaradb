@@ -5,6 +5,7 @@ import "errors"
 const (
 	dbName     = "db"         // d
 	collection = "collection" // c
+	action     = "action"     // c
 
 	// actions
 	findOne    = "findOne"    // fo

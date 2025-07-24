@@ -26,31 +26,28 @@ func (s *Store) createCollection(query gjson.Result) string {
 	coll := query.Get("collection").Str
 	s.db.Exec("create table " + coll + "(obj text);")
 	s.lastids[coll] = 1
-	return coll + "Done"
+	return coll + " Done"
 }
 
 // Rename renames db.
 func (s *Store) renameDB(query gjson.Result) string {
 	_ = query
-	return "no yer"
+	return "renameDB not emplemented yet"
 }
 
 // Remove remove db to .Trash dir
-func (s *Store) removeDB(query gjson.Result) (err error) {
+func (s *Store) removeDB(query gjson.Result) string {
 	_ = query
-	return nil
+	return "removeDB not emplemented yet"
 }
 
 // ???
-func (s *Store) createDB(query gjson.Result) (string, error) {
-
+func (s *Store) createDB(query gjson.Result) string {
 	_ = query
-	return "not yet", nil
+	return "createDB not emplemented yet"
 }
 
-// ???
 func deleteDB(query gjson.Result) string {
-
 	_ = query
-	return " not yet"
+	return "removeDB not emplemented yet"
 }

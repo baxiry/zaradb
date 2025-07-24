@@ -392,7 +392,7 @@ func getSubs(dataVal, subQuery gjson.Result) (bool, error) {
 }
 
 func getsub(query gjson.Result) (ids []int64) {
-
+	_ = query
 	return ids
 }
 

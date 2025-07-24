@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" sizes="32x32" href="static/favicon.png">
+    <link rel="stylesheet" href="static/style.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <title>Zara Shell</title>
+    <style>
+        .example-item {
+            margin-bottom: 30px;
+            /*background-color: #212121;*/
+            padding: 15px;
+            border-radius: 5px;
+                    }
+        .example-item textarea {
+            width: calc(100% - 20px);
+            min-height: 80px; /* Minimum height */
+            background-color: #333;
+            color: #eee;
+            border: 1px solid #555;
+            padding: 10px;
+            box-sizing: border-box; /* Crucial for correct height calculation */
+            font-family: monospace;
+            font-size: 0.9em;
+
+            /* Removing this to allow scrollbar when it exceeds initial min-height before auto-expansion kicks in, but auto-expand handles it better. You can keep it if you prefer no scrollbar ever. */
+            /* overflow: hidden; */
+            resize: none; /* Disable manual resizing */
+            /*
+            margin-bottom: 10px;
+            */
+        }
+        .example-item button.run-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+        .example-item button.run-button:hover {
+            background-color: #45a049;
+        }
+        .result-area {
+            /*background-color: #1a1a1a;
+            color: #d4d4d4;
+            padding: 10px;
+            border-radius: 3px;
+            margin-top: 10px;
+            border: 1px dashed #666;
+             */
+            font-family: monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        #output, #examples {
+            display: block !important;
+            margin: 0;
+            padding: 0;
+        }
+        #fixed-area {
+            padding: 20px;
+        }
+        #data {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="fixed-area">
+    <div id="output">
+        <div id="reconnecte"><h6>Disconnected</h6><p>Please wait seconds or reload page</p></div>
+        <div id="examples">
+            <h4>Examples</h4>
+
+            <div class="example-item">
+                <p>Insert one data object</p>
+                <textarea spellcheck="false">{ "collection":"test", "action":"insert", "data":{"name":"adam", "age":12}}</textarea>
+                <button class="run-button">Run</button>
+                <div class="result-area"></div>
+            </div>
+
+            <div class="example-item">
+                <p>Insert many data objects at one time 'bulk'</p>
+                <textarea spellcheck="false">
+{
+    "collection":"test",
+    "action":"insertMany",
+    "data":[
+        {"name":"jalal", "age":23},
+        {"name":"akram", "age":30},
+        {"name":"hasna", "age":35}
+   ]
+}
+                </textarea>
+                <button class="run-button">Run</button>
+                <div class="result-area"></div>
+            </div>
+
+            <div class="example-item">
+                <p>Find one object</p>
+                <textarea spellcheck="false">{ "collection":"test", "action":"findOne"}</textarea>
+                <button class="run-button">Run</button>
+                <div class="result-area"></div>
+            </div>
+
+            <div class="example-item">
+                <p>Find one object with match conditions, ***where***</p>
+                <textarea spellcheck="false">{ "collection":"test", "action":"findOne", "match":{"name":"adam"}}</textarea>
+                <button class="run-button">Run</button>
+                <div class="result-area"></div>
+            </div>
+
+            <div class="example-item">
+                <p>Find many objects</p>
+                <textarea spellcheck="false">{ "collection":"test", "action":"findMany"}</textarea>
+                <button class="run-button">Run</button>
+                <div class="result-area"></div>
+            </div>
+
+            <div class="example-item">
+                <p>Select objects match conditions</p>
+                <textarea spellcheck="false">{ "collection":"test", "action":"findMany", "match":{"name":"adam"}}</textarea>
+                <button class="run-button">Run</button>
+                <div class="result-area"></div>
+            </div>
+
+            <div class="example-item">
+                <p>Select objects that match the conditions</p>
+                <textarea spellcheck="false">{ "collection":"test", "action":"findMany", "match":{"name":"adam", "age":{"$gt":12}}}</textarea>
+                <button class="run-button">Run</button>
+                <div class="result-area"></div>
+            </div>
+
+            <p>Match numeric data by $eq $nq $lt $gt $ge $le</p>
+            <p>Match text data by $eq $nq $lt $gt $ge $le $c $nc $st $nst $en $nen </p>
+
+            <div class="example-item">
+                <p>Select objects that match any value </p>
+                <textarea spellcheck="false">{ "collection":"test", "action":"findMany", "match":{"age":{"$in":[12, 23, 34]}}}</textarea>
+                <button class="run-button">Run</button>
+                <div class="result-area"></div>
+            </div>
+
+            <div class="example-item">
+                <textarea spellcheck="false">{ "collection":"test", "action":"findMany", "match":{"name":{"$in":["akram", "zaid"]}}}</textarea>
+                <button class="run-button">Run</button>
+                <div class="result-area"></div>
+            </div>
+        </div>
+        <div id="config">
+            <label>Pretty Output <input type="checkbox" id="togglePretty"> </label>
+            <a href="shell">Examples</a>
+            <a href="doc">Doc</a>
+        </div>
+    </div>
+</div>
+<script>
+const togglePretty = $('#togglePretty');
+let pretty = localStorage.getItem("pretty") === "true";
+
+$(document).ready(function() {
+    togglePretty.prop('checked', pretty);
+
+    // Initial resize for all textareas
+    $('textarea').each(function() {
+        autoExpandTextarea(this);
+    });
+});
+
+togglePretty.change(function() {
+    pretty = !pretty;
+    localStorage.setItem('pretty', pretty.toString());
+});
+
+function autoExpandTextarea(textarea) {
+    // Temporarily set height to 'auto' to correctly calculate scrollHeight
+    textarea.style.height = 'auto';
+    // Then set height to scrollHeight to expand it
+    textarea.style.height = textarea.scrollHeight + 'px';
+}
+
+function HandleResponse(response, resultAreaElement) {
+    $(resultAreaElement).empty();
+    let displayContent;
+
+    if (response === null || response === "") {
+        displayContent = "null";
+    } else {
+        try {
+            if (pretty) {
+                const jsonObject = JSON.parse(response);
+                displayContent = JSON.stringify(jsonObject, null, 3);
+            } else {
+                let data = JSON.parse(response);
+                if (!Array.isArray(data)) {
+                    displayContent = JSON.stringify(data);
+                } else {
+                    displayContent = data.map(obj => JSON.stringify(obj).replace(/,"/g, ', "')).join('\n');
+                }
+            }
+        } catch (e) {
+            displayContent = `Error parsing response: ${e.message}\n${response}`;
+            console.error("Error parsing response:", e, response);
+        }
+    }
+    $(resultAreaElement).html(`<pre><span>${displayContent}</span></pre>`);
+}
+
+function sendQuery(textareaElement, resultAreaElement) {
+    $(resultAreaElement).empty().html('<pre><span>Running query...</span></pre>');
+
+    if (textareaElement.value.length < 5) {
+        $(resultAreaElement).html('<pre><span>Error: Query too short.</span></pre>');
+        return;
+    }
+
+    let query;
+    try {
+        query = JSON.stringify(JSON.parse(textareaElement.value));
+    } catch (error) {
+        console.error("Error parsing query JSON:", error);
+        $(resultAreaElement).html(`<pre><span>Error: Invalid JSON format. ${error.message}</span></pre>`);
+        return;
+    }
+
+    send(query, resultAreaElement);
+}
+
+function send(query, resultAreaElement) {
+    $.ajax({
+        url: 'http://localhost:1111/queries',
+        type: 'POST',
+        contentType: 'text/plain',
+        data: query,
+        success: function(response) {
+            HandleResponse(response, resultAreaElement);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error("Error sending query:", errorThrown);
+            let errorMessage = errorThrown || textStatus || "Unknown Error";
+            if (jqXHR.responseText) {
+                errorMessage += ": " + jqXHR.responseText;
+            }
+            $(resultAreaElement).html(`<pre><span>Error: ${errorMessage}</span></pre>`);
+        }
+    });
+}
+
+// Attach event listeners to all 'Run' buttons and textareas
+$(document).ready(function() {
+    $(document).on('click', '.run-button', function() {
+        const parentDiv = $(this).closest('.example-item');
+        const textarea = parentDiv.find('textarea')[0];
+        const resultArea = parentDiv.find('.result-area')[0];
+        sendQuery(textarea, resultArea);
+    });
+
+    // Attach input event listener for auto-expanding textareas
+    $(document).on('input', '.example-item textarea', function() {
+        autoExpandTextarea(this);
+    });
+});
+</script>
+</body>
+</html>

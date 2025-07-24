@@ -69,25 +69,26 @@ func (store *Store) insertMany(query gjson.Result) (res string) {
 }
 
 // Finds first obj match creteria.
-func (s *Store) findOne(query gjson.Result) (res string) {
+func (s *Store) findOne(query gjson.Result) (rowid string, res string) {
 	coll := query.Get("collection").Str
 	skip := query.Get("skip").Int()
 	isMatch := query.Get("match")
 
-	rows, err := s.db.Query("SELECT * FROM " + coll)
+	rows, err := s.db.Query("SELECT rowid obj FROM " + coll)
 	if err != nil {
-		return `{"error": "` + err.Error() + `"}`
+		return "", `{"error": "` + err.Error() + `"}`
 	}
 	defer rows.Close()
 
 	for rows.Next() {
 		var obj string
+		var rowid string
 
-		err := rows.Scan(&obj)
+		err := rows.Scan(&rowid, &obj)
 
 		ok, err := match(isMatch, string(obj))
 		if err != nil {
-			return `{"error":"` + err.Error() + `"}`
+			return "", `{"error":"` + err.Error() + `"}`
 		}
 
 		if ok {
@@ -101,10 +102,10 @@ func (s *Store) findOne(query gjson.Result) (res string) {
 	}
 
 	if res != "" {
-		return res
+		return rowid, res
 	}
 
-	return `{"status":"nothing match"}`
+	return "", `{"status":"nothing match"}`
 }
 
 // Find finds any object match creteria.
@@ -164,22 +165,27 @@ func (s *Store) findById(query gjson.Result) (res string) {
 
 // TODO updateOne updates one  document data
 func (s *Store) updateOne(query gjson.Result) (result string) {
-	oldObj := s.findOne(query)
+	rowid, oldObj := s.findOne(query)
+
+	fmt.Println(rowid, oldObj)
 
 	newObj := query.Get("data").Raw
 
 	newData := gjson.Get(`[`+oldObj+`,`+newObj+`]`, `@join`).Raw
+	fmt.Println(newData)
 
 	coll := query.Get(collection).Str
 
 	stmt, err := s.db.Prepare("UPDATE " + coll + " SET obj = ?;") // strings.Builder
 	if err != nil {
-		fmt.Println("error is :                ", err)
+		fmt.Println("error is :", err)
 		return err.Error()
 	}
 
-	_, err = stmt.Exec(newData)
+	_, err = stmt.Exec(newData, "1")
 	if err != nil {
+
+		fmt.Println("error is : ", err)
 		return `{"ak", "` + err.Error() + `"}` // TODO err
 	}
 
@@ -189,6 +195,7 @@ func (s *Store) updateOne(query gjson.Result) (result string) {
 // TODO updateMany update document data
 func (s *Store) updateMany(query gjson.Result) (result string) {
 
+	fmt.Println("update Many")
 	isMatch := query.Get("match")
 
 	newObj := query.Get("data").Raw

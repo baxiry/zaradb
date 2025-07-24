@@ -3,19 +3,15 @@ package main
 
 import (
 	"context"
-	"embed"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
-	"zaradb/engine"
+	eng "zaradb/engine"
+	"zaradb/web"
 )
-
-//go:embed static
-var content embed.FS
 
 var server = &http.Server{
 	Addr: Port,
@@ -23,7 +19,7 @@ var server = &http.Server{
 
 func main() {
 
-	db := engine.NewDB("test.db")
+	db := eng.NewDB("test.db")
 	if db == nil {
 		log.Fatal("no db")
 		return
@@ -32,22 +28,22 @@ func main() {
 
 	fmt.Printf("interacte with zaradb through %s%s\n", Host, Port)
 
-	http.Handle("/static/", http.FileServer(http.FS(content)))
+	http.Handle("/static/", http.FileServer(http.FS(web.Content)))
 
-	http.HandleFunc("/", index)
-	http.HandleFunc("/index", shell)
+	http.HandleFunc("/", web.Index)
+	http.HandleFunc("/index", web.Shell)
 
 	// endpoints for low loading
-	http.HandleFunc("/queries", queries)
+	http.HandleFunc("/queries", web.Queries)
 
-	http.HandleFunc("/shell", shell)
+	http.HandleFunc("/shell", web.Shell)
 
 	// endpoints for high loading
-	http.HandleFunc("/query", engine.Request)
-	http.HandleFunc("/result", engine.Response)
+	http.HandleFunc("/query", web.Request)
+	http.HandleFunc("/result", web.Response)
 
 	// for pages under development
-	http.HandleFunc("/dev", dev)
+	http.HandleFunc("/dev", web.Dev)
 
 	// Start the server in a goroutine
 	go func() {
@@ -73,47 +69,4 @@ func main() {
 
 	log.Println("zaradb exiting")
 
-}
-
-// render static shell.html file
-func queries(w http.ResponseWriter, r *http.Request) {
-	// Read the body of the request
-	query, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Failed to read request body", http.StatusBadRequest)
-		return
-	}
-	defer r.Body.Close()
-
-	result := engine.HandleQueries(string(query))
-
-	w.Header().Set("Content-Type", "text/plain")
-	w.Write([]byte(result))
-}
-
-// redirect to shell page temporary
-func dev(w http.ResponseWriter, r *http.Request) {
-	f, err := content.ReadFile("static/dev.html")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	fmt.Fprint(w, string(f))
-}
-
-// render static shell.html file
-func shell(w http.ResponseWriter, r *http.Request) {
-	f, err := content.ReadFile("static/shell.html")
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	fmt.Fprint(w, string(f))
-}
-
-// redirect to shell page temporary
-func index(w http.ResponseWriter, r *http.Request) {
-	// TODO create index page
-	http.Redirect(w, r, "http://localhost:1111/shell", http.StatusSeeOther)
 }

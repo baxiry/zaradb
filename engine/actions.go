@@ -13,16 +13,16 @@ func HandleQueries(query string) string {
 
 	parsedQuery := gjson.Parse(query)
 
-	switch parsedQuery.Get("action").Str { // action
+	switch parsedQuery.Get(action).Str {
 
 	// aggregate actions
 	case "aggregate":
 		return aggr.aggrigate(parsedQuery)
 
-	// database actions
-	// find
+	// io actions
 	case "findOne":
-		return s.findOne(parsedQuery)
+		_, res := s.findOne(parsedQuery)
+		return res
 
 	case "findMany":
 		return s.findMany(parsedQuery)
@@ -30,14 +30,12 @@ func HandleQueries(query string) string {
 	case "findById":
 		return s.findById(parsedQuery)
 
-		// insert
 	case "insert":
 		return s.insertOne(parsedQuery)
 
 	case "insertMany":
 		return s.insertMany(parsedQuery)
 
-	// update
 	case "updateById":
 		return s.updateById(parsedQuery)
 
@@ -60,11 +58,11 @@ func HandleQueries(query string) string {
 		return transaction(parsedQuery)
 
 	// manage database
-	case "create_collection":
-		return s.createCollection(parsedQuery.Get("collection"))
+	case "createCollection":
+		return s.createCollection(parsedQuery.Get(collection))
 
-	case "delete_collection":
-		return s.deleteCollection(parsedQuery.Get("collection"))
+	case "deleteCollection":
+		return s.deleteCollection(parsedQuery.Get(collection))
 
 	case "getCollections":
 		return s.getCollections()

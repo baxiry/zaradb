@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" sizes="32x32" href="static/favicon.png">
+    <link rel="stylesheet" href="static/style.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="static/shell.js" defer></script>
+    <title>zara shell</title>
+</head>
+<body>
+
+ <textarea id="query-input" rows="4" cols="30"
+     placeholder="Enter your query and press Enter + ⌘ or Enter + Alt to send it" spellcheck="false" autofocus
+ ></textarea>
+
+<div id="fixed-area" >
+     <div id="output">
+           
+           <div id="reconnecte">
+               <h6>desconnected</h6>
+               <p>please wait seconds or reload page</p>
+           </div>
+           
+           <div id="data">
+           </div>
+
+         <div id="examples">
+         <h4>examples</h4>
+
+<p>insert one data object</p>
+<pre>{ collection:"test", action:"insert", data:{name:"adam", age:12}}</pre>
+
+
+<p>insertMany inserts many data objects at one time 'bulk'</p>
+<pre>
+{
+    collection:"test",
+    action:"insertMany",
+    data:[
+        {name:"jalal", age:23},
+        {name:"akram", age:30},
+        {name:"hasna", age:35}
+   ]
+}
+</pre></br>
+
+<p>find one object</p>
+<pre>{ collection:"test", action:"findOne"}</pre>
+
+<p>find one object with match conditions, ***where***</p>
+<pre>{ collection:"test", action:"findOne", match:{name:"adam"}}</pre>
+
+<p>find many objects</p>
+<pre>{collection:"test", action:"findMany"}</pre>
+
+<p>select objects match conditions</p>
+<pre>{collection:"test", action:"findMany", match:{name:"adam"}}</pre>
+
+<p>select objects that match the conditions</p>
+<pre>{collection:"test", action:"findMany", match:{name:"adam", age:{$gt:12}}}</pre>
+
+<p>match numeric data by $eq $nq $lt $gt $ge $le</p>
+<p>match text data by $eq $nq $lt $gt $ge $le $c $nc $st $nst $en $nen </p>
+
+<p>select objects that match any value </p>
+<pre>{collection:"test", action:"findMany", match:{ age:{$in:[12, 23, 34]}}}</pre>
+<pre>{collection:"test", action:"findMany", match:{ name:{$in:["akram", "zaid"]}}}</pre>
+
+<p>select objects that do not match any value</p>
+<pre>{collection:"test", action:"findMany", match:{ age:{$nin:[12, 23, 34]}}}</pre>
+<pre>{ collection:"test", action:"findMany", match:{ name:{$nin:["akram", "zaid"]}}}</pre>
+
+<p>select objects that match any conditions by <b>$or</b> operation:</p>
+
+<pre>{collection:"test", action:"findMany", match:{$or:[{name:{$eq:"akram"}},{age:{$lt:13}}]}}</pre>
+
+<p>select objects that match all conditions by <b>$and</b> operation:</p>
+<pre>{action:"findMany", collection:"test", match:{$and:[{name:{$c:"k"}},{name:{$nc:"m"}}]}}</pre>
+<note>note that is usefel just when we need more conditions per field.</note>
+
+<p>sub Query (in progress)</p>
+<pre>{ match:{name:{sub:{op:"$eq", action:"findOne", collection:"test",match:{name:"adam"}}}}}</pre>
+
+<p>sort & reverse fields, sort by 1, reverse by 0</p>
+<pre>{action:"findMany", collection:"test", sort:{name:1, age:1}}</pre>
+<pre>{action:"findMany", collection:"test", sort:{name:1, age:0}}</pre>
+
+<p>updateById </p>
+<pre>{action:"updateById", collection:"test", _id:3, data:{name:"hosam", age:10}}</pre>
+
+<p>updateOne </p>
+<pre>{action:"updateById", collection:"test", match:{_id{$gt:33}}, data:{name:"hosam", age:10}}</pre>
+
+<p>updateMany </p>
+<pre>{action:"updateById", collection:"test",  match:{_id{$gt:33}}, data:{name:"hosam", age:10}}</pre>
+
+<p>delete first objects that match the conditions</p>
+<pre>{action:"deleteOne", collection:"test", match:{name:"adam", age:{$gt:12}}}</pre>
+
+<p>delete all objects that match the conditions </p>
+<pre>{action:"deleteMany", collection:"test", match:{name:"adam", age:{$gt:12}}}</pre>
+
+<p>skip or ignor some matching objects</p>
+<pre>{action:"deleteMany", collection:"test", match:{name:"adam", age:{$gt:12}}, skip: 3}</pre>
+
+<p>Limited to a number of matching objects</p>
+<pre>{action:"deleteMany", collection:"test", match:{name:"adam", age:{$gt:12}}, skip: 3, limit:3}</pre>
+
+<p>deleteMany</p>
+<pre>{collection:"test", action:"deleteMany", match:{name:"adam", age:{$gt:12}}, skip: 3, limit:3}</pre>
+
+
+<p>exclode fields</p>
+<pre>{collection:"test", action:"findMany", fields:{_id:0, name:0}}</pre>
+
+
+<p>rename fields</p>
+<pre>{ collection:"test",action:"findMany", fields:{_id:0, name:"full_name"}}</pre>
+
+
+ <p>String matching, by `$st` `$en` `$c` :</p>
+
+ <p>is str starts with 'ad' ? :</p> 
+ <pre>{collection:"test", action:"findMany", match:{name:{$st:"ad"}}}</pre>
+
+ <p>is str ends with 'ad' ? :</p>  
+ <pre>{collection:"test", action:"findMany", match:{name:{$en:"ad"}}}</pre>
+
+ <p>is str contains 'ad' ? :</p>
+ <pre>{collection:"test", action:"findMany", match:{name:{$c:"ad"}}}</pre>
+
+ <p>is str not starts with 'ad' ? :</p> 
+ <pre>{collection:"test",action:"findMany", match:{name:{$nst:"ad"}}}</pre>
+
+ <p>is str not ends with 'ad' ? :</p>  
+ <pre>{collection:"test", action:"findMany", match:{name:{$nen:"ad"}}}</pre>
+
+ <p>is str not contains 'ad' ? :</p>
+ <pre>{ collection:"test", action:"findMany", match:{name:{$nc:"ad"}}}</pre>
+
+ <p>Aggregation</p>
+ 
+we will appely aggregation on this data:
+
+ <pre>
+{ 
+  collection: "products",
+  action: "insertMany",
+  data: [
+	{ item: "Americanos", price: 5,  size: "Short",  "quantity": 22 },
+	{ item: "Cappuccino", price: 6,  size: "Short",  "quantity": 12 },
+	{ item: "Lattes",     price: 15, size: "Grande", "quantity": 25 },
+	{ item: "Mochas",     price: 25, size: "Tall",   "quantity": 11 },
+	{ item: "Americanos", price: 10, size: "Grande", "quantity": 12 },
+	{ item: "Cappuccino", price: 7,  size: "Tall",   "quantity": 20 },
+	{ item: "Lattes",     price: 25, size: "Tall",   "quantity": 30 },
+	{ item: "Americanos", price: 10, size: "Grande", "quantity": 24 },
+	{ item: "Cappuccino", price: 10, size: "Grande", "quantity": 25 },
+	{ item: "Americanos", price: 8,  size: "Tall",   "quantity": 28 }
+  ]
+}
+</pre>
+
+<p>`$min` `$max` `$count` `$avg` `$sum` examples:</p>
+
+<pre>
+{
+  collection: "products",
+  action: "aggregate",  
+  group: {
+      _id: 'item',
+      countItem: {$count: ''}, // count param should be zero value 
+      minPrice: {$min: 'price'},
+      maxPrice: {$max: 'price'},
+      sumPrice: {$sum: 'price'},
+      averagePrice: { $avg: 'price'},
+      averageAmount: {$avg: { $multiply: ['quantity','price']}}
+    },
+}
+</pre>
+
+
+
+<p><b>gsort</b>and <b>gmatch</b> works like sort & match but with aggregation</p>
+
+<pre>
+{
+  collection: "products",
+  action: "aggregate",  
+  gmatch:{price:{$gte:20}}
+  group: {
+      _id: 'item',
+      countItems: {$count: ''}, // count param should be zero value
+      sumPrice: {$sum: 'price'},
+      averagePrice: { $avg: 'price'},
+      averageAmount: {$avg: { $multiply: ['quantity','price']}}
+    },
+    gsort:{averageAmount:1, averagePrice:1 },
+}
+
+</pre>
+
+</div>
+    <div id="config">
+        <label>pretty output <input type="checkbox" id="togglePretty"> </label>
+        <a href="shell">examples</a>
+        <a href="doc">doc</a>
+    </div>
+</div>
+</div>
+   <script>0</script>
+</body>
+</html>
+
