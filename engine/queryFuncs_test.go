@@ -29,7 +29,6 @@ func Test_insertOne(t *testing.T) {
 	if got != exp {
 		t.Errorf("\n%sexpect %s\ngot %s %s", Yellow, exp, got, Reset)
 	}
-
 }
 
 func Test_findOne(t *testing.T) {
@@ -39,7 +38,7 @@ func Test_findOne(t *testing.T) {
 	exp := `{"_id":1, "name":"adam", "age": 23}`
 
 	if res != exp {
-		t.Errorf("expect %s\ngot %s", exp, res)
+		t.Errorf(Yellow+"\nexp %s\ngot %s"+Reset, exp, res)
 	}
 }
 
@@ -139,14 +138,15 @@ func Test_findMany(t *testing.T) {
 
 func Test_updateOne(t *testing.T) {
 
-	ak := s.updateOne(gjson.Parse(`{"collection":"test", "action":"updateOne", "data":{"age":26}}, "match":{"name":"adam"}`))
+	ak := s.updateOne(gjson.Parse(`{"collection":"test", "action":"updateOne", "data":{"age":26}, "match":{"name":"adam"}`))
+	fmt.Println("akk at Test_updateOne is : ", ak)
 	if ak != `{"ak": "update: done"}` {
-		fmt.Println("akk: ", ak)
+		fmt.Println("we are her : akk: ", ak)
 		t.Errorf(Red+"got\t %s\nexp\t %s"+Reset, ak, `{"ak": "update: done"}`)
 	}
 
 	exp := `{"_id":1,"name":"adam","age":26}`
-	res := s.db.QueryRow("select obj from test;")
+	res := s.db.QueryRow("select obj from test where rowid = 1;")
 	res.Scan(&got)
 
 	if got != exp {

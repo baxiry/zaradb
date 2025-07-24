@@ -70,25 +70,30 @@ func (store *Store) insertMany(query gjson.Result) (res string) {
 
 // Finds first obj match creteria.
 func (s *Store) findOne(query gjson.Result) (rowid string, res string) {
-	coll := query.Get("collection").Str
+	coll := query.Get(collection).Str
 	skip := query.Get("skip").Int()
 	isMatch := query.Get("match")
 
-	rows, err := s.db.Query("SELECT rowid obj FROM " + coll)
+	rows, err := s.db.Query("SELECT rowid, obj FROM " + coll)
 	if err != nil {
-		return "", `{"error": "` + err.Error() + `"}`
+		return rowid, `{"error": "` + err.Error() + `"}`
 	}
+
+	var obj string
 	defer rows.Close()
 
 	for rows.Next() {
-		var obj string
-		var rowid string
 
 		err := rows.Scan(&rowid, &obj)
-
-		ok, err := match(isMatch, string(obj))
 		if err != nil {
-			return "", `{"error":"` + err.Error() + `"}`
+			fmt.Println("err when Scan: ", err)
+			continue
+		}
+		fmt.Println("rowid & obj is : ", rowid, obj)
+
+		ok, err := match(isMatch, obj)
+		if err != nil {
+			return rowid, `{"error":"` + err.Error() + `"}`
 		}
 
 		if ok {
@@ -96,7 +101,7 @@ func (s *Store) findOne(query gjson.Result) (rowid string, res string) {
 				skip--
 				continue
 			}
-			res = string(obj)
+			res = obj
 			break
 		}
 	}
@@ -105,7 +110,7 @@ func (s *Store) findOne(query gjson.Result) (rowid string, res string) {
 		return rowid, res
 	}
 
-	return "", `{"status":"nothing match"}`
+	return rowid, `{"status":"nothing match"}`
 }
 
 // Find finds any object match creteria.
@@ -142,6 +147,32 @@ func (s *Store) findMany(query gjson.Result) (res string) {
 	return records[:ln-1] + "]"
 }
 
+// TODO updateOne updates one  document data
+func (s *Store) updateOne(query gjson.Result) (result string) {
+
+	rowid, oldObj := s.findOne(query)
+	if rowid == "" {
+		return `{"error":"nothing to update"}`
+	}
+
+	newObj := query.Get("data").Raw
+	newData := gjson.Get(`[`+oldObj+`,`+newObj+`]`, `@join`).Raw
+
+	coll := query.Get(collection).Str
+
+	stmt, err := s.db.Prepare("UPDATE " + coll + " SET obj = ? where rowid= ?;") // strings.Builder
+	if err != nil {
+		return err.Error()
+	}
+
+	_, err = stmt.Exec(newData, rowid)
+	if err != nil {
+		return `{"ak", "` + err.Error() + `"}` // TODO err
+	}
+
+	return `{"ak": "update: done"}`
+}
+
 // Finds first obj match creteria.
 func (s *Store) findById(query gjson.Result) (res string) {
 	coll := query.Get(collection).Str
@@ -161,35 +192,6 @@ func (s *Store) findById(query gjson.Result) (res string) {
 	}
 
 	return res
-}
-
-// TODO updateOne updates one  document data
-func (s *Store) updateOne(query gjson.Result) (result string) {
-	rowid, oldObj := s.findOne(query)
-
-	fmt.Println(rowid, oldObj)
-
-	newObj := query.Get("data").Raw
-
-	newData := gjson.Get(`[`+oldObj+`,`+newObj+`]`, `@join`).Raw
-	fmt.Println(newData)
-
-	coll := query.Get(collection).Str
-
-	stmt, err := s.db.Prepare("UPDATE " + coll + " SET obj = ?;") // strings.Builder
-	if err != nil {
-		fmt.Println("error is :", err)
-		return err.Error()
-	}
-
-	_, err = stmt.Exec(newData, "1")
-	if err != nil {
-
-		fmt.Println("error is : ", err)
-		return `{"ak", "` + err.Error() + `"}` // TODO err
-	}
-
-	return `{"ak": "update: done"}`
 }
 
 // TODO updateMany update document data
